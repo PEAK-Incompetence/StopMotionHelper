@@ -1,0 +1,11 @@
+{
+    "ignore": [
+        "README.md",
+        ".git/*",
+        ".github/*",
+		".gitignore"
+    ],
+    "tags": ["movie"],
+    "title": "Stop Motion Helper Beta",
+    "type": "tool"
+}
