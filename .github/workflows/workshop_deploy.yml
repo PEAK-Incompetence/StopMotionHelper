@@ -13,10 +13,25 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: "main"
+
+      - name: Resolve Changelog Message
+        id: changelog
+        env:
+          # Use push payload message if available, otherwise read via git for PRs
+          PUSH_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          if [ -n "$PUSH_MSG" ]; then
+            echo "MSG=$PUSH_MSG" >> "$GITHUB_OUTPUT"
+          else
+            # Extracts the exact commit message of the PR head commit
+            PR_MSG=$(git log -1 --pretty=%B FETCH_HEAD)
+            echo "MSG=$PR_MSG" >> "$GITHUB_OUTPUT"
+          fi
+          
       - uses: gmod-workshop/workshop-upload@v1
         with:
           username: ${{ secrets.PEAKBOT_STEAM_USERNAME }}
           vdf: ${{ secrets.PEAKBOT_STEAM_VDF }}
           id: ${{ secrets.ADDON_ID }}
-          changelog: ${{ github.event.release.body }}
+          changelog: ${{ steps.changelog.outputs.MSG }}
           folder: ./
