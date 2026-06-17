@@ -109,7 +109,7 @@ local doPeakUnstretch = CreateClientConVar(
 	"0",
 	true,
 	false,
-	"If set to 1 and Ragdoll Unstretch Tool is enabled, use Penol's Unstretch method",
+	"If set to 1 and Ragdoll Unstretch Tool is installed, use Penol's Unstretch method",
 	0,
 	1
 )
