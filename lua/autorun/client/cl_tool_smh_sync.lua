@@ -1,7 +1,7 @@
 ---Generate a think hook that updates an entity when the SMH state changes
 ---@param convar string
 ---@param hookName string
----@param callback fun(ent: SMHEntity, ents: SMHEntity[])
+---@param callback fun(ent: SMHEntity)
 function SMHEntitySyncFactory(convar, hookName, callback)
 	local enableSync = CreateClientConVar(convar, "1", true, false, nil, 0, 1)
 	local enabled = enableSync:GetBool()
@@ -10,10 +10,11 @@ function SMHEntitySyncFactory(convar, hookName, callback)
 		enabled = tobool(Either(tonumber(newValue) ~= nil, tonumber(newValue) > 0, false))
 	end, "updateBoolean")
 
-	hook.Remove("SMH_PostSelectEntity", hookName)
-	hook.Add("SMH_PostSelectEntity", hookName, function(ent, ents)
+	hook.Remove("SMH_PostSetFrame", hookName)
+	hook.Add("SMH_PostSetFrame", hookName, function(frame)
 		if enabled then
-			callback(ent, ents)
+			local ents = SMH.State.Entity
+			callback(next(ents))
 		end
 	end)
 end
