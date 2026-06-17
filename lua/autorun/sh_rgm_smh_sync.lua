@@ -7,8 +7,6 @@
 ---@field rgmOffsetTable table
 
 if CLIENT then
-	local THINK_INTERVAL = 0.1
-
 	local lastBone
 	local enableSync = CreateClientConVar(
 		"sync_rgm_to_smh",
@@ -49,19 +47,11 @@ if CLIENT then
 		enabled2 = tobool(Either(tonumber(newValue) ~= nil, tonumber(newValue) > 0, false))
 	end, "updateBoolean")
 
-	local lastThink = 0
-	hook.Remove("Think", "syncRGMSMHBone")
-	hook.Add("Think", "syncRGMSMHBone", function()
+	hook.Remove("SMH_PostSetFrame", "syncRGMSMHBone")
+	hook.Add("SMH_PostSetFrame", "syncRGMSMHBone", function(frame)
 		if not enabled then
 			return
 		end
-
-		local now = CurTime()
-		if now <= lastThink + THINK_INTERVAL then
-			return
-		end
-		lastThink = now
-
 		smhBone = smhBone or GetConVar("smh_motionpathbone")
 		local pl = LocalPlayer()
 		---@type rgmPlayer
@@ -96,29 +86,9 @@ if CLIENT then
 			print("RGM SMH Sync: Make sure to set `local function rgmSendBonePos` to `function rgmSendBonePos`")
 		end
 	end)
-	local lastFrame
-	timer.Simple(0, function()
-		lastFrame = SMH.State.Frame
-	end)
-	hook.Remove("Think", "syncRGMSMHBoneFrame")
-	hook.Add("Think", "syncRGMSMHBoneFrame", function()
+	hook.Remove("SMH_PostSetFrame", "syncRGMSMHBoneFrame")
+	hook.Add("SMH_PostSetFrame", "syncRGMSMHBoneFrame", function(frame)
 		if not enabled then
-			return
-		end
-
-		if not lastFrame then
-			return
-		end
-
-		if not RAGDOLLMOVER and not SMH then
-			return
-		end
-
-		if lastFrame == SMH.State.Frame then
-			return
-		end
-
-		if not IsValid(LocalPlayer()) then
 			return
 		end
 
@@ -134,16 +104,12 @@ if CLIENT then
 			hook.Remove("Think", "syncRGMSMHBoneFrame")
 			return
 		end
-
-		lastFrame = SMH.State.Frame
 	end)
 
-	local lastFrame2
-	timer.Simple(0, function()
-		lastFrame2 = SMH.State.Frame
-	end)
-	hook.Remove("Think", "syncRGMSMHLocks")
-	hook.Add("Think", "syncRGMSMHLocks", function()
+	-- TODO: Replace below with a dedicated, Ragdoll Mover version which calls the correct functions, without
+	-- having to do it all in this script
+	hook.Remove("SMH_PostSetFrame", "syncRGMSMHLocks")
+	hook.Add("SMH_PostSetFrame", "syncRGMSMHLocks", function()
 		if not enabled then
 			return
 		end
@@ -151,27 +117,12 @@ if CLIENT then
 			return
 		end
 
-		if not lastFrame then
-			return
-		end
-
-		if not RAGDOLLMOVER and not SMH then
-			return
-		end
-
-		if lastFrame2 == SMH.State.Frame then
-			return
-		end
-
-		if not IsValid(LocalPlayer()) then
+		if not RAGDOLLMOVER then
 			return
 		end
 
 		net.Start("RAGDOLLMOVER_SMH_SYNC")
 		net.SendToServer()
-
-		lastFrame2 = SMH.State.Frame
-		---@diagnostic enable
 	end)
 else
 	print("RGM SMH Sync: Ready to receive signals for offsetting")

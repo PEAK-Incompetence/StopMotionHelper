@@ -1,18 +1,8 @@
----@class vlazed_SMHState
----@field Entity {[Entity]: boolean}
----@field Frame integer
-
----@class vlazed_SMH
----@field State vlazed_SMHState
-
----@class vlazed_SMHEntity: Entity
----@field FingerIndex integer[]
-
 ---Generate a think hook that updates an entity when the SMH state changes
 ---@param convar string
 ---@param hookName string
----@param callback fun(ent: vlazed_SMHEntity)
-function EntitySyncFactory(convar, hookName, callback)
+---@param callback fun(ent: SMHEntity, ents: SMHEntity[])
+function SMHEntitySyncFactory(convar, hookName, callback)
 	local enableSync = CreateClientConVar(convar, "1", true, false, nil, 0, 1)
 	local enabled = enableSync:GetBool()
 	cvars.RemoveChangeCallback(convar, "updateBoolean")
@@ -20,33 +10,15 @@ function EntitySyncFactory(convar, hookName, callback)
 		enabled = tobool(Either(tonumber(newValue) ~= nil, tonumber(newValue) > 0, false))
 	end, "updateBoolean")
 
-	local lastFrame = 0
-	hook.Remove("Think", hookName)
-	hook.Add("Think", hookName, function()
-		if not enabled then
-			return
+	hook.Remove("SMH_PostSelectEntity", hookName)
+	hook.Add("SMH_PostSelectEntity", hookName, function(ent, ents)
+		if enabled then
+			callback(ent, ents)
 		end
-
-		---@type vlazed_SMH
-		local SMH = SMH ---@diagnostic disable-line
-		if not SMH or not SMH.State then
-			return
-		end
-		if not next(SMH.State.Entity) then
-			return
-		end
-		if lastFrame == SMH.State.Frame then
-			return
-		end
-
-		local entity = next(SMH.State.Entity)
-		callback(entity)
-
-		lastFrame = SMH.State.Frame
 	end)
 end
 
-local entitySyncFactory = EntitySyncFactory
+local entitySyncFactory = SMHEntitySyncFactory
 
 -- On frame change, set each slider on the faceposer to correspond to a flex
 entitySyncFactory("sync_smh_to_facepose", "syncFacePoseSMH", function(ent)
@@ -108,6 +80,7 @@ entitySyncFactory("sync_smh_to_fingerpose", "syncFingerPoseSMH", function(ent)
 		return
 	end
 
+	-- FIXME: This isn't consistent for most ragdolls
 	local bTF2 = HasTF2Hands(ent)
 	for i = 0, VarsOnHand - 1 do
 		local Ang = ent:GetNW2Angle(Format("finger_%s", i))
