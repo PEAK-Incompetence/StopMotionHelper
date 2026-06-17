@@ -917,23 +917,32 @@ local function SetFrameResponse(msgLength)
     SMH.State.Frame = frame
     SMH.State.TimeStamp = RealTime()
     SMH.UI.SetFrame(frame)
+
+    hook.Run("SMH_PostSetFrame", frame)
 end
 
 ---@type Receiver
 local function SelectEntityResponse(msgLength)
     local keyframes = ReceiveKeyframes()
     local entities = {}
+    local entityList = {}
     for i = 1, net.ReadUInt(INT_BITCOUNT) do
-        entities[net.ReadEntity()] = true
+        local ent = net.ReadEntity()
+        entities[ent] = true
+        entityList[i] = ent
     end
 
     local entity = next(entities)
 
     SMH.State.Entity = entities
+    
     SMH.State.TimeStamp = RealTime()
     SMH.UI.SetSelectedEntity(entities)
     SMH.UI.SetUsingWorld(entity == LocalPlayer())
     SMH.UI.SetKeyframes(keyframes)
+
+
+    hook.Run("SMH_PostSelectEntity", entity, entityList)
 end
 
 ---@type Receiver
