@@ -1,3 +1,5 @@
+local shouldRemap = CreateClientConVar("sync_smh_to_facepose_remap", "0", true, false, "If set to 1, this applies a remapping correction for the default faceposer, or for any faceposer tool that remaps its flexes. Set this to 0 for the Improved Faceposer or Enhanced Faceposer", 0, 1)
+
 ---Generate a think hook that updates an entity when the SMH state changes
 ---@param convar string
 ---@param hookName string
@@ -33,7 +35,12 @@ entitySyncFactory("sync_smh_to_facepose", "syncFacePoseSMH", function(ent)
 		return
 	end
 	for i = 0, n - 1 do
-		RunConsoleCommand("faceposer_flex" .. i, ent:GetNW2Float("faceposer_flex" .. i))
+		local weight = ent:GetNW2Float("faceposer_flex" .. i)
+		local min, max = ent:GetFlexBounds(i)
+		if shouldRemap:GetBool() then
+			weight = math.Remap(weight, 0, 1, min, max)
+		end
+		RunConsoleCommand("faceposer_flex" .. i, weight)
 	end
 end)
 
