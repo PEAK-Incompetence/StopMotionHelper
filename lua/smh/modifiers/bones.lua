@@ -8,7 +8,8 @@ local function networkFingerVariables(ent)
 
     if not ent.FingerIndex then return end
 
-    local VarsOnHand = 15
+    ---Network all finger values over. The client will choose the correct hand
+    local VarsOnHand = 30
 	
     for i = 1, VarsOnHand do
 		local bone = ent.FingerIndex[ i ]

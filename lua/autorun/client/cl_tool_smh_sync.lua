@@ -89,11 +89,15 @@ entitySyncFactory("sync_smh_to_fingerpose", "syncFingerPoseSMH", function(ent)
 	if tool:GetClass() ~= "gmod_tool" then
 		return
 	end
+	if tool:GetMode() ~= "finger" then 
+		return
+	end
+	local hand = tool:GetNWInt( "HandNum" )
 
 	-- FIXME: This isn't consistent for most ragdolls
 	local bTF2 = HasTF2Hands(ent)
 	for i = 0, VarsOnHand - 1 do
-		local Ang = ent:GetNW2Angle(Format("finger_%s", i))
+		local Ang = ent:GetNW2Angle(Format("finger_%s", i + VarsOnHand * hand))
 
 		if bTF2 then
 			if i < 3 then
