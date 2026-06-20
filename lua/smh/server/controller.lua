@@ -3,7 +3,13 @@ local disableNetworking = CreateConVar("smh_disablenetworking", "0", FCVAR_PROTE
 local disablePacking = CreateConVar("smh_disablepacking", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, it prevents applying SMH packages upon loading a save")
 
 local INT_BITCOUNT = 32
-local KFRAMES_PER_MSG = 250
+local KFRAMES_PER_MSG = 60
+local MAX_MODIFIER_BITS = 8
+
+local DECIMAL_BITS = 7
+local function doublePrecision(x)
+    return math.floor(x * 100)
+end
 
 ---@param framecount number
 ---@param IDs table<integer, number>
@@ -27,9 +33,9 @@ local function SendKeyframes(framecount, IDs, ents, Frame, In, Out, ModCount, Mo
         net.WriteUInt(Frame[i], INT_BITCOUNT)
         net.WriteUInt(ModCount[i], INT_BITCOUNT)
         for j = 1, ModCount[i] do
-            net.WriteString(Modifiers[i][j])
-            net.WriteFloat(In[i][j])
-            net.WriteFloat(Out[i][j])
+            net.WriteUInt(SMH.Modifiers.Ids[Modifiers[i][j]], MAX_MODIFIER_BITS)
+            net.WriteUInt(doublePrecision(In[i][j]), DECIMAL_BITS)
+            net.WriteUInt(doublePrecision(Out[i][j]), DECIMAL_BITS)
         end
     end
     return framecount - KFRAMES_PER_MSG
@@ -80,7 +86,7 @@ local function SendLeftoverKeyframes(player, framecount, IDs, entities, Frame, I
             if framecount < 0 then return end
             net.Start(SMH.MessageTypes.GetAllKeyframes)
                 framecount = SendKeyframes(framecount, IDs, entities, Frame, In, Out, ModCount, Modifiers, i)
-            net.Send(player)            
+            net.Send(player)
         end)
     end
 end
@@ -694,6 +700,7 @@ local function RequestModifiers(msgLength, player)
 
     net.Start(SMH.MessageTypes.RequestModifiersResponse)
     net.WriteTable(list)
+    net.WriteTable(SMH.Modifiers.Names, true)
     net.Send(player)
 end
 
