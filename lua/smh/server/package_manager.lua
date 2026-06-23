@@ -3,7 +3,11 @@ local disablePacking = CreateConVar("smh_disablepacking", "0", FCVAR_PROTECTED +
 
 local MGR = {}
 
-local function packSaveIntoEntity()
+---@param entities {[string]: Entity}
+---@param serializedKeyframes SMHFile
+---@param savePath string
+---@return boolean
+local function packSaveIntoEntity(entities, serializedKeyframes, savePath)
     local hasDupes = false
     for _,  data in ipairs(serializedKeyframes.Entities) do
         local entity = entities[data.Properties.Name]
@@ -19,17 +23,43 @@ local function packSaveIntoEntity()
             save = savePath,
             isDupe = entity.smh_IsDupe ---@diagnostic disable-line
         })
-        -- Only apply the dupe thing once, so that it only carries over once per packing operation.
+        -- Only apply the dupe tag once, so that it only carries over once per packing operation.
         entity.smh_IsDupe = nil
     end
     return hasDupes
 end
 
-local function packDataIntoEntity()
-    ---TODO: Add guards for packing data. We should not pack data
-    ---that could potentially kick clients out due to 
-    ---reliable buffer overflows
-    return false
+---@param entities {[string]: Entity}
+---@param serializedKeyframes SMHFile
+---@return boolean
+local function packDataIntoEntity(entities, serializedKeyframes)
+    ---TODO: Add guards for saving packed data. The duplicator is unable
+    ---to save at least 256KB worth of keyframe data, and will kick the
+    ---client out due to reliable buffer error
+    
+    for _,  data in ipairs(serializedKeyframes.Entities) do
+        local entity = entities[data.Properties.Name]
+        if not IsValid(entity) or entity:IsPlayer() then continue end
+
+        duplicator.ClearEntityModifier(entity, "SMHPackage")
+        duplicator.StoreEntityModifier(entity, "SMHPackage", table.Copy(data))
+    end
+    return true
+end
+
+---@param player Player
+function MGR.NotifyPack(player)
+    if packIntoEntity:GetBool() then
+        return player:ChatPrint(Format("Stop Motion Helper: Successfully packed animation data into all entities", path))
+    else
+        return player:ChatPrint(Format("Stop Motion Helper: Successfully packed the following save path: %s!", path))
+    end
+end
+
+---@param path string
+---@return boolean
+function MGR.ValidateSave(path)
+    return Either(not packIntoEntity:GetBool(), SMH.Saves.CheckIfExists(path, NULL), true)
 end
 
 ---@param entities {[string]: Entity}
@@ -39,9 +69,9 @@ function MGR.Pack(entities, serializedKeyframes, savePath)
     local hasDupes = false
 
     if packIntoEntity:GetBool() then
-        hasDupes = packDataIntoEntity()
+        hasDupes = packDataIntoEntity(entities, serializedKeyframes)
     else
-        hasDupes = packSaveIntoEntity()
+        hasDupes = packSaveIntoEntity(entities, serializedKeyframes, savePath)
     end
 
     return hasDupes
@@ -51,9 +81,6 @@ end
 ---@param entity SMHEntity
 ---@param data Data
 local function applyDataIntoEntity(player, entity, data)
-    ---TODO: Add guards for packing data. We should not pack data
-    ---that could potentially kick clients out due to 
-    ---reliable buffer overflows
     SMH.PropertiesManager.AddEntity(player, {entity})
     SMH.KeyframeManager.ImportSave(player, entity, data.Frames, data.Properties)
 
@@ -100,12 +127,12 @@ local function PackageApply(player, entity, data)
     if disablePacking:GetBool() then return false end
 
     timer.Simple(0, function()
-        if packIntoEntity:GetBool() then
-            ---@cast data Data
-            applyDataIntoEntity(player, entity, data)
-        else
+        if data.save then
             ---@cast data PackageData
             applySaveIntoEntity(player, entity, data)
+        else
+            ---@cast data Data
+            applyDataIntoEntity(player, entity, data)
         end
     end)
 
@@ -124,9 +151,16 @@ end
 function duplicator.Copy(Ent, AddToTable)
     Ent.smh_IsDupe = true
     local ents = duplicator.GetAllConstrainedEntitiesAndConstraints(Ent, {}, {})
+    -- local count = 0
     for _, ent in pairs(ents or {}) do
         ent.smh_IsDupe = true
+        -- local data = ent.EntityMods and ent.EntityMods["SMHPackage"]
+        -- if data then
+        --     count = count + #util.Compress(util.TableToJSON(data))
+        -- end
     end
+    -- print(count, string.NiceSize(count))
+
     return duplicator.smh_Copy(Ent, AddToTable)
 end
 

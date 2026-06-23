@@ -585,7 +585,7 @@ local function RequestPack(msgLength, player)
     local subpath = SMH.Saves.GetPath(player)
     path = subpath .. path
 
-    if not SMH.Saves.CheckIfExists(path, NULL) then
+    if not SMH.Packer.ValidateSave(path) then
         return player:ChatPrint(Format("Stop Motion Helper: Failed to pack the following save path: %s; make sure that this save path exists (e.g. save the file) before attempting a pack.", path))
     end
 
@@ -602,7 +602,7 @@ local function RequestPack(msgLength, player)
     if hasDupes then
         player:ChatPrint(Format("Stop Motion Helper: This save path has been tagged for dupes! Click Pack again to remove the dupe tag.")) 
     end
-    return player:ChatPrint(Format("Stop Motion Helper: Successfully packed the following save path: %s!", path))
+    return SMH.Packer.NotifyPack(player)
 end
 
 ---@type Receiver
