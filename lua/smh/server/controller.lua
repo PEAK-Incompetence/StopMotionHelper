@@ -1,6 +1,5 @@
 local disableExitSaves = CreateConVar("smh_disableexitsaves", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, it prevents the server from making saves per user if the server gracefully closes (map change, `quit` command, `reload` (singleplayer-only), etc.)")
 local disableNetworking = CreateConVar("smh_disablenetworking", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, faceposer, fingerposer, and eyeposer values won't be sent to the client.")
-local disablePacking = CreateConVar("smh_disablepacking", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, it prevents applying SMH packages upon loading a save")
 
 local INT_BITCOUNT = 32
 local KFRAMES_PER_MSG = 60
@@ -599,42 +598,11 @@ local function RequestPack(msgLength, player)
         rearrange[data.Name] = ent
     end
 
-    local hasDupes = SMH.Spawner.Pack(rearrange, serializedKeyframes, path)
+    local hasDupes = SMH.Packer.Pack(rearrange, serializedKeyframes, path)
     if hasDupes then
         player:ChatPrint(Format("Stop Motion Helper: This save path has been tagged for dupes! Click Pack again to remove the dupe tag.")) 
     end
     return player:ChatPrint(Format("Stop Motion Helper: Successfully packed the following save path: %s!", path))
-end
-
----@param player Player
----@param entity SMHEntity
----@param packageData PackageData
----@return boolean?
-local function PackageApply(player, entity, packageData)
-    if not IsValid(entity) then return false end
-    if disablePacking:GetBool() then return false end
-
-    timer.Simple(0, function()
-        local frameData, properties, _, settings = SMH.Saves.LoadPathForEntity(packageData.save, packageData.name)
-        if not frameData or not properties then return end
-        local smhFile = SMH.Saves.Load(packageData.save, NULL)
-
-        SMH.PropertiesManager.AddEntity(player, {entity})
-        SMH.KeyframeManager.ImportSave(player, entity, frameData, properties)
-
-        if packageData.isDupe then
-            SMH.Spawner.DupeOffsetKeyframes(player, entity, smhFile)
-        end
-
-        duplicator.ClearEntityModifier(entity, "SMHPackage")
-        duplicator.StoreEntityModifier(entity, "SMHPackage", packageData)
-
-        net.Start(SMH.MessageTypes.LoadResponseSettings)
-        net.WriteEntity(entity)
-        net.WriteTable(settings or {})
-        net.Send(player)
-    end)
-
 end
 
 ---@type Receiver
@@ -1009,8 +977,6 @@ end
 
 SMH.Controller = MGR
 
-duplicator.RegisterEntityModifier("SMHPackage", PackageApply)
-
 for _, message in pairs(SMH.MessageTypes) do
     util.AddNetworkString(message)
 end
@@ -1054,22 +1020,6 @@ hook.Add("ShutDown", "SMHExitSave", function()
     end
 end)
 
-if not duplicator.smh_Copy then
-    duplicator.smh_Copy = duplicator.Copy
-end
-
----Override `duplicator.Copy` to label copied entities as dupes, so SMH can preserve animations in saves
----@param Ent Entity
----@param AddToTable table
----@return table
-function duplicator.Copy(Ent, AddToTable)
-    Ent.smh_IsDupe = true
-    local ents = duplicator.GetAllConstrainedEntitiesAndConstraints(Ent, {}, {})
-    for _, ent in pairs(ents or {}) do
-        ent.smh_IsDupe = true
-    end
-    return duplicator.smh_Copy(Ent, AddToTable)
-end
 
 net.Receive(SMH.MessageTypes.SetFrame, SetFrame)
 

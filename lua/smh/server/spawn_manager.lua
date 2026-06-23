@@ -251,30 +251,4 @@ function MGR.SetAngleOffset(ang, player)
     MGR.OffsetAng[player] = ang
 end
 
----@param entities {[string]: Entity}
----@param serializedKeyframes SMHFile
----@param savePath string
-function MGR.Pack(entities, serializedKeyframes, savePath)
-    local hasDupes = false
-    for _,  data in ipairs(serializedKeyframes.Entities) do
-        local entity = entities[data.Properties.Name]
-        if not IsValid(entity) or entity:IsPlayer() then continue end
-        ---@cast entity Entity
-
-        if entity.smh_IsDupe then
-            hasDupes = true
-        end
-        duplicator.ClearEntityModifier(entity, "SMHPackage")
-        duplicator.StoreEntityModifier(entity, "SMHPackage", {
-            name = data.Properties.Name,
-            save = savePath,
-            isDupe = entity.smh_IsDupe ---@diagnostic disable-line
-        })
-        -- Only apply the dupe thing once, so that it only carries over once per packing operation.
-        entity.smh_IsDupe = nil
-    end
-
-    return hasDupes
-end
-
 SMH.Spawner = MGR
