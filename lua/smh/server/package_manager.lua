@@ -1,4 +1,4 @@
-local packIntoEntity = CreateConVar("smh_packentity", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, this packs animation data into the entity itself. Useful for animation sharing, but you are limited by the amount of keyframes")
+local packIntoEntity = CreateConVar("smh_packentity", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, this packs animation data into the entity itself. Up to 2MB of animation data can be saved.")
 local disablePacking = CreateConVar("smh_disablepacking", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, it prevents applying SMH packages upon loading a save")
 
 local MGR = {}
@@ -33,24 +33,22 @@ end
 ---@param serializedKeyframes SMHFile
 ---@return boolean
 local function packDataIntoEntity(entities, serializedKeyframes)
-    ---TODO: Add guards for saving packed data. The duplicator is unable
-    ---to save at least 256KB worth of keyframe data, and will kick the
-    ---client out due to reliable buffer error
-    
     for _,  data in ipairs(serializedKeyframes.Entities) do
         local entity = entities[data.Properties.Name]
         if not IsValid(entity) or entity:IsPlayer() then continue end
 
         duplicator.ClearEntityModifier(entity, "SMHPackage")
         duplicator.StoreEntityModifier(entity, "SMHPackage", table.Copy(data))
+        entity.smh_PackCount = nil
     end
     return true
 end
 
 ---@param player Player
-function MGR.NotifyPack(player)
+---@param path string
+function MGR.NotifyPack(player, path)
     if packIntoEntity:GetBool() then
-        return player:ChatPrint(Format("Stop Motion Helper: Successfully packed animation data into all entities", path))
+        return player:ChatPrint(Format("Stop Motion Helper: Successfully packed animation data into all entities"))
     else
         return player:ChatPrint(Format("Stop Motion Helper: Successfully packed the following save path: %s!", path))
     end
@@ -144,22 +142,54 @@ if not duplicator.smh_Copy then
     duplicator.smh_Copy = duplicator.Copy
 end
 
+---`engine.OpenDupe` enforces a limit of 2MB
+---(even though `engine.WriteDupe` can save at least 2MB worth of data).
+---This shall be the limit for duped SMH animations
+local MAX_DUPE_FILE_SIZE = 2048000
+
+---@type Entity[]
+local markedDirty = {}
+
 ---Override `duplicator.Copy` to label copied entities as dupes, so SMH can preserve animations in saves
+---Pretty hacky
 ---@param Ent Entity
 ---@param AddToTable table
 ---@return table
 function duplicator.Copy(Ent, AddToTable)
     Ent.smh_IsDupe = true
+
     local ents = duplicator.GetAllConstrainedEntitiesAndConstraints(Ent, {}, {})
-    -- local count = 0
+    local count = 0
+    local overCount = false
     for _, ent in pairs(ents or {}) do
         ent.smh_IsDupe = true
-        -- local data = ent.EntityMods and ent.EntityMods["SMHPackage"]
-        -- if data then
-        --     count = count + #util.Compress(util.TableToJSON(data))
-        -- end
+        if packIntoEntity:GetBool() then
+            local data = ent.EntityMods and ent.EntityMods["SMHPackage"]
+            if data and count <= MAX_DUPE_FILE_SIZE then
+                if not ent.smh_PackCount then
+                    ent.smh_PackCount = #util.Compress(util.TableToJSON(data))
+                end
+                count = count + ent.smh_PackCount
+            end
+            overCount = count > MAX_DUPE_FILE_SIZE
+            if overCount then
+                ent.smh_OldDoNotDuplicate = ent.DoNotDuplicate ~= nil and ent.DoNotDuplicate
+                ent.DoNotDuplicate = true
+                table.insert(markedDirty, ent)
+            end
+        end
     end
-    -- print(count, string.NiceSize(count))
+
+    if overCount then
+        MsgN(Format("Stop Motion Helper detected a large dupe size (%s > %s)", string.NiceSize(count), string.NiceSize(MAX_DUPE_FILE_SIZE)))
+        MsgN("The dupe has been trimmed to prevent duplication. You may need to copy the entities again.")
+    end
+    timer.Simple(0, function()
+        for _, ent in ipairs(markedDirty) do
+            ent.DoNotDuplicate = ent.smh_OldDoNotDuplicate
+        end
+        markedDirty = {}
+    end)
 
     return duplicator.smh_Copy(Ent, AddToTable)
 end

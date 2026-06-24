@@ -602,7 +602,7 @@ local function RequestPack(msgLength, player)
     if hasDupes then
         player:ChatPrint(Format("Stop Motion Helper: This save path has been tagged for dupes! Click Pack again to remove the dupe tag.")) 
     end
-    return SMH.Packer.NotifyPack(player)
+    return SMH.Packer.NotifyPack(player, path)
 end
 
 ---@type Receiver
