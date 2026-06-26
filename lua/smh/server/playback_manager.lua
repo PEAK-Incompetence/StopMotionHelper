@@ -52,7 +52,7 @@ local function PlaybackSmooth(player, playback, settings)
     for entity, keyframes in pairs(SMH.KeyframeData.Players[player].Entities) do
         if entity ~= player then
             for name, mod in pairs(SMH.Modifiers) do
-                if checkPhysBake(entity, name, settings) then return end
+                if checkPhysBake(entity, name, settings) then continue end
 
                 local prevKeyframe, nextKeyframe, _ = getBetweenKeyframes(keyframes, currentFrame, false, name)
                 ---@cast prevKeyframe FrameData
@@ -99,7 +99,7 @@ function MGR.SetFrame(player, newFrame, settings)
     for entity, keyframes in pairs(SMH.KeyframeData.Players[player].Entities) do
         if entity ~= player then
             for name, mod in pairs(SMH.Modifiers) do
-                if checkPhysBake(entity, name, settings) then return end
+                if checkPhysBake(entity, name, settings) then continue end
 
                 local prevKeyframe, nextKeyframe, lerpMultiplier = SMH.GetClosestKeyframes(keyframes, newFrame, false, name)
                 if not prevKeyframe then
