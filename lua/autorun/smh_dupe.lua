@@ -132,9 +132,12 @@ timer.Simple(0, function()
             ply.m_NextDupeSave = CurTime() + loadDelay * parts + 1
         end, nil, "Save the current dupe!", { FCVAR_DONTRECORD } )
 
+        SMH.OldArmReceiver = SMH.OldArmReceiver or net.Receivers["armdupe"]
         -- We're replacing this because we want to remove limits from the `util.Decompress` function
         net.Receive( "ArmDupe", function( size, client )
-
+            if not newDupeSave:GetBool() then
+                return SMH.OldArmReceiver(size, client)
+            end
             if ( !IsValid( client ) or size < 48 ) then return end
 
             local res, msg = hook.Run( "CanArmDupe", client )
