@@ -94,12 +94,14 @@ if CLIENT then
 
 		local pl = LocalPlayer()
 
-		if not IsValid(RAGDOLLMOVER[pl].Entity) then
+		local plTable = RAGDOLLMOVER and RAGDOLLMOVER[pl]
+
+		if not plTable or not IsValid(RAGDOLLMOVER[pl].Entity) then
 			return
 		end
 
 		if isfunction(sendBonePos) then
-			sendBonePos(pl, RAGDOLLMOVER[pl].Entity, RAGDOLLMOVER[pl].Bone)
+			sendBonePos(pl, plTable.Entity, plTable.Bone)
 		else
 			hook.Remove("Think", "syncRGMSMHBoneFrame")
 			return
