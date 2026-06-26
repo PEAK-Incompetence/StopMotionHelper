@@ -221,9 +221,9 @@ local x, y = ScrW() * 0.5, ScrH() * 0.5
 local dotCount = 0
 
 hook.Add("HUDPaint", "SMHShowLoadingDupe", function()
-    dotCount = dotCount + 1
+    dotCount = dotCount + 0.05
     local dots = ""
-    for _ = 1, dotCount % 3 + 1 do
+    for _ = 1, math.floor(dotCount) % 3 + 1 do
         dots = dots .. "."
     end
     if isSavingDupe then
