@@ -1,5 +1,11 @@
 local INT_BITCOUNT = 32
-local KFRAMES_PER_MSG = 250
+local KFRAMES_PER_MSG = 60
+local MAX_MODIFIER_BITS = 8
+
+local DECIMAL_BITS = 7
+local function twoDecimalPrecision(x)
+    return x / 100
+end
 
 local function ReceiveKeyframes()
     local framecount = net.ReadUInt(INT_BITCOUNT)
@@ -8,10 +14,10 @@ local function ReceiveKeyframes()
         ---@cast entity SMHEntity
         local Modifiers, In, Out = {}, {}, {}
         for j = 1, ModCount do
-            local name = net.ReadString()
+            local name = net.ReadUInt(MAX_MODIFIER_BITS)
             Modifiers[name] = true
-            In[name] = net.ReadFloat()
-            Out[name] = net.ReadFloat()
+            In[name] = twoDecimalPrecision(net.ReadUInt(DECIMAL_BITS)) --net.ReadFloat()
+            Out[name] = twoDecimalPrecision(net.ReadUInt(DECIMAL_BITS)) --net.ReadFloat()
         end
         SMH.TableSplit.AKeyframes(ID, entity, Frame, In, Out, Modifiers)
     end
@@ -1114,8 +1120,9 @@ end
 ---@type Receiver
 local function RequestModifiersResponse(msgLength)
     local list = net.ReadTable()
+    local ids = net.ReadTable(true)
 
-    SMH.UI.InitModifiers(list)
+    SMH.UI.InitModifiers(list, ids)
 end
 
 ---@type Receiver
@@ -1163,6 +1170,7 @@ local function StopPhysicsRecordResponse(msgLength)
     SMH.PhysRecord.Stop()
 end
 
+---@type Receiver
 local function RequestNodesResponse(msgLength)
     local nodes = {}
     local len = net.ReadUInt(14)
@@ -1191,6 +1199,16 @@ local function StopAllAudio()
 	SMH.AudioClip.StopAll()
 end
 -- ===============================
+
+---@type Receiver
+local function ReceiveModifierIds(msgLength)
+    local modCount = net.ReadUInt(MAX_MODIFIER_BITS)
+    local modNames = {}
+    for i = 1, modCount do
+        modNames[i] = net.ReadString()
+    end
+
+end
 
 local function Setup()
     net.Receive(SMH.MessageTypes.SetFrameResponse, SetFrameResponse)

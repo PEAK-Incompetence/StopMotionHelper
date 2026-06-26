@@ -723,6 +723,7 @@ end
 
 function MGR.SetKeyframes(keyframes, isreceiving)
     local propertymods = PropertiesMenu:GetCurrentModifiers()
+    local _, modnames = PropertiesMenu:GetModifiers()
 
     if not isreceiving then
         for _, pointer in pairs(KeyframePointers) do
@@ -750,7 +751,9 @@ function MGR.SetKeyframes(keyframes, isreceiving)
     if not PropertiesMenu:GetUsingWorld() then
         for _, keyframe in pairs(keyframes) do
             for name, _ in pairs(keyframe.Modifiers) do
-                if Modifiers[name] then
+                -- print(name)
+                local modname = modnames[name]
+                if Modifiers[modname] then
                     if not FrameToKeyframe[keyframe.Frame] then
                         KeyframePointers[LocalIDs] = NewKeyframePointer(LocalIDs)
                         KeyframePointers[LocalIDs]:SetFrame(keyframe.Frame)
@@ -1064,8 +1067,9 @@ function MGR.RemoveSaveFile(path, isFolder)
 end
 
 ---@param list any
-function MGR.InitModifiers(list)
-    PropertiesMenu:InitModifiers(list)
+---@param ids string[]
+function MGR.InitModifiers(list, ids)
+    PropertiesMenu:InitModifiers(list, ids)
 end
 
 function MGR.RefreshTimelineSettings()

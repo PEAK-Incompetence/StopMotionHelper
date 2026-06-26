@@ -1,3 +1,5 @@
+local MAX_MODIFIER_BITS = 8
+
 local MODBASE = {}
 MODBASE.__index = MODBASE
 MODBASE.Name = "Unnamed"
@@ -17,22 +19,31 @@ end
 
 ---@type {[string]: table}
 SMH.Modifiers = {}
+---@type string[]
+SMH.Modifiers.Names = {}
+---@type {[string]: integer}
+SMH.Modifiers.Ids = {}
 
 local path = "smh/modifiers/"
 local files, dirs = file.Find(path .. "*.lua", "LUA")
 
 local function refreshModifiers()
+	SMH.Modifiers.Names = {}
 	for _, f in pairs(files) do
 
 		_G["MOD"] = setmetatable({}, MODBASE)
 
 		include(path .. f)
 
-		SMH.Modifiers[f:sub(1, -5)] = _G["MOD"]
+		local modName = f:sub(1, -5) 
+		SMH.Modifiers[modName] = _G["MOD"]
+		table.insert(SMH.Modifiers.Names, modName)
 
 		_G["MOD"] = nil
 
 	end
+
+	SMH.Modifiers.Ids = table.Flip(SMH.Modifiers.Names)
 end	
 
 refreshModifiers()

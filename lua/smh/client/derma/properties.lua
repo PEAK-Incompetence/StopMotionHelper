@@ -4,7 +4,7 @@ local PANEL = {}
 local EntsTable = {}
 local BonemergedEntsTable = {}
 local PropertyTable = {}
-local ModifierList = {}
+local ModifierList, ModifierNames, ModifierIds = {}, {}, {}
 local Fallback = "none"
 local selectedEntity = nil
 local UsingWorld = false
@@ -474,12 +474,14 @@ function PANEL:SetBonemergedEntities(entities)
     self.BonemergedList:UpdateLines(entlist)
 end
 
-function PANEL:InitModifiers(list)
+function PANEL:InitModifiers(list, ids)
     ModifierList = table.Copy(list)
+    ModifierNames = table.Copy(ids)
+    ModifierIds = table.Flip(ids)
 end
 
 function PANEL:GetModifiers()
-    return ModifierList
+    return ModifierList, ModifierNames, ModifierIds
 end
 
 function PANEL:SetUsingWorld(set)
