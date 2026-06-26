@@ -28,6 +28,17 @@ local function incrementTime(playback)
     return playback.Timer
 end
 
+
+---Skip loading Physical Bone keyframes when enabled, so the animator can use other 
+---physics bone body modifiers to either record manually or automatically with the physics recorder
+---@param entity Entity
+---@param modName string
+---@param settings Settings
+---@return boolean
+local function checkPhysBake(entity, modName, settings)
+    return modName == "physbones" and check(settings, "EnablePhysBake", entity)
+end
+
 ---@param player Player
 ---@param playback Playback
 ---@param settings Settings
@@ -41,6 +52,8 @@ local function PlaybackSmooth(player, playback, settings)
     for entity, keyframes in pairs(SMH.KeyframeData.Players[player].Entities) do
         if entity ~= player then
             for name, mod in pairs(SMH.Modifiers) do
+                if checkPhysBake(entity, name, settings) then return end
+
                 local prevKeyframe, nextKeyframe, _ = getBetweenKeyframes(keyframes, currentFrame, false, name)
                 ---@cast prevKeyframe FrameData
                 ---@cast nextKeyframe FrameData
@@ -86,6 +99,8 @@ function MGR.SetFrame(player, newFrame, settings)
     for entity, keyframes in pairs(SMH.KeyframeData.Players[player].Entities) do
         if entity ~= player then
             for name, mod in pairs(SMH.Modifiers) do
+                if checkPhysBake(entity, name, settings) then return end
+
                 local prevKeyframe, nextKeyframe, lerpMultiplier = SMH.GetClosestKeyframes(keyframes, newFrame, false, name)
                 if not prevKeyframe then
                     continue
