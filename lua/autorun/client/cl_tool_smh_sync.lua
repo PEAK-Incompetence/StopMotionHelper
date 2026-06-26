@@ -4,8 +4,9 @@ local shouldRemap = CreateClientConVar("sync_smh_to_facepose_remap", "0", true, 
 ---@param convar string
 ---@param hookName string
 ---@param callback fun(ent: SMHEntity)
-function SMHEntitySyncFactory(convar, hookName, callback)
-	local enableSync = CreateClientConVar(convar, "1", true, false, nil, 0, 1)
+---@param enabledByDefault boolean?
+function SMHEntitySyncFactory(convar, hookName, callback, enabledByDefault)
+	local enableSync = CreateClientConVar(convar, Either(enabledByDefault ~= nil, tobool(enabledByDefault) and "1" or "0", "1"), true, false, nil, 0, 1)
 	local enabled = enableSync:GetBool()
 	cvars.RemoveChangeCallback(convar, "updateBoolean")
 	cvars.AddChangeCallback(convar, function(_, _, newValue)

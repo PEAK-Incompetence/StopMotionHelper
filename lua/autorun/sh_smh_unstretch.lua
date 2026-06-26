@@ -162,5 +162,5 @@ timer.Simple(0, function()
 		if ent:IsRagdoll() then
 			unstretch({ ent })
 		end
-	end)
+	end, false)
 end)
