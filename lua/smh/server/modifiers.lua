@@ -19,16 +19,18 @@ end
 
 ---@type {[string]: table}
 SMH.Modifiers = {}
+
+SMH.ModifierInfo = {}
 ---@type string[]
-SMH.Modifiers.Names = {}
+SMH.ModifierInfo.Names = {}
 ---@type {[string]: integer}
-SMH.Modifiers.Ids = {}
+SMH.ModifierInfo.Ids = {}
 
 local path = "smh/modifiers/"
 local files, dirs = file.Find(path .. "*.lua", "LUA")
 
 local function refreshModifiers()
-	SMH.Modifiers.Names = {}
+	SMH.ModifierInfo.Names = {}
 	for _, f in pairs(files) do
 
 		_G["MOD"] = setmetatable({}, MODBASE)
@@ -37,13 +39,13 @@ local function refreshModifiers()
 
 		local modName = f:sub(1, -5) 
 		SMH.Modifiers[modName] = _G["MOD"]
-		table.insert(SMH.Modifiers.Names, modName)
+		table.insert(SMH.ModifierInfo.Names, modName)
 
 		_G["MOD"] = nil
 
 	end
 
-	SMH.Modifiers.Ids = table.Flip(SMH.Modifiers.Names)
+	SMH.ModifierInfo.Ids = table.Flip(SMH.ModifierInfo.Names)
 end	
 
 refreshModifiers()

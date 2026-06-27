@@ -32,7 +32,7 @@ local function SendKeyframes(framecount, IDs, ents, Frame, In, Out, ModCount, Mo
         net.WriteUInt(Frame[i], INT_BITCOUNT)
         net.WriteUInt(ModCount[i], INT_BITCOUNT)
         for j = 1, ModCount[i] do
-            net.WriteUInt(SMH.Modifiers.Ids[Modifiers[i][j]], MAX_MODIFIER_BITS)
+            net.WriteUInt(SMH.ModifierInfo.Ids[Modifiers[i][j]], MAX_MODIFIER_BITS)
             net.WriteUInt(doublePrecision(In[i][j]), DECIMAL_BITS)
             net.WriteUInt(doublePrecision(Out[i][j]), DECIMAL_BITS)
         end
@@ -668,7 +668,7 @@ local function RequestModifiers(msgLength, player)
 
     net.Start(SMH.MessageTypes.RequestModifiersResponse)
     net.WriteTable(list)
-    net.WriteTable(SMH.Modifiers.Names, true)
+    net.WriteTable(SMH.ModifierInfo.Names, true)
     net.Send(player)
 end
 
