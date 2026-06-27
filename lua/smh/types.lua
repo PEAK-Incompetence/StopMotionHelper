@@ -59,6 +59,24 @@
 ---@field SmoothPlayback boolean
 ---@field EnableWorld boolean
 
+---### Structure
+---
+---```
+---{
+--- [Entity]: {
+---     [Modifier]: {
+---         [Frame]: {
+---             [1]: PrevFrame
+---             [2]: NextFrame
+---             [3]: LerpMultiplier
+---         }
+---     }
+--- }
+---}
+---```
+---
+---@alias PlaybackCache {[Entity]: {[Modifier]: {[number]: {[1]: FrameData, [2]: FrameData, [3]: number}}}}
+
 ---@class Playback
 ---@field StartFrame integer
 ---@field EndFrame integer

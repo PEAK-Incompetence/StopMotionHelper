@@ -159,8 +159,8 @@ end
 ---@param player Player
 ---@param keyframeIds any
 ---@param updateData any
----@param timeline any
----@return table
+---@param timeline integer
+---@return FrameData[]
 function MGR.Update(player, keyframeIds, updateData, timeline)
     local keyframes, movingkeyframes = {}, {}
 
@@ -236,8 +236,8 @@ end
 ---@param player Player
 ---@param keyframeIds any
 ---@param frame integer
----@param timeline any
----@return table
+---@param timeline integer
+---@return FrameData[]
 function MGR.Copy(player, keyframeIds, frame, timeline)
     local copiedKeyframes, movingkeyframes = {}, {}
 

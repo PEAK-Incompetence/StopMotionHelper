@@ -7,6 +7,7 @@ local check = SMH.SettingsManager.CheckSetting
 local getSetting = SMH.SettingsManager.GetSetting
 
 local getBetweenKeyframes = SMH.GetBetweenKeyframes
+local getClosestKeyframes = SMH.GetClosestKeyframes
 ---Increment the current frame, validate it, and return its new value
 ---@param increment number
 ---@param playback Playback
@@ -39,6 +40,52 @@ local function checkPhysBake(entity, modName, settings)
     return modName == "physbones" and check(settings, "EnablePhysBake", entity)
 end
 
+---@type PlaybackCache
+local playbackCache = {}
+
+---@param entity Entity
+---@param modName string
+---@param frame number
+---@return boolean, FrameData?, FrameData?, number?
+local function lookupCache(entity, modName, frame)
+    local entityCache = playbackCache[entity]
+    local modCache = entityCache and entityCache[modName]
+    local frameCache = modCache and modCache[frame]
+
+    if entityCache and modCache and frameCache then
+        return true, frameCache[1], frameCache[2], frameCache[3]
+    end
+
+    return false
+end
+
+---@param entity Entity
+---@param modName string
+---@param frame number
+---@param prev FrameData?
+---@param next FrameData?
+---@param lerp number?
+local function storeCache(entity, modName, frame, prev, next, lerp)
+    playbackCache[entity] = playbackCache[entity] or {}
+    playbackCache[entity][modName] = playbackCache[entity][modName] or {}
+    playbackCache[entity][modName][frame] = {prev, next, lerp}
+end
+
+---@param entity Entity
+function MGR.UpdateCacheFor(entity)
+    if IsValid(entity) then
+        playbackCache[entity] = {}
+    end
+end
+
+function MGR.FlushCache()
+    playbackCache = {}
+end
+
+function MGR.GetCache()
+    return table.Copy(playbackCache) -- return a copy for dev purposes
+end
+
 ---@param player Player
 ---@param playback Playback
 ---@param settings Settings
@@ -67,11 +114,18 @@ local function PlaybackSmooth(player, playback, settings)
         for name, mod in pairs(modifiers) do
             if checkPhysBake(entity, name, settings) then continue end
 
-            local prevKeyframe, nextKeyframe, _ = getBetweenKeyframes(keyframes, currentFrame, false, name)
+            local cached, prevKeyframe, nextKeyframe, lerpMultiplier = lookupCache(entity, name, currentFrame)
+            if not cached then
+                prevKeyframe, nextKeyframe, lerpMultiplier = getClosestKeyframes(keyframes, currentFrame, false, name)
+                if prevKeyframe then
+                    storeCache(entity, name, currentFrame, prevKeyframe, nextKeyframe, lerpMultiplier)
+                end
+            end
+            if not prevKeyframe then
+                continue
+            end        
             ---@cast prevKeyframe FrameData
             ---@cast nextKeyframe FrameData
-
-            if not prevKeyframe then continue end
 
             local prevFrame = prevKeyframe.Frame
             local nextFrame = nextKeyframe.Frame
@@ -124,7 +178,11 @@ function MGR.SetFrame(player, newFrame, settings)
         for name, mod in pairs(modifiers) do
             if checkPhysBake(entity, name, settings) then continue end
 
-            local prevKeyframe, nextKeyframe, lerpMultiplier = SMH.GetClosestKeyframes(keyframes, newFrame, false, name)
+            local cached, prevKeyframe, nextKeyframe, lerpMultiplier = lookupCache(entity, name, newFrame)
+            if not cached then
+                prevKeyframe, nextKeyframe, lerpMultiplier = getClosestKeyframes(keyframes, newFrame, false, name)
+                storeCache(entity, name, newFrame, prevKeyframe, nextKeyframe, lerpMultiplier)
+            end
             if not prevKeyframe then
                 continue
             end
@@ -162,8 +220,12 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
         local entitySettings = getSetting(settings, entity)
 
         for name, mod in pairs(modifiers) do
-            local prevKeyframe, nextKeyframe, lerpMultiplier = SMH.GetClosestKeyframes(keyframes, newFrame, false, name)
-            if not prevKeyframe then
+            local cached, prevKeyframe, nextKeyframe, lerpMultiplier = lookupCache(entity, name, newFrame)
+            if not cached then
+                prevKeyframe, nextKeyframe, lerpMultiplier = getClosestKeyframes(keyframes, newFrame, false, name)
+                storeCache(entity, name, newFrame, prevKeyframe, nextKeyframe, lerpMultiplier)
+            end
+            if cached and not prevKeyframe then
                 continue
             end
             ---@cast prevKeyframe FrameData

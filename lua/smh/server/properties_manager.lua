@@ -45,7 +45,7 @@ local function SetUniqueName(player, entity, name)
 end
 
 ---@param player Player
----@return any
+---@return Entity?
 local function FindEntity(player) -- I use this to find entity that doesn't have recorded frames
     local sorting = {}
 
