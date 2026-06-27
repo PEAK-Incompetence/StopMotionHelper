@@ -151,6 +151,7 @@ function MGR.Create(player, entities, frame, timeline)
             }
             table.insert(keyframes, keyframe)
         end
+        SMH.SortKeyframes(player, entity)
     end
 
     return keyframes
@@ -198,6 +199,7 @@ function MGR.Update(player, keyframeIds, updateData, timeline)
                         remainkeyframe.Modifiers = remainmods
                         remainkeyframe.EaseIn = EaseIn
                         remainkeyframe.EaseOut = EaseOut
+                        SMH.SortKeyframes(player, keyframe.Entity)
                     end
 
                     movingkeyframes[keyframe] = frame
@@ -228,6 +230,8 @@ function MGR.Update(player, keyframeIds, updateData, timeline)
         end
         keyframe.Frame = frame
         table.insert(keyframes, keyframe)
+
+        SMH.SortKeyframes(player, keyframe.Entity)
     end
 
     return keyframes
@@ -285,6 +289,7 @@ function MGR.Copy(player, keyframeIds, frame, timeline)
 
         keyframe.Frame = frame
         table.insert(copiedKeyframes, keyframe)
+        SMH.SortKeyframes(player, keyframe.Entity)
     end
 
     return copiedKeyframes
@@ -311,6 +316,9 @@ function MGR.Delete(player, keyframeId, timeline)
     if not next(keyframe.Modifiers) then
         SMH.KeyframeData:Delete(player, keyframeId)
     end
+
+    SMH.SortKeyframes(player, entity)
+
     return entity
 end
 
@@ -347,6 +355,8 @@ function MGR.ImportSave(player, entity, serializedKeyframes, entityProperties)
             end
         end
     end
+
+    SMH.SortKeyframes(player, entity)
 end
 
 ---@param player Player

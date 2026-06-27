@@ -11,19 +11,22 @@ function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
 
     local prevKeyframe = nil
     local nextKeyframe = nil
-    for _, keyframe in pairs(keyframes) do
-        if keyframe.Frame == frame and keyframe.Modifiers[modname] and not ignoreCurrentFrame then
-            prevKeyframe = keyframe
-            nextKeyframe = keyframe
-            break
-        end
+    for _, keyframe in ipairs(keyframes) do
+        if keyframe.Modifiers[modname] then
+            if keyframe.Frame == frame then
+                prevKeyframe = keyframe
+                nextKeyframe = keyframe
+                break
+            end
 
-        if keyframe.Frame < frame and (not prevKeyframe or prevKeyframe.Frame < keyframe.Frame) and keyframe.Modifiers[modname] then
+            if keyframe.Frame >= frame then
+                nextKeyframe = keyframe
+                break
+            end
             prevKeyframe = keyframe
-        elseif keyframe.Frame > frame and (not nextKeyframe or nextKeyframe.Frame > keyframe.Frame) and keyframe.Modifiers[modname] then
-            nextKeyframe = keyframe
         end
     end
+
 
     if not prevKeyframe and not nextKeyframe then
         return nil, nil
@@ -62,6 +65,20 @@ function SMH.GetClosestKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
     end
 
     return prevKeyframe, nextKeyframe, lerpMultiplier
+end
+
+---@param player Player
+---@param entity Entity
+function SMH.SortKeyframes(player, entity)
+    local keyframes = SMH.KeyframeData.Players[player].Entities[entity]
+    if keyframes then
+        table.sort(keyframes, function (a, b)
+            ---@cast a FrameData
+            ---@cast b FrameData
+            
+            return a.Frame < b.Frame
+        end)
+    end
 end
 
 ---@class KeyframeData
