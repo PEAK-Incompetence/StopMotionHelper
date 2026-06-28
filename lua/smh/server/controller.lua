@@ -228,11 +228,25 @@ local function CreateKeyframe(msgLength, player)
     SMH.GhostsManager.UpdateKeyframe(player)
 end
 
+---@param keyframes FrameData[]
+local function flushPlaybackCacheFromKeyframes(keyframes)
+    local flushedEnts = {}
+    for _, keyframe in ipairs(keyframes) do
+        if not flushedEnts[keyframe.Entity] then
+            SMH.PlaybackManager.UpdateCacheFor(keyframe.Entity)
+            flushedEnts[keyframe.Entity] = true
+        end
+    end
+end
+
+---@type {[Player]: BufferDatum}
 local bufferData = {}
 
 ---@type Receiver
 local function UpdateKeyframe(msgLength, player)
-    bufferData[player] = {Ids = {}, UpdateData = {}, Timeline = 1}
+    if not bufferData[player] then
+        bufferData[player] = {Ids = {}, UpdateData = {}, Timeline = 1}
+    end
 
     local count = net.ReadUInt(INT_BITCOUNT)
 
@@ -258,21 +272,24 @@ end
 local function UpdateKeyframeExecute(msgLength, player)
     local keyframes = SMH.KeyframeManager.Update(player, bufferData[player].Ids, bufferData[player].UpdateData, bufferData[player].Timeline)
 
-    for key, keyframe in ipairs(keyframes) do
-        local framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers = SMH.TableSplit.DKeyframes({keyframe})
-        SMH.PlaybackManager.UpdateCacheFor(keyframe.Entity)
-
-        net.Start(SMH.MessageTypes.UpdateKeyframeResponse)
-        SendKeyframes(framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers)
-        net.Send(player)
-    end
-
-    bufferData[player] = {}
+    local framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers = SMH.TableSplit.DKeyframes(keyframes)
+    
+    net.Start(SMH.MessageTypes.UpdateKeyframeResponse)
+    framecount = SendKeyframes(framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers)
+    net.Send(player)
+    
+    SendLeftoverKeyframes(player, framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers)
+    
+    bufferData[player] = nil
+    
+    flushPlaybackCacheFromKeyframes(keyframes)
 end
 
 ---@type Receiver
 local function CopyKeyframe(msgLength, player)
-    bufferData[player] = {Ids = {}, Frames = {}, Timeline = 1}
+    if not bufferData[player] then
+        bufferData[player] = {Ids = {}, Frames = {}, Timeline = 1}
+    end
 
     local count = net.ReadUInt(INT_BITCOUNT)
 
@@ -288,16 +305,17 @@ end
 local function CopyKeyframeExecute(msgLength, player)
     local keyframes = SMH.KeyframeManager.Copy(player, bufferData[player].Ids, bufferData[player].Frames, bufferData[player].Timeline)
     
-    for key, keyframe in ipairs(keyframes) do
-        local framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers = SMH.TableSplit.DKeyframes({keyframe})
-        SMH.PlaybackManager.UpdateCacheFor(keyframe.Entity)
-        net.Start(SMH.MessageTypes.UpdateKeyframeResponse)
-        SendKeyframes(framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers)
-        net.Send(player)
+    local framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers = SMH.TableSplit.DKeyframes(keyframes)
 
-    end
+    net.Start(SMH.MessageTypes.UpdateKeyframeResponse)
+    framecount = SendKeyframes(framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers)
+    net.Send(player)
 
-    bufferData[player] = {}
+    SendLeftoverKeyframes(player, framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers)
+
+    bufferData[player] = nil
+
+    flushPlaybackCacheFromKeyframes(keyframes)
 end
 
 ---@type Receiver
