@@ -235,7 +235,7 @@ end
 
 ---@param player Player
 ---@param keyframeIds any
----@param frame integer
+---@param frame integer[]
 ---@param timeline any
 ---@return table
 function MGR.Copy(player, keyframeIds, frame, timeline)
