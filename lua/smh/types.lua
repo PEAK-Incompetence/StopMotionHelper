@@ -78,6 +78,12 @@
 ---@field Physbones boolean
 ---@field RagdollWeightData number[]
 
+---@class BufferDatum
+---@field Ids integer[]
+---@field UpdateData table?
+---@field Frames table?
+---@field Timeline integer
+
 ---@alias Modifiers
 ---| "advcamera"
 ---| "advlight"
