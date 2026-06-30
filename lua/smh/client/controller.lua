@@ -263,6 +263,7 @@ function CTRL.Stretch(frames, amount)
         local done = co()
         if done then
             timer.Remove("SMH_Stretching_Timer")
+            RequestNodes()
         end
     end)
 
@@ -358,6 +359,8 @@ function CTRL.UpdateKeyframe(keyframeId, updateData, singledata)
 
     net.Start(SMH.MessageTypes.UpdateKeyframeExecute)
     net.SendToServer()
+
+    RequestNodes()
 end
 
 ---@param keyframeId integer[]
@@ -381,6 +384,8 @@ function CTRL.CopyKeyframe(keyframeId, frame)
 
     net.Start(SMH.MessageTypes.CopyKeyframeExecute)
     net.SendToServer()
+
+    RequestNodes()
 end
 
 ---@param keyframeId integer[]
@@ -400,6 +405,8 @@ function CTRL.DeleteKeyframe(keyframeId)
 
         net.SendToServer()
     end
+
+    RequestNodes()
 end
 
 local function PlayAudioInBetween()

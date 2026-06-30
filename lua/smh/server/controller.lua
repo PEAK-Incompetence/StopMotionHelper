@@ -283,6 +283,7 @@ local function UpdateKeyframeExecute(msgLength, player)
     bufferData[player] = nil
     
     flushPlaybackCacheFromKeyframes(keyframes)
+    SMH.GhostsManager.UpdateKeyframe(player)
 end
 
 ---@type Receiver
@@ -316,6 +317,7 @@ local function CopyKeyframeExecute(msgLength, player)
     bufferData[player] = nil
 
     flushPlaybackCacheFromKeyframes(keyframes)
+    SMH.GhostsManager.UpdateKeyframe(player)
 end
 
 ---@type Receiver
