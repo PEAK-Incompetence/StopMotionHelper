@@ -283,6 +283,7 @@ local function UpdateKeyframeExecute(msgLength, player)
     bufferData[player] = nil
     
     flushPlaybackCacheFromKeyframes(keyframes)
+    SMH.GhostsManager.UpdateKeyframe(player)
 end
 
 ---@type Receiver
@@ -316,6 +317,7 @@ local function CopyKeyframeExecute(msgLength, player)
     bufferData[player] = nil
 
     flushPlaybackCacheFromKeyframes(keyframes)
+    SMH.GhostsManager.UpdateKeyframe(player)
 end
 
 ---@type Receiver
@@ -965,7 +967,11 @@ end
 ---@type Receiver
 local function RequestNewSession(msgLength, player)
     SMH.KeyframeData.Players[player] = nil
+    SMH.Properties.Players[player] = nil
     SMH.PlaybackManager.FlushCache()
+
+    GetServerEntities(msgLength, player)
+
     return RequestUnpack(msgLength, player)
 end
 

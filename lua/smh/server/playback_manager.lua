@@ -86,6 +86,10 @@ function MGR.GetCache()
     return table.Copy(playbackCache) -- return a copy for dev purposes
 end
 
+hook.Add("EntityRemoved", "SMHPlaybackManagerEntityRemoved", function(entity)
+    playbackCache[entity] = nil
+end)
+
 ---@param player Player
 ---@param playback Playback
 ---@param settings Settings
