@@ -134,6 +134,10 @@ function MGR.SelectEntity(player, entities)
     GhostData[player].Entity = table.Copy(entities)
 end
 
+local PREV_GHOST_COLOR = Color(200, 0, 0)
+local NEXT_GHOST_COLOR = Color(0, 200, 0)
+local GHOST_COLOR = Color(255, 255, 255)
+
 ---@param player Player
 ---@param frame integer
 ---@param settings Settings
@@ -191,6 +195,12 @@ function MGR.UpdateState(player, frame, settings, timeline, settimeline)
 
     for entity, keyframes in pairs(entities) do
 
+        local alpha = check(settings, "GhostTransparency", entity) * 255
+        local xray = check(settings, "GhostXRay", entity)
+        local ghostPrevious = check(settings, "GhostPrevFrame", entity)
+        local ghostNext = check(settings, "GhostNextFrame", entity)
+        local onionSkin = check(settings, "OnionSkin", entity)
+
         for name, _ in pairs(filtermods) do -- gonna apply used modifiers
             local prevKeyframe, nextKeyframe, lerpMultiplier = SMH.GetClosestKeyframes(keyframes, frame, true, name)
             if not prevKeyframe and not nextKeyframe then
@@ -200,32 +210,35 @@ function MGR.UpdateState(player, frame, settings, timeline, settimeline)
             ---@cast nextKeyframe FrameData
             ---@cast entity SMHEntity
 
-            local alpha = check(settings, "GhostTransparency", entity) * 255
-            local xray = check(settings, "GhostXRay", entity)
-
             if lerpMultiplier == 0 then
-                if check(settings, "GhostPrevFrame", entity) and prevKeyframe.Frame < frame then
-                    local g = CreateGhost(player, entity, Color(200, 0, 0, alpha), prevKeyframe.Frame, ghosts, xray)
+                if ghostPrevious and prevKeyframe.Frame < frame then
+                    PREV_GHOST_COLOR.a = alpha
+                    local g = CreateGhost(player, entity, PREV_GHOST_COLOR, prevKeyframe.Frame, ghosts, xray)
                     SetGhostFrame(entity, g, prevKeyframe.Modifiers, name)
-                elseif check(settings, "GhostNextFrame", entity) and nextKeyframe.Frame > frame then
-                    local g = CreateGhost(player, entity, Color(0, 200, 0, alpha), nextKeyframe.Frame, ghosts, xray)
+                end
+                if ghostNext and nextKeyframe.Frame > frame then
+                    NEXT_GHOST_COLOR.a = alpha
+                    local g = CreateGhost(player, entity, NEXT_GHOST_COLOR, nextKeyframe.Frame, ghosts, xray)
                     SetGhostFrame(entity, g, nextKeyframe.Modifiers, name)
                 end
             else
-                if check(settings, "GhostPrevFrame", entity) then
-                    local g = CreateGhost(player, entity, Color(200, 0, 0, alpha), prevKeyframe.Frame, ghosts, xray)
+                if ghostPrevious then
+                    PREV_GHOST_COLOR.a = alpha
+                    local g = CreateGhost(player, entity, PREV_GHOST_COLOR, prevKeyframe.Frame, ghosts, xray)
                     SetGhostFrame(entity, g, prevKeyframe.Modifiers, name)
                 end
-                if check(settings, "GhostNextFrame", entity) then
-                    local g = CreateGhost(player, entity, Color(0, 200, 0, alpha), nextKeyframe.Frame, ghosts, xray)
+                if ghostNext then
+                    NEXT_GHOST_COLOR.a = alpha
+                    local g = CreateGhost(player, entity, NEXT_GHOST_COLOR, nextKeyframe.Frame, ghosts, xray)
                     SetGhostFrame(entity, g, nextKeyframe.Modifiers, name)
                 end
             end
 
-            if check(settings, "OnionSkin", entity) then
-                for _, keyframe in pairs(keyframes) do
+            if onionSkin then
+                for _, keyframe in ipairs(keyframes) do
                     if keyframe.Modifiers[name] then
-                        local g = CreateGhost(player, entity, Color(255, 255, 255, alpha), keyframe.Frame, ghosts, xray)
+                        GHOST_COLOR.a = alpha
+                        local g = CreateGhost(player, entity, GHOST_COLOR, keyframe.Frame, ghosts, xray)
                         SetGhostFrame(entity, g, keyframe.Modifiers, name)
                     end
                 end

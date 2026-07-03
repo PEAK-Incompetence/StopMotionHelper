@@ -13,17 +13,16 @@ function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
     local nextKeyframe = nil
     for _, keyframe in ipairs(keyframes) do
         if keyframe.Modifiers[modname] then
-            if keyframe.Frame == frame then
+            if keyframe.Frame == frame and not ignoreCurrentFrame then
                 prevKeyframe = keyframe
                 nextKeyframe = keyframe
                 break
-            end
-
-            if keyframe.Frame >= frame then
+            elseif keyframe.Frame < frame then
+                prevKeyframe = keyframe
+            elseif keyframe.Frame > frame then
                 nextKeyframe = keyframe
                 break
             end
-            prevKeyframe = keyframe
         end
     end
 

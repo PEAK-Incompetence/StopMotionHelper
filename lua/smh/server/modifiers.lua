@@ -30,7 +30,7 @@ local path = "smh/modifiers/"
 local files, dirs = file.Find(path .. "*.lua", "LUA")
 
 local function refreshModifiers()
-	SMH.ModifierInfo.Names = {}
+	SMH.ModifierInfo.Names = {"world"}
 	for _, f in pairs(files) do
 
 		_G["MOD"] = setmetatable({}, MODBASE)
