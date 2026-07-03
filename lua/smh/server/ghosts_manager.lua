@@ -474,8 +474,8 @@ function MGR.RequestNode(player)
         end
 
         local parentPos, parentAng = vector_origin, angle_zero
-        if physBoneParent then
-            local physObj = entity:GetPhysicsObjectNum(physBoneParent)
+        local physObj = entity:GetPhysicsObjectNum(physBoneParent)
+        if physBoneParent and physObj then
             parentPos, parentAng = physObj:GetPos(), physObj:GetAngles()
         else
             parentPos, parentAng = entity:GetPos(), entity:GetAngles()

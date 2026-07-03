@@ -229,7 +229,7 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
                 prevKeyframe, nextKeyframe, lerpMultiplier = getClosestKeyframes(keyframes, newFrame, false, name)
                 storeCache(entity, name, newFrame, prevKeyframe, nextKeyframe, lerpMultiplier)
             end
-            if cached and not prevKeyframe then
+            if not prevKeyframe then
                 continue
             end
             ---@cast prevKeyframe FrameData
