@@ -14,8 +14,10 @@
 
 -- SMH Types
 
+---@alias EntitySet Set<Entity>
+
 ---@class NewState
----@field Entity {[Entity]: boolean}?
+---@field Entity EntitySet?
 ---@field Frame integer?
 ---@field Timeline integer?
 ---@field PlaybackRate integer?
@@ -23,7 +25,7 @@
 ---@field TimeStamp number?
 
 ---@class State
----@field Entity {[Entity]: boolean}
+---@field Entity EntitySet
 ---@field Frame integer
 ---@field Timeline integer
 ---@field PlaybackRate integer

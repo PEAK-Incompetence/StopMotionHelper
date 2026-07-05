@@ -977,29 +977,36 @@ end
 
 local MGR = {}
 
+---@param player Player
 function MGR.StopPhysicsRecordResponse(player)
     net.Start(SMH.MessageTypes.StopPhysicsRecordResponse)
     net.Send(player)
 end
 
 -- AUDIO =========================
+---@param id integer
+---@param player Player
 function MGR.PlayAudio(id, player)
 	net.Start(SMH.MessageTypes.PlayAudio)
 	net.WriteUInt(id, INT_BITCOUNT)
 	net.Send(player)
 end
 
+---@param id integer
+---@param player Player
 function MGR.StopAudio(id, player)
 	net.Start(SMH.MessageTypes.StopAudio)
 	net.WriteUInt(id, INT_BITCOUNT)
 	net.Send(player)
 end
 
+---@param player Player
 function MGR.StopAllAudio(player)
 	net.Start(SMH.MessageTypes.StopAllAudio)
 	net.Send(player)
 end
 
+---@type Receiver
 local function UpdateServerAudio(len, ply)
 	SMH.PlaybackManager.UpdateServerAudio(len, ply)
 end
