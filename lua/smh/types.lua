@@ -77,7 +77,7 @@
 ---}
 ---```
 ---
----@alias PlaybackCache {[Entity]: {[Modifier]: {[number]: {[1]: FrameData, [2]: FrameData, [3]: number}}}}
+---@alias PlaybackCache {[Player]: {[Entity]: {[Modifier]: {[number]: {[1]: FrameData, [2]: FrameData, [3]: number}}}}}
 
 ---@class Playback
 ---@field StartFrame integer
@@ -154,6 +154,17 @@
 ---@class ColorPose A struct of the entity's color at an SMH frame
 ---@field Color Color
 
+---@class ModifierClass
+---@field Name string
+---@field Ghost boolean
+---@field Load fun(self: ModifierClass, entity: Entity, data: table, settings: Settings)
+---@field LoadBetween fun(self: ModifierClass, entity: Entity, prevData: table, nextData: table, lerpMultiplier: number, settings: Settings)
+---@field LoadGhostBetween fun(self: ModifierClass, entity: Entity, ghost: SMHEntity, prevData: table, nextData: table, lerpMultiplier: number, settings: Settings?)
+---@field LoadGhost fun(self: ModifierClass, entity: Entity, ghost: SMHEntity, data: table, settings: Settings?)
+---@field Offset fun(self: ModifierClass, data: table, origindata: table, worldpos: Vector, worldang: Angle, offsetpos: Vector?, offsetang: Angle?)
+---@field OffsetDupe fun(self: ModifierClass, entity: Entity, data: table, origindata: table)
+---@field Save fun(self: ModifierClass, entity: Entity)
+
 ---@class Modifier A struct of the entity's modifiers
 ---@field physbones FramePose[]?
 ---@field bones FramePose[]?
@@ -178,6 +189,8 @@
 ---@field EaseOut number|table<string, number> If stored as a number, then this is an legacy SMH save file, otherwise this is an new SMH save file.
 ---@field Modifiers table<Modifiers, Modifier> Legacy SMH save file feature
 ---@field Frame number
+---@field Previous FrameData?
+---@field Next FrameData?
 
 ---@alias TimelineMods TimelineMod[]
 

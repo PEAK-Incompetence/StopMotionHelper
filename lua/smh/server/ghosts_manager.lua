@@ -202,7 +202,7 @@ function MGR.UpdateState(player, frame, settings, timeline, settimeline)
         local onionSkin = check(settings, "OnionSkin", entity)
 
         for name, _ in pairs(filtermods) do -- gonna apply used modifiers
-            local prevKeyframe, nextKeyframe, lerpMultiplier = SMH.GetClosestKeyframes(keyframes, frame, true, name)
+            local prevKeyframe, nextKeyframe, lerpMultiplier = SMH.GetClosestKeyframes(keyframes, frame, true, name, 1)
             if not prevKeyframe and not nextKeyframe then
                 continue
             end
@@ -261,7 +261,7 @@ function MGR.UpdateState(player, frame, settings, timeline, settimeline)
                 end
 
                 if not IsSet then
-                    local prevKeyframe, nextKeyframe, lerpMultiplier = SMH.GetClosestKeyframes(keyframes, g.Frame, true, name)
+                    local prevKeyframe, nextKeyframe, lerpMultiplier = SMH.GetClosestKeyframes(keyframes, g.Frame, true, name, 1)
                     if not prevKeyframe then
                         continue
                     end
@@ -422,7 +422,7 @@ end
 ---@return Angle?
 local function lerpTransform(keyframes, frame, modifier, tweening, index)
     local pos, ang
-    local prevFrame, nextFrame, lerp = SMH.GetClosestKeyframes(keyframes, frame, true, modifier)
+    local prevFrame, nextFrame, lerp = SMH.GetClosestKeyframes(keyframes, frame, true, modifier, 1)
     if prevFrame and nextFrame then
         local prevData, nextData
         if index then

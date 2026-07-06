@@ -1,6 +1,8 @@
 local MAX_MODIFIER_BITS = 8
 
+---@class ModifierClass
 local MODBASE = {}
+---@package
 MODBASE.__index = MODBASE
 MODBASE.Name = "Unnamed"
 
@@ -17,7 +19,7 @@ function MODBASE:IsEffect(entity) -- checking if the entity is an effect prop
     return false
 end
 
----@type {[string]: table}
+---@type {[string]: ModifierClass}
 SMH.Modifiers = {}
 
 SMH.ModifierInfo = {}
