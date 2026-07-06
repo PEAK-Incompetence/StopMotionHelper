@@ -1,10 +1,14 @@
+---Legacy keyframe getter
+---TODO: Make `WalkBetweenKeyframes` behavior the same as `GetBetweenKeyframes` 
 ---@param keyframes FrameData[]
 ---@param frame integer
 ---@param ignoreCurrentFrame boolean
 ---@param modname Modifiers
+---@param delta number
+---@param start FrameData?
 ---@return FrameData? prevKeyframe
 ---@return FrameData? nextKeyframe
-function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
+function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta, start)
     if ignoreCurrentFrame == nil then
         ignoreCurrentFrame = false
     end
@@ -38,17 +42,70 @@ function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
     return prevKeyframe, nextKeyframe
 end
 
+---Playback performant keyframe getter
+---@param keyframes FrameData[]
+---@param frame integer
+---@param ignoreCurrentFrame boolean
+---@param modname Modifiers
+---@param delta number
+---@param start FrameData?
+---@return FrameData? prevKeyframe
+---@return FrameData? nextKeyframe
+function SMH.WalkBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta, start)
+    if ignoreCurrentFrame == nil then
+        ignoreCurrentFrame = false
+    end
+
+    local walk = start or keyframes[1]
+    local direction = delta < 0 and "Previous" or "Next"
+
+    local prevKeyframe = nil
+    local nextKeyframe = nil
+    while walk do
+        if walk.Modifiers[modname] then
+            if walk.Frame == frame and not ignoreCurrentFrame then
+                prevKeyframe = walk
+                nextKeyframe = walk
+                break
+            elseif walk.Frame < frame then
+                prevKeyframe = walk
+                if delta < 0 then
+                    break
+                end
+            elseif walk.Frame > frame then
+                nextKeyframe = walk
+                if delta >= 0 then
+                    break
+                end
+            end
+        end
+        walk = walk[direction]
+    end
+
+    if not prevKeyframe and not nextKeyframe then
+        return nil, nil
+    elseif not prevKeyframe then
+        prevKeyframe = nextKeyframe
+    elseif not nextKeyframe then
+        nextKeyframe = prevKeyframe
+    end
+
+    return prevKeyframe, nextKeyframe
+end
+
 local GetBetweenKeyframes = SMH.GetBetweenKeyframes
+local WalkBetweenKeyframes = SMH.WalkBetweenKeyframes
 
 ---@param keyframes FrameData[]
 ---@param frame integer
 ---@param ignoreCurrentFrame boolean
 ---@param modname Modifiers
+---@param delta number
 ---@return FrameData? prevKeyframe
 ---@return FrameData? nextKeyframe
 ---@return integer
-function SMH.GetClosestKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
-    local prevKeyframe, nextKeyframe = GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
+function SMH.GetClosestKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta)
+    local prevKeyframe, nextKeyframe = WalkBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta)
 
     if not prevKeyframe and not nextKeyframe then
         return nil, nil, 0
@@ -75,8 +132,22 @@ function SMH.SortKeyframes(player, entity)
             ---@cast a FrameData
             ---@cast b FrameData
             
+            a.Previous = nil
+            a.Next = nil
+            b.Previous = nil
+            b.Next = nil
             return a.Frame < b.Frame
         end)
+    end
+
+    ---@type FrameData
+    local prevKeyframe
+    for i, keyframe in ipairs(keyframes) do
+        keyframe.Previous = prevKeyframe
+        if prevKeyframe then
+            prevKeyframe.Next = keyframe
+        end
+        prevKeyframe = keyframe
     end
 end
 

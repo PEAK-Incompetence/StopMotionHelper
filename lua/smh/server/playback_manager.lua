@@ -6,8 +6,8 @@ local MGR = {}
 local check = SMH.SettingsManager.CheckSetting
 local getSetting = SMH.SettingsManager.GetSetting
 
+local walkBetweenKeyframes = SMH.WalkBetweenKeyframes
 local getBetweenKeyframes = SMH.GetBetweenKeyframes
-local getClosestKeyframes = SMH.GetClosestKeyframes
 ---Increment the current frame, validate it, and return its new value
 ---@param increment number
 ---@param playback Playback
@@ -40,20 +40,24 @@ local function checkPhysBake(entity, modName, settings)
     return modName == "physbones" and check(settings, "EnablePhysBake", entity)
 end
 
+---This is used to make the walking algorithm go the right direction
+---@type {[Player]: number}
+local frameHistory = {}
+
+---Store the previous and next keyframes and the interval between them
 ---@type PlaybackCache
 local playbackCache = {}
 
 ---@param entity Entity
 ---@param modName string
----@param frame number
 ---@return boolean, FrameData?, FrameData?, number?
-local function lookupCache(entity, modName, frame)
-    local entityCache = playbackCache[entity]
+local function lookupCache(player, entity, modName)
+    local playerCache = playbackCache[player]
+    local entityCache = playerCache and playerCache[entity]
     local modCache = entityCache and entityCache[modName]
-    local frameCache = modCache and modCache[frame]
 
-    if entityCache and modCache and frameCache then
-        return true, frameCache[1], frameCache[2], frameCache[3]
+    if modCache then
+        return true, modCache[1], modCache[2], modCache[3]
     end
 
     return false
@@ -61,25 +65,29 @@ end
 
 ---@param entity Entity
 ---@param modName string
----@param frame number
 ---@param prev FrameData?
 ---@param next FrameData?
----@param lerp number?
-local function storeCache(entity, modName, frame, prev, next, lerp)
-    playbackCache[entity] = playbackCache[entity] or {}
-    playbackCache[entity][modName] = playbackCache[entity][modName] or {}
-    playbackCache[entity][modName][frame] = {prev, next, lerp}
+---@return number
+local function storeCache(player, entity, modName, prev, next)
+    local invDelta = prev and next and prev ~= next and 1 / (next.Frame - prev.Frame) or 0
+    playbackCache[player] = playbackCache[player] or {}
+    playbackCache[player][entity] = playbackCache[player][entity] or {}
+    playbackCache[player][entity][modName] = {prev, next, invDelta}
+    return invDelta
 end
 
 ---@param entity Entity
-function MGR.UpdateCacheFor(entity)
-    if IsValid(entity) then
-        playbackCache[entity] = {}
+function MGR.UpdateCacheFor(player, entity)
+    if playbackCache[player] and IsValid(entity) then
+        playbackCache[player][entity] = {}
     end
 end
 
-function MGR.FlushCache()
-    playbackCache = {}
+---@param player Player
+function MGR.FlushCache(player)
+    if playbackCache[player] then
+        playbackCache[player] = {}
+    end
 end
 
 function MGR.GetCache()
@@ -104,6 +112,7 @@ local function PlaybackSmooth(player, playback, settings)
     local modifiers = SMH.Modifiers
     local entities = SMH.KeyframeData.Players[player].Entities
     local enableWorldKeyframes = tobool(player:GetInfo("smh_enableworldkeyframes"))
+    local delta = currentFrame - (frameHistory[player] or currentFrame)
 
     for entity, keyframes in pairs(entities) do
         if entity == player then
@@ -114,16 +123,19 @@ local function PlaybackSmooth(player, playback, settings)
         end
 
         local entitySettings = getSetting(settings, entity)
+        local tweenDisabled = check(settings, "TweenDisable", entity)
 
         for name, mod in pairs(modifiers) do
             if checkPhysBake(entity, name, settings) then continue end
 
-            local cached, prevKeyframe, nextKeyframe, lerpMultiplier = lookupCache(entity, name, currentFrame)
-            if not cached then
-                prevKeyframe, nextKeyframe, lerpMultiplier = getClosestKeyframes(keyframes, currentFrame, false, name)
-                if prevKeyframe then
-                    storeCache(entity, name, currentFrame, prevKeyframe, nextKeyframe, lerpMultiplier)
-                end
+            local cached, prevKeyframe, nextKeyframe, invDelta = lookupCache(player, entity, name)
+            if 
+                not cached 
+                or (prevKeyframe and prevKeyframe.Frame > currentFrame) 
+                or (nextKeyframe and nextKeyframe.Frame < currentFrame) 
+            then
+                prevKeyframe, nextKeyframe = getBetweenKeyframes(keyframes, currentFrame, false, name, delta, prevKeyframe)
+                invDelta = storeCache(player, entity, name, prevKeyframe, nextKeyframe)
             end
             if not prevKeyframe then
                 continue
@@ -133,7 +145,6 @@ local function PlaybackSmooth(player, playback, settings)
 
             local prevFrame = prevKeyframe.Frame
             local nextFrame = nextKeyframe.Frame
-            local invDelta = 1 / (nextFrame - prevFrame)
             local prevData, nextData = prevKeyframe.Modifiers[name], nextKeyframe.Modifiers[name]
 
             if prevFrame == nextFrame then
@@ -144,7 +155,7 @@ local function PlaybackSmooth(player, playback, settings)
                 local lerpMultiplier = (currentFrame - prevFrame) * invDelta
                 lerpMultiplier = math.EaseInOut(lerpMultiplier, prevKeyframe.EaseOut[name], nextKeyframe.EaseIn[name])
 
-                if lerpMultiplier <= 0 or check(settings, "TweenDisable", entity) then
+                if lerpMultiplier <= 0 or tweenDisabled then
                     mod:Load(entity, prevData, entitySettings)
                 elseif prevData and nextData then
                     mod:LoadBetween(entity, prevData, nextData, lerpMultiplier, entitySettings);
@@ -152,12 +163,14 @@ local function PlaybackSmooth(player, playback, settings)
             end
         end
     end
+    frameHistory[player] = currentFrame
 end
 
+---Legacy set frame
 ---@param player Player
 ---@param newFrame integer
 ---@param settings Settings
-function MGR.SetFrame(player, newFrame, settings)
+function MGR.SelectFrame(player, newFrame, settings)
     local playerData = SMH.KeyframeData.Players[player]
     
     if not playerData then
@@ -182,10 +195,14 @@ function MGR.SetFrame(player, newFrame, settings)
         for name, mod in pairs(modifiers) do
             if checkPhysBake(entity, name, settings) then continue end
 
-            local cached, prevKeyframe, nextKeyframe, lerpMultiplier = lookupCache(entity, name, newFrame)
-            if not cached then
-                prevKeyframe, nextKeyframe, lerpMultiplier = getClosestKeyframes(keyframes, newFrame, false, name)
-                storeCache(entity, name, newFrame, prevKeyframe, nextKeyframe, lerpMultiplier)
+            local cached, prevKeyframe, nextKeyframe, invDelta = lookupCache(player, entity, name)
+            if 
+                not cached
+                or (prevKeyframe and prevKeyframe.Frame > newFrame) 
+                or (nextKeyframe and nextKeyframe.Frame < newFrame) 
+            then
+                prevKeyframe, nextKeyframe  = getBetweenKeyframes(keyframes, newFrame, false, name, delta, prevKeyframe)
+                invDelta = storeCache(player, entity, name, prevKeyframe, nextKeyframe)
             end
             if not prevKeyframe then
                 continue
@@ -193,6 +210,8 @@ function MGR.SetFrame(player, newFrame, settings)
             ---@cast prevKeyframe FrameData
             ---@cast nextKeyframe FrameData
 
+            local lerpMultiplier = (newFrame - prevKeyframe.Frame) * invDelta
+            lerpMultiplier = math.EaseInOut(lerpMultiplier, prevKeyframe.EaseOut[name], nextKeyframe.EaseIn[name])
             if lerpMultiplier <= 0 or tweenDisabled then
                 mod:Load(entity, prevKeyframe.Modifiers[name], entitySettings);
             elseif lerpMultiplier >= 1 then
@@ -202,6 +221,66 @@ function MGR.SetFrame(player, newFrame, settings)
             end
         end
     end
+    frameHistory[player] = newFrame
+end
+
+---Playback performant set frame
+---@param player Player
+---@param newFrame integer
+---@param settings Settings
+function MGR.SetFrame(player, newFrame, settings)
+    local playerData = SMH.KeyframeData.Players[player]
+    
+    if not playerData then
+        return
+    end
+
+    local entities = playerData.Entities
+    local modifiers = SMH.Modifiers
+    local enableWorldKeyframes = tobool(player:GetInfo("smh_enableworldkeyframes"))
+    local delta = newFrame - (frameHistory[player] or newFrame)
+
+    for entity, keyframes in pairs(entities) do
+        if entity == player then
+            if enableWorldKeyframes then
+                SMH.WorldKeyframesManager.Load(player, newFrame, keyframes)
+            end
+            continue
+        end
+
+        local entitySettings = getSetting(settings, entity)
+        local tweenDisabled = check(settings, "TweenDisable", entity)
+
+        for name, mod in pairs(modifiers) do
+            if checkPhysBake(entity, name, settings) then continue end
+
+            local cached, prevKeyframe, nextKeyframe, invDelta = lookupCache(player, entity, name)
+            if 
+                not cached
+                or (prevKeyframe and prevKeyframe.Frame > newFrame) 
+                or (nextKeyframe and nextKeyframe.Frame < newFrame) 
+            then
+                prevKeyframe, nextKeyframe  = walkBetweenKeyframes(keyframes, newFrame, false, name, delta, prevKeyframe)
+                invDelta = storeCache(player, entity, name, prevKeyframe, nextKeyframe)
+            end
+            if not prevKeyframe then
+                continue
+            end
+            ---@cast prevKeyframe FrameData
+            ---@cast nextKeyframe FrameData
+
+            local lerpMultiplier = (newFrame - prevKeyframe.Frame) * invDelta
+            lerpMultiplier = math.EaseInOut(lerpMultiplier, prevKeyframe.EaseOut[name], nextKeyframe.EaseIn[name])
+            if lerpMultiplier <= 0 or tweenDisabled then
+                mod:Load(entity, prevKeyframe.Modifiers[name], entitySettings);
+            elseif lerpMultiplier >= 1 then
+                mod:Load(entity, nextKeyframe.Modifiers[name], entitySettings);
+            else
+                mod:LoadBetween(entity, prevKeyframe.Modifiers[name], nextKeyframe.Modifiers[name], lerpMultiplier, entitySettings);
+            end
+        end
+    end
+    frameHistory[player] = newFrame
 end
 
 ---@param player Player
@@ -216,18 +295,23 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
 
     local modifiers = SMH.Modifiers
     local entities = playerData.Entities
+    local delta = newFrame - (frameHistory[player] or newFrame)
 
     for entity, keyframes in pairs(entities) do
         if ignored[entity] then continue end
 
-        local tweenDisabled = check(settings, "TweenDisable", entity)
         local entitySettings = getSetting(settings, entity)
+        local tweenDisabled = check(settings, "TweenDisable", entity)
 
         for name, mod in pairs(modifiers) do
-            local cached, prevKeyframe, nextKeyframe, lerpMultiplier = lookupCache(entity, name, newFrame)
-            if not cached then
-                prevKeyframe, nextKeyframe, lerpMultiplier = getClosestKeyframes(keyframes, newFrame, false, name)
-                storeCache(entity, name, newFrame, prevKeyframe, nextKeyframe, lerpMultiplier)
+            local cached, prevKeyframe, nextKeyframe, invDelta = lookupCache(player, entity, name)
+            if 
+                not cached 
+                or (prevKeyframe and prevKeyframe.Frame > newFrame) 
+                or (nextKeyframe and nextKeyframe.Frame < newFrame) 
+            then
+                prevKeyframe, nextKeyframe = getBetweenKeyframes(keyframes, newFrame, false, name, delta, prevKeyframe)
+                invDelta = storeCache(player, entity, name, prevKeyframe, nextKeyframe)
             end
             if not prevKeyframe then
                 continue
@@ -235,6 +319,8 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
             ---@cast prevKeyframe FrameData
             ---@cast nextKeyframe FrameData
 
+            local lerpMultiplier = (newFrame - prevKeyframe.Frame) * invDelta
+            lerpMultiplier = math.EaseInOut(lerpMultiplier, prevKeyframe.EaseOut[name], nextKeyframe.EaseIn[name])
             if lerpMultiplier <= 0 or tweenDisabled then
                 mod:Load(entity, prevKeyframe.Modifiers[name], entitySettings);
             elseif lerpMultiplier >= 1 then
@@ -244,6 +330,7 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
             end
         end
     end
+    frameHistory[player] = newFrame
 end
 
 -- AUDIO PLAYBACK CONTROL ==========

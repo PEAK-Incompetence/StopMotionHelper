@@ -199,7 +199,6 @@ function MGR.Update(player, keyframeIds, updateData, timeline)
                         remainkeyframe.Modifiers = remainmods
                         remainkeyframe.EaseIn = EaseIn
                         remainkeyframe.EaseOut = EaseOut
-                        SMH.SortKeyframes(player, keyframe.Entity)
                     end
 
                     movingkeyframes[keyframe] = frame
@@ -230,8 +229,15 @@ function MGR.Update(player, keyframeIds, updateData, timeline)
         end
         keyframe.Frame = frame
         table.insert(keyframes, keyframe)
+    end
 
-        SMH.SortKeyframes(player, keyframe.Entity)
+    local sortedEnts = {}
+    for _, keyframe in ipairs(keyframes) do
+        local entity = keyframe.Entity
+        if not sortedEnts[entity] then
+            SMH.SortKeyframes(player, entity)
+            sortedEnts[entity] = true
+        end
     end
 
     return keyframes
@@ -289,7 +295,15 @@ function MGR.Copy(player, keyframeIds, frame, timeline)
 
         keyframe.Frame = frame
         table.insert(copiedKeyframes, keyframe)
-        SMH.SortKeyframes(player, keyframe.Entity)
+    end
+
+    local sortedEnts = {}
+    for _, keyframe in ipairs(copiedKeyframes) do
+        local entity = keyframe.Entity
+        if not sortedEnts[entity] then
+            SMH.SortKeyframes(player, entity)
+            sortedEnts[entity] = true
+        end
     end
 
     return copiedKeyframes

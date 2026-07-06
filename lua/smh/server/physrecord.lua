@@ -33,13 +33,8 @@ function MGR.RecordStart(player, framecount, interval, frame, playbackrate, endf
     RecordPhys(player, entities, timelines, frame)
     
     local startFrame = frame
-    timer.Create(SMHRecorderID .. player:EntIndex(), 1 / playbackrate , framecount, function()
-        counter = counter + 1
-
-        if interval == 0 or (counter / interval) == math.Round(counter / interval)  then 
-            RecordPhys(player, entities, timelines, frame)
-        end
-        SMH.PlaybackManager.AudioPlayback(player, {
+    ---@type Playback
+    local playback = {
             CurrentFrame = frame,
             PlaybackRate = playbackrate,
             StartFrame = startFrame,
@@ -47,7 +42,14 @@ function MGR.RecordStart(player, framecount, interval, frame, playbackrate, endf
             Timer = 0,
             PrevFrame = 0,
             Settings = settings
-        })
+    }
+    timer.Create(SMHRecorderID .. player:EntIndex(), 1 / playbackrate , framecount, function()
+        counter = counter + 1
+
+        if interval == 0 or (counter / interval) == math.Round(counter / interval)  then 
+            RecordPhys(player, entities, timelines, frame)
+        end
+        SMH.PlaybackManager.AudioPlayback(player, playback)
 
         if counter >= framecount - 1 or frame + 1 > endframe - 1  then
             RecordPhys(player, entities, timelines, frame)

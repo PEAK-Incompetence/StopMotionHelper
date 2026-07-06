@@ -119,7 +119,7 @@ local function SetFrame(msgLength, player)
     local timeline = SMH.PropertiesManager.GetTimelinesInfo(player)
 
     SMH.SettingsManager.StorePlayerSettings(player, settings)
-    SMH.PlaybackManager.SetFrame(player, newFrame, settings)
+    SMH.PlaybackManager.SelectFrame(player, newFrame, settings)
     SMH.GhostsManager.UpdateState(player, newFrame, settings, timeline, timelineset)
 
     net.Start(SMH.MessageTypes.SetFrameResponse)
@@ -199,7 +199,7 @@ local function CreateKeyframe(msgLength, player)
     for i = 1, net.ReadUInt(INT_BITCOUNT) do
         local entity = net.ReadEntity()
         entities[i] = entity
-        SMH.PlaybackManager.UpdateCacheFor(entity)
+        SMH.PlaybackManager.UpdateCacheFor(player, entity)
     end
 
     local frame = net.ReadUInt(INT_BITCOUNT)
@@ -228,12 +228,13 @@ local function CreateKeyframe(msgLength, player)
     SMH.GhostsManager.UpdateKeyframe(player)
 end
 
+---@param player Player
 ---@param keyframes FrameData[]
-local function flushPlaybackCacheFromKeyframes(keyframes)
+local function flushPlaybackCacheFromKeyframes(player, keyframes)
     local flushedEnts = {}
     for _, keyframe in ipairs(keyframes) do
         if not flushedEnts[keyframe.Entity] then
-            SMH.PlaybackManager.UpdateCacheFor(keyframe.Entity)
+            SMH.PlaybackManager.UpdateCacheFor(player, keyframe.Entity)
             flushedEnts[keyframe.Entity] = true
         end
     end
@@ -282,7 +283,7 @@ local function UpdateKeyframeExecute(msgLength, player)
     
     bufferData[player] = nil
     
-    flushPlaybackCacheFromKeyframes(keyframes)
+    flushPlaybackCacheFromKeyframes(player, keyframes)
     SMH.GhostsManager.UpdateKeyframe(player)
 end
 
@@ -316,7 +317,7 @@ local function CopyKeyframeExecute(msgLength, player)
 
     bufferData[player] = nil
 
-    flushPlaybackCacheFromKeyframes(keyframes)
+    flushPlaybackCacheFromKeyframes(player, keyframes)
     SMH.GhostsManager.UpdateKeyframe(player)
 end
 
@@ -327,7 +328,7 @@ local function DeleteKeyframe(msgLength, player)
     for i = 1, count do 
         local id = net.ReadUInt(INT_BITCOUNT)
         local entity = SMH.KeyframeManager.Delete(player, id, timeline)
-        SMH.PlaybackManager.UpdateCacheFor(entity)
+        SMH.PlaybackManager.UpdateCacheFor(player, entity)
         
         SMH.PropertiesManager.RemoveEntity(player)
 
@@ -968,7 +969,7 @@ end
 local function RequestNewSession(msgLength, player)
     SMH.KeyframeData.Players[player] = nil
     SMH.Properties.Players[player] = nil
-    SMH.PlaybackManager.FlushCache()
+    SMH.PlaybackManager.FlushCache(player)
 
     GetServerEntities(msgLength, player)
 
@@ -977,29 +978,36 @@ end
 
 local MGR = {}
 
+---@param player Player
 function MGR.StopPhysicsRecordResponse(player)
     net.Start(SMH.MessageTypes.StopPhysicsRecordResponse)
     net.Send(player)
 end
 
 -- AUDIO =========================
+---@param id integer
+---@param player Player
 function MGR.PlayAudio(id, player)
 	net.Start(SMH.MessageTypes.PlayAudio)
 	net.WriteUInt(id, INT_BITCOUNT)
 	net.Send(player)
 end
 
+---@param id integer
+---@param player Player
 function MGR.StopAudio(id, player)
 	net.Start(SMH.MessageTypes.StopAudio)
 	net.WriteUInt(id, INT_BITCOUNT)
 	net.Send(player)
 end
 
+---@param player Player
 function MGR.StopAllAudio(player)
 	net.Start(SMH.MessageTypes.StopAllAudio)
 	net.Send(player)
 end
 
+---@type Receiver
 local function UpdateServerAudio(len, ply)
 	SMH.PlaybackManager.UpdateServerAudio(len, ply)
 end
