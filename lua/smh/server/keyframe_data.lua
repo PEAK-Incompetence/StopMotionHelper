@@ -132,6 +132,10 @@ function SMH.SortKeyframes(player, entity)
             ---@cast a FrameData
             ---@cast b FrameData
             
+            a.Previous = nil
+            a.Next = nil
+            b.Previous = nil
+            b.Next = nil
             return a.Frame < b.Frame
         end)
     end
