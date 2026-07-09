@@ -118,6 +118,12 @@ end
 
 ---@param player Player
 function MGR.FlushCache(player)
+    if not IsValid(player) then
+        playbackCache = {}
+        modifierCache = {}
+        return
+    end
+
     if playbackCache[player] then
         playbackCache[player] = {}
     end

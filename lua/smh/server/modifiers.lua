@@ -85,4 +85,5 @@ refreshModifiers()
 
 concommand.Add("smh_refreshmodifiers", function(ply)
 	refreshModifiers()
+	SMH.PlaybackManager.FlushCache(ply)
 end, nil, "Update modifier data")
