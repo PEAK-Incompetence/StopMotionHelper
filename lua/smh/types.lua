@@ -158,13 +158,6 @@
 ---@class ModifierClass
 ---@field Name string
 ---@field Ghost boolean
----@field Load fun(self: ModifierClass, entity: Entity, data: table, settings: Settings)
----@field LoadBetween fun(self: ModifierClass, entity: Entity, prevData: table, nextData: table, lerpMultiplier: number, settings: Settings)
----@field LoadGhostBetween fun(self: ModifierClass, entity: Entity, ghost: SMHEntity, prevData: table, nextData: table, lerpMultiplier: number, settings: Settings?)
----@field LoadGhost fun(self: ModifierClass, entity: Entity, ghost: SMHEntity, data: table, settings: Settings?)
----@field Offset fun(self: ModifierClass, data: table, origindata: table, worldpos: Vector, worldang: Angle, offsetpos: Vector?, offsetang: Angle?): table offsetdata
----@field OffsetDupe fun(self: ModifierClass, entity: Entity, data: table, origindata: table): table? offsetdata
----@field Save fun(self: ModifierClass, entity: Entity): table? data
 
 ---@class Modifier A struct of the entity's modifiers
 ---@field physbones FramePose[]?

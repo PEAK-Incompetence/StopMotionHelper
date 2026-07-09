@@ -1,6 +1,9 @@
 
 MOD.Name = "Editors";
 
+local lerpLinear = SMH.LerpLinear
+local lerpLinearVector = SMH.LerpLinearVector
+
 local validClasses = {
     edit_fog = true,
     edit_sky = true,
@@ -86,29 +89,29 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
     if not self:IsEditor(entity) then return; end -- can never be too sure?
 
     if entity:GetClass() == "edit_fog" then
-        entity:SetFogStart(SMH.LerpLinear(data1.FogStart, data2.FogStart, percentage));
-        entity:SetFogEnd(SMH.LerpLinear(data1.FogEnd, data2.FogEnd, percentage));
-        entity:SetDensity(SMH.LerpLinear(data1.Density, data2.Density, percentage));
-        entity:SetFogColor(SMH.LerpLinearVector(data1.FogColor, data2.FogColor, percentage));
+        entity:SetFogStart(lerpLinear(data1.FogStart, data2.FogStart, percentage));
+        entity:SetFogEnd(lerpLinear(data1.FogEnd, data2.FogEnd, percentage));
+        entity:SetDensity(lerpLinear(data1.Density, data2.Density, percentage));
+        entity:SetFogColor(lerpLinearVector(data1.FogColor, data2.FogColor, percentage));
     elseif entity:GetClass() == "edit_sky" then
-        entity:SetTopColor(SMH.LerpLinearVector(data1.TopColor, data2.TopColor, percentage))
-        entity:SetBottomColor(SMH.LerpLinearVector(data1.BottomColor, data2.BottomColor, percentage))
-        entity:SetFadeBias(SMH.LerpLinear(data1.FadeBias, data2.FadeBias, percentage))
-        entity:SetHDRScale(SMH.LerpLinear(data1.HDRScale, data2.HDRScale, percentage))
-        entity:SetStarLayers(SMH.LerpLinear(data1.StarLayers, data2.StarLayers, percentage))
-        entity:SetStarScale(SMH.LerpLinear(data1.StarScale, data2.StarScale, percentage))
-        entity:SetStarFade(SMH.LerpLinear(data1.StarFade, data2.StarFade, percentage))
-        entity:SetStarSpeed(SMH.LerpLinear(data1.StarSpeed, data2.StarSpeed, percentage))
-        entity:SetDuskIntensity(SMH.LerpLinear(data1.DuskIntensity, data2.DuskIntensity, percentage))
-        entity:SetDuskScale(SMH.LerpLinear(data1.DuskScale, data2.DuskScale, percentage))
-        entity:SetDuskColor(SMH.LerpLinearVector(data1.DuskColor, data2.DuskColor, percentage))
-        entity:SetSunSize(SMH.LerpLinear(data1.SunSize, data2.SunSize, percentage))
-        entity:SetSunColor(SMH.LerpLinearVector(data1.SunColor, data2.SunColor, percentage))
+        entity:SetTopColor(lerpLinearVector(data1.TopColor, data2.TopColor, percentage))
+        entity:SetBottomColor(lerpLinearVector(data1.BottomColor, data2.BottomColor, percentage))
+        entity:SetFadeBias(lerpLinear(data1.FadeBias, data2.FadeBias, percentage))
+        entity:SetHDRScale(lerpLinear(data1.HDRScale, data2.HDRScale, percentage))
+        entity:SetStarLayers(lerpLinear(data1.StarLayers, data2.StarLayers, percentage))
+        entity:SetStarScale(lerpLinear(data1.StarScale, data2.StarScale, percentage))
+        entity:SetStarFade(lerpLinear(data1.StarFade, data2.StarFade, percentage))
+        entity:SetStarSpeed(lerpLinear(data1.StarSpeed, data2.StarSpeed, percentage))
+        entity:SetDuskIntensity(lerpLinear(data1.DuskIntensity, data2.DuskIntensity, percentage))
+        entity:SetDuskScale(lerpLinear(data1.DuskScale, data2.DuskScale, percentage))
+        entity:SetDuskColor(lerpLinearVector(data1.DuskColor, data2.DuskColor, percentage))
+        entity:SetSunSize(lerpLinear(data1.SunSize, data2.SunSize, percentage))
+        entity:SetSunColor(lerpLinearVector(data1.SunColor, data2.SunColor, percentage))
     elseif entity:GetClass() == "edit_sun" then
-        entity:SetSunSize(SMH.LerpLinear(data1.SunSize, data2.SunSize, percentage));
-        entity:SetOverlaySize(SMH.LerpLinear(data1.OverlaySize, data2.OverlaySize, percentage));
-        entity:SetSunColor(SMH.LerpLinearVector(data1.SunColor, data2.SunColor, percentage));
-        entity:SetOverlayColor(SMH.LerpLinearVector(data1.OverlayColor, data2.OverlayColor, percentage));
+        entity:SetSunSize(lerpLinear(data1.SunSize, data2.SunSize, percentage));
+        entity:SetOverlaySize(lerpLinear(data1.OverlaySize, data2.OverlaySize, percentage));
+        entity:SetSunColor(lerpLinearVector(data1.SunColor, data2.SunColor, percentage));
+        entity:SetOverlayColor(lerpLinearVector(data1.OverlayColor, data2.OverlayColor, percentage));
     end
 
 end

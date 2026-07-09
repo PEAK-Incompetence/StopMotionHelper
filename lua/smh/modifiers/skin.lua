@@ -1,6 +1,9 @@
 
 MOD.Name = "Skin";
 
+local opt = SMH.Optimizations
+local setSkin = opt.EntitySetSkin
+
 function MOD:Save(entity)
 
     if self:IsEffect(entity) then
@@ -24,7 +27,7 @@ function MOD:Load(entity, data)
         entity = entity.AttachedEntity;
     end
 
-    entity:SetSkin(data);
+    setSkin(entity, data);
 end
 
 function MOD:LoadBetween(entity, data1, data2, percentage)

@@ -1,6 +1,8 @@
 
 MOD.Name = "Eye target";
 
+local lerpLinearVector = SMH.LerpLinearVector
+
 local function networkEyeTarget(ent, eyeTarget)
     if GetConVar("smh_disablenetworking"):GetInt() > 0 then return end
 
@@ -53,7 +55,7 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
 
     if not self:HasEyes(entity) then return; end --Shouldn't happen, but meh
 
-    local et = SMH.LerpLinearVector(data1.EyeTarget, data2.EyeTarget, percentage);
+    local et = lerpLinearVector(data1.EyeTarget, data2.EyeTarget, percentage);
 
     entity:SetEyeTarget(et);
     networkEyeTarget(entity, et)

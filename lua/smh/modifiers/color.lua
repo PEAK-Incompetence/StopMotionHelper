@@ -1,6 +1,11 @@
 
 MOD.Name = "Color";
 
+local opt = SMH.Optimizations
+local setColor = opt.EntitySetColor
+
+local lerpLinear = SMH.LerpLinear
+
 function MOD:Save(entity)
 
     if self:IsEffect(entity) then
@@ -18,9 +23,11 @@ function MOD:Load(entity, data)
         entity = entity.AttachedEntity;
     end
 
-    entity:SetColor(data.Color);
+    setColor(entity, data.Color);
 
 end
+
+local colorSetter = Color(255, 255, 255, 255)
 
 function MOD:LoadBetween(entity, data1, data2, percentage)
 
@@ -31,11 +38,13 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
     local c1 = data1.Color;
     local c2 = data2.Color;
 
-    local r = SMH.LerpLinear(c1.r, c2.r, percentage);
-    local g = SMH.LerpLinear(c1.g, c2.g, percentage);
-    local b = SMH.LerpLinear(c1.b, c2.b, percentage);
-    local a = SMH.LerpLinear(c1.a, c2.a, percentage);
+    local r = lerpLinear(c1.r, c2.r, percentage);
+    local g = lerpLinear(c1.g, c2.g, percentage);
+    local b = lerpLinear(c1.b, c2.b, percentage);
+    local a = lerpLinear(c1.a, c2.a, percentage);
 
-    entity:SetColor(Color(r, g, b, a));
+    colorSetter:SetUnpacked(r, g, b, a)
+
+    setColor(entity, colorSetter);
 
 end

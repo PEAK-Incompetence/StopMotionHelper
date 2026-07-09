@@ -2,6 +2,17 @@
 MOD.Name = "Physical Bones";
 MOD.Ghost = true
 
+local opt = SMH.Optimizations
+local setPos = opt.PhysObjSetPos
+local setAngles = opt.PhysObjSetAngles
+local enableMotion = opt.PhysObjEnableMotion
+local wake = opt.PhysObjWake
+
+local getPhysicsObjectNum = opt.EntityGetPhysicsObjectNum
+
+local lerpLinearVector = SMH.LerpLinearVector
+local lerpLinearAngle = SMH.LerpLinearAngle
+
 function MOD:Save(entity)
 
     local count = entity:GetPhysicsObjectCount();
@@ -11,8 +22,8 @@ function MOD:Save(entity)
 
     for i = 0, count - 1 do
 
-        local pb = entity:GetPhysicsObjectNum(i);
-        local parent = entity:GetPhysicsObjectNum(GetPhysBoneParent(entity, i));
+        local pb = getPhysicsObjectNum(entity, i);
+        local parent = getPhysicsObjectNum(entity, GetPhysBoneParent(entity, i));
 
         local d = {};
 
@@ -40,30 +51,32 @@ function MOD:Load(entity, data, settings)
     end
 
     local count = entity:GetPhysicsObjectCount();
+    local freezeAll = settings.FreezeAll
+    local localizePhysBones = settings.LocalizePhysBones
 
     for i = 0, count - 1 do
 
-        local pb = entity:GetPhysicsObjectNum(i);
-        local parent = entity:GetPhysicsObjectNum(GetPhysBoneParent(entity, i));
+        local pb = getPhysicsObjectNum(entity, i);
+        local parent = getPhysicsObjectNum(entity, GetPhysBoneParent(entity, i));
 
         local d = data[i];
 
-        if parent and settings.LocalizePhysBones and d.LocalPos and d.LocalAng then
+        if parent and localizePhysBones and d.LocalPos and d.LocalAng then
             local pos, ang = LocalToWorld(d.LocalPos, d.LocalAng, parent:GetPos(), parent:GetAngles());
-            pb:SetPos(pos, true);
-            pb:SetAngles(ang);
+            setPos(pb, pos, true)
+            setAngles(pb, ang)
         else
-            pb:SetPos(d.Pos, true);
-            pb:SetAngles(d.Ang);
+            setPos(pb, d.Pos, true);
+            setAngles(pb, d.Ang);
         end
 
-        if settings.FreezeAll then
-            pb:EnableMotion(false);
+        if freezeAll then
+            enableMotion(pb, false);
         else
-            pb:EnableMotion(d.Moveable);
+            enableMotion(pb, d.Moveable);
         end
 
-        pb:Wake();
+        wake(pb);
 
     end
 
@@ -75,17 +88,17 @@ function MOD:LoadGhost(entity, ghost, data)
 
     for i = 0, count - 1 do
 
-        local pb = ghost:GetPhysicsObjectNum(i);
+        local pb = getPhysicsObjectNum(ghost, i);
 
-        pb:EnableMotion(true);
-        pb:Wake();
+        enableMotion(pb, true);
+        wake(pb);
 
         local d = data[i];
-        pb:SetPos(d.Pos, true);
-        pb:SetAngles(d.Ang);
+        setPos(pb, d.Pos, true);
+        setAngles(pb, d.Ang);
 
-        pb:EnableMotion(false);
-        pb:Wake();
+        enableMotion(pb, false);
+        wake(pb);
 
     end
 
@@ -97,19 +110,19 @@ function MOD:LoadGhostBetween(entity, ghost, data1, data2, percentage)
 
     for i = 0, count - 1 do
 
-        local pb = ghost:GetPhysicsObjectNum(i);
+        local pb = getPhysicsObjectNum(ghost, i);
 
         local d1 = data1[i];
         local d2 = data2[i];
 
-        local Pos = SMH.LerpLinearVector(d1.Pos, d2.Pos, percentage);
-        local Ang = SMH.LerpLinearAngle(d1.Ang, d2.Ang, percentage);
+        local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
+        local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
 
-        pb:EnableMotion(false);
-            pb:SetPos(Pos, true);
-        pb:SetAngles(Ang);
+        enableMotion(pb, false);
+        setPos(pb, Pos, true);
+        setAngles(pb, Ang);
 
-        pb:Wake();
+        wake(pb);
 
     end
 end
@@ -121,25 +134,26 @@ function MOD:LoadBetween(entity, data1, data2, percentage, settings)
     end
 
     local count = entity:GetPhysicsObjectCount();
+    local freezeAll = settings.FreezeAll
 
     for i = 0, count - 1 do
-            local pb = entity:GetPhysicsObjectNum(i);
+        local pb = getPhysicsObjectNum(entity, i);
 
         local d1 = data1[i];
         local d2 = data2[i];
 
-        local Pos = SMH.LerpLinearVector(d1.Pos, d2.Pos, percentage);
-        local Ang = SMH.LerpLinearAngle(d1.Ang, d2.Ang, percentage);
+        local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
+        local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
 
-        if settings.FreezeAll then
-            pb:EnableMotion(false);
+        if freezeAll then
+            enableMotion(pb, false);
         else
-            pb:EnableMotion(d1.Moveable);
+            enableMotion(pb, d1.Moveable);
         end
-        pb:SetPos(Pos, true);
-        pb:SetAngles(Ang);
+        setPos(pb, Pos, true);
+        setAngles(pb, Ang);
 
-        pb:Wake();
+        wake(pb);
     end
 
 end
@@ -174,7 +188,7 @@ end
 
 function MOD:OffsetDupe(entity, data, origindata)
 
-    local pb = entity:GetPhysicsObjectNum(0);
+    local pb = getPhysicsObjectNum(entity, 0);
     if not IsValid(pb) then return nil end
 
     local entPos, entAng = pb:GetPos(), pb:GetAngles();

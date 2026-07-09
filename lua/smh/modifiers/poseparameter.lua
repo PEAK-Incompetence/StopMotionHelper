@@ -1,6 +1,11 @@
 
 MOD.Name = "Pose parameters";
 
+local opt = SMH.Optimizations
+local setPoseParameter = opt.EntitySetPoseParameter
+
+local lerpLinear = SMH.LerpLinear
+
 function MOD:Save(entity)
 
     local data = {};
@@ -18,7 +23,7 @@ end
 function MOD:Load(entity, data)
 
     for name, value in pairs(data) do
-        entity:SetPoseParameter(name, value);
+        setPoseParameter(entity, name, value);
     end
 
 end
@@ -29,9 +34,9 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
 
         local value2 = data2[name];
         if value1 and value2 then
-            entity:SetPoseParameter(name, SMH.LerpLinear(value1, value2, percentage));
+            setPoseParameter(entity, name, lerpLinear(value1, value2, percentage));
         elseif value1 then
-            entity:SetPoseParameter(name, value1);
+            setPoseParameter(entity, name, value1);
         end
 
     end
