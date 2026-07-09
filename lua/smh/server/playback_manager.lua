@@ -493,6 +493,7 @@ end
 -- ======================================
 local AudioPlayback = MGR.AudioPlayback
 
+local setFrame = MGR.SetFrame
 hook.Add("Think", "SMHPlaybackManagerThink", function()
     for player, playback in pairs(ActivePlaybacks) do
         local timer = incrementTime(playback)
@@ -506,7 +507,7 @@ hook.Add("Think", "SMHPlaybackManagerThink", function()
 
                 if currentFrame ~= playback.PrevFrame then
                     playback.PrevFrame = currentFrame
-                    MGR.SetFrame(player, currentFrame, playback.Settings)
+                    setFrame(player, currentFrame, playback.Settings)
                 end
 
             end

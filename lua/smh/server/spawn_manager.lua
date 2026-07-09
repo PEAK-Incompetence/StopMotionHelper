@@ -65,7 +65,7 @@ local function SetOffset(player, modname, keyframe, pos)
     keyframe.Modifiers[modname] = mod:Offset(keyframe.Modifiers[modname], MGR.OriginData[player][modname].Modifiers, offsetpos, offsetang, pos)
 end
 
----@param entity Entity
+---@param entity SMHEntity
 ---@param modname string
 ---@param keyframe FrameData
 ---@param firstkey FrameData
@@ -137,6 +137,7 @@ function MGR.Spawn(model, settings, player, serializedKeyframes)
     end
 
     local entity = ents.Create(class)
+    ---@cast entity SMHEntity
     local tracepos = nil
     if MGR.OffsetMode[player] then
         tracepos = player:GetEyeTraceNoCursor().HitPos
@@ -192,7 +193,7 @@ function MGR.OffsetKeyframes(player, entity, offsetpos)
 end
 
 ---@param player Player
----@param entity Entity
+---@param entity SMHEntity
 ---@param serializedKeyframes SMHFile
 function MGR.DupeOffsetKeyframes(player, entity, serializedKeyframes)
     local originData = GetDupeData(serializedKeyframes)

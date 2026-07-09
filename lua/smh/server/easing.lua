@@ -2,20 +2,24 @@
 -- Lerp methods
 ---
 
+local lerp = Lerp
+local lerpVector = LerpVector
+local lerpAngle = LerpAngle
+
 function SMH.LerpLinear(s, e, p)
 
-    return Lerp(p, s, e);
+    return lerp(p, s, e);
 
 end
 
 function SMH.LerpLinearVector(s, e, p)
 
-    return LerpVector(p, s, e);
+    return lerpVector(p, s, e);
 
 end
 
 function SMH.LerpLinearAngle(s, e, p)
 
-    return LerpAngle(p, s, e);
+    return lerpAngle(p, s, e);
 
 end

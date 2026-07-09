@@ -6,7 +6,7 @@ local MODBASE = {}
 MODBASE.__index = MODBASE
 MODBASE.Name = "Unnamed"
 
----@param entity SMHEntity
+---@param entity SMHEntity|Player
 ---@return any
 function MODBASE:Save(entity) end
 ---@param entity SMHEntity

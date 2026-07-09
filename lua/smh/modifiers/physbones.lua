@@ -9,6 +9,10 @@ local enableMotion = opt.PhysObjEnableMotion
 local wake = opt.PhysObjWake
 
 local getPhysicsObjectNum = opt.EntityGetPhysicsObjectNum
+local getPhysBoneParent = GetPhysBoneParent
+timer.Simple(0, function()
+    getPhysBoneParent = GetPhysBoneParent
+end)
 
 local lerpLinearVector = SMH.LerpLinearVector
 local lerpLinearAngle = SMH.LerpLinearAngle
@@ -23,7 +27,7 @@ function MOD:Save(entity)
     for i = 0, count - 1 do
 
         local pb = getPhysicsObjectNum(entity, i);
-        local parent = getPhysicsObjectNum(entity, GetPhysBoneParent(entity, i));
+        local parent = getPhysicsObjectNum(entity, getPhysBoneParent(entity, i));
 
         local d = {};
 
@@ -57,7 +61,7 @@ function MOD:Load(entity, data, settings)
     for i = 0, count - 1 do
 
         local pb = getPhysicsObjectNum(entity, i);
-        local parent = getPhysicsObjectNum(entity, GetPhysBoneParent(entity, i));
+        local parent = getPhysicsObjectNum(entity, getPhysBoneParent(entity, i));
 
         local d = data[i];
 

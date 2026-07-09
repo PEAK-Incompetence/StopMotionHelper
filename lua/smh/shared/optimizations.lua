@@ -161,7 +161,7 @@ function MGR.EntityGetBoneCount(entity)
     local boneCount = entBoneCount[entity]
     if not boneCount then
         boneCount = entGetBoneCount(entity)
-        boneCount[entity] = entity
+        entBoneCount[entity] = boneCount
     end
     return boneCount
 end

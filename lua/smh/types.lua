@@ -98,6 +98,7 @@
 ---@field Frame integer
 ---@field Physbones boolean
 ---@field RagdollWeightData number[]
+---@field smh_OldDoNotDuplicate boolean
 
 ---@class BufferDatum
 ---@field Ids integer[]
@@ -228,7 +229,7 @@
 ---@field LastTween boolean
 
 ---@alias GhostSettings {[Player]: Settings}
----@alias SpawnGhost {[Player]: Entity}
+---@alias SpawnGhost {[Player]: SMHEntity}
 ---@alias SpawnGhostData {[Player]: table}
 
 ---@alias GhostData table<Player, GhostDatum>
@@ -246,7 +247,7 @@
 
 ---@class PlayerData
 ---@field Keyframes FrameData[]
----@field Entities {[Entity]: FrameData[]}
+---@field Entities {[SMHEntity]: FrameData[]}
 
 ---@class KeyframeData
 ---@field Players {[Player]: PlayerData}

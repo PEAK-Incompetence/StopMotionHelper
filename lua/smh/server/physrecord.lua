@@ -43,13 +43,15 @@ function MGR.RecordStart(player, framecount, interval, frame, playbackrate, endf
             PrevFrame = 0,
             Settings = settings
     }
+    local setFrameIgnore = SMH.PlaybackManager.SetFrameIgnore
+    local audioPlayback = SMH.PlaybackManager.AudioPlayback
     timer.Create(SMHRecorderID .. player:EntIndex(), 1 / playbackrate , framecount, function()
         counter = counter + 1
 
         if interval == 0 or (counter / interval) == math.Round(counter / interval)  then 
             RecordPhys(player, entities, timelines, frame)
         end
-        SMH.PlaybackManager.AudioPlayback(player, playback)
+        audioPlayback(player, playback)
 
         if counter >= framecount - 1 or frame + 1 > endframe - 1  then
             RecordPhys(player, entities, timelines, frame)
@@ -59,7 +61,7 @@ function MGR.RecordStart(player, framecount, interval, frame, playbackrate, endf
             SMH.Controller.StopAllAudio(player)
         else
             frame = frame + 1
-            SMH.PlaybackManager.SetFrameIgnore(player, frame, settings, timelines)
+            setFrameIgnore(player, frame, settings, timelines)
         end
     end)
 
