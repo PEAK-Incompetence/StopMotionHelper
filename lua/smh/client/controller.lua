@@ -709,6 +709,14 @@ function CTRL.SetRendering(rendering)
     net.Start(SMH.MessageTypes.SetRendering)
     net.WriteBool(rendering)
     net.SendToServer()
+
+    local entities = {}
+    for _, entity in ents.Iterator() do
+        if entity.GetModel and entity:GetModel() then
+            table.insert(entities, entity)
+        end
+    end
+    SMH.Renderer.ForceRenderEntities(entities, SMH.Renderer.IsRendering())
 end
 
 function CTRL.UpdateGhostState()
@@ -1217,6 +1225,13 @@ local function ReceiveModifierIds(msgLength)
 
 end
 
+local function PlaybackResponse(msgLength)
+    local isPlaying = net.ReadBool()
+    local entities = net.ReadTable(true)
+
+    SMH.Renderer.ForceRenderEntities(entities, isPlaying)
+end
+
 local function Setup()
     net.Receive(SMH.MessageTypes.SetFrameResponse, SetFrameResponse)
 
@@ -1259,6 +1274,8 @@ local function Setup()
 
     net.Receive(SMH.MessageTypes.RequestDefaultPose, RequestDefaultPose)
     net.Receive(SMH.MessageTypes.UpdateNode, UpdateNode)
+
+    net.Receive(SMH.MessageTypes.PlaybackResponse, PlaybackResponse)
 
     if game.SinglePlayer() then
         local lastUpdate = SMH.State.TimeStamp

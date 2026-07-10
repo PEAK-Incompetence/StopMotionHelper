@@ -348,8 +348,16 @@ local function StartPlayback(msgLength, player)
     SMH.PlaybackManager.StartPlayback(player, startFrame, endFrame, playbackRate, settings)
     SMH.SettingsManager.StorePlayerSettings(player, settings)
 
+    local playerData = SMH.KeyframeData.Players[player]
+    local entities = {}
+
+    for entity, _ in pairs(playerData and playerData.Entities or {}) do
+        table.insert(entities, entity)
+    end
+
     net.Start(SMH.MessageTypes.PlaybackResponse)
     net.WriteBool(true)
+    net.WriteTable(entities, true)
     net.Send(player)
 end
 
@@ -357,8 +365,16 @@ end
 local function StopPlayback(msgLength, player)
     SMH.PlaybackManager.StopPlayback(player)
 
+    local playerData = SMH.KeyframeData.Players[player]
+    local entities = {}
+
+    for entity, _ in pairs(playerData and playerData.Entities or {}) do
+        table.insert(entities, entity)
+    end
+    
     net.Start(SMH.MessageTypes.PlaybackResponse)
     net.WriteBool(false)
+    net.WriteTable(entities, true)
     net.Send(player)
 end
 
