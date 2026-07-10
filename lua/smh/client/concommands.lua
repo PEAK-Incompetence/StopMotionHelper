@@ -27,6 +27,7 @@ end)
 CreateClientConVar("smh_scrollmultiplier", "1", true, false, "Set how much scrolling should affect the timeline", 0, 100)
 CreateClientConVar("smh_cycleselected", "1", true, false, "Controls the new behavior of selecting child (bonemerged) entities", 0, 1)
 CreateClientConVar("smh_lockselected", "0", true, false, "Controls the selection of other entities", 0, 1)
+CreateClientConVar("smh_force_render_entities", "1", true, false, "Controls whether all entities are always rendered. This may prevent entities from disappearing between frames", 0, 1)
 
 local smh_entity_settings = CreateClientConVar("smh_entity_settings", "0", true, false, "Stores settings per entity. For example, Disable Tweening can disable tweening for one entity")
 

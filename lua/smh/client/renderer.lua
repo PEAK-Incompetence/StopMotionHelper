@@ -64,6 +64,7 @@ hook.Remove("Think", "SMHAlwaysRenderEntities")
 ---@param entities Entity[]
 ---@param shouldRender boolean
 function MGR.ForceRenderEntities(entities, shouldRender)
+    if not GetConVar("smh_force_render_entities"):GetBool() then return end
     if shouldRender then
         RenderEntities = entities
         hook.Add("Think", "SMHAlwaysRenderEntities", alwaysRenderEntities)
@@ -75,6 +76,19 @@ function MGR.ForceRenderEntities(entities, shouldRender)
         doRenderBounds(entity, shouldRender)
     end
 end
+
+local function forceRenderCallback(cvar, old, new)
+    local result = tobool(new)
+    if not result then
+        for _, entity in ipairs(RenderEntities) do
+            doRenderBounds(entity, shouldRender)
+        end
+        hook.Remove("Think", "SMHAlwaysRenderEntities")
+    end
+end
+
+cvars.RemoveChangeCallback("smh_force_render_entities", "forceRenderEntities")
+cvars.AddChangeCallback("smh_force_render_entities", forceRenderCallback, "forceRenderEntities")
 
 ---@return boolean
 function MGR.IsRendering()
