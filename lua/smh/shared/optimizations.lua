@@ -3,6 +3,8 @@
 ---To do that, we try to reduce `__index`ing calls and also use
 ---Lua to cache the data
 
+local isValid = IsValid
+
 local MGR = {}
 
 do
@@ -69,6 +71,37 @@ local entSetSubMaterial = ENTITY.SetSubMaterial
 local entSetPoseParameter = ENTITY.SetPoseParameter
 local entSetModelScale = ENTITY.SetModelScale
 
+local optEntityGetModel
+do
+
+---@type {[Entity]: string}
+local modelList = {}
+hook.Remove("OnEntityCreated", "SMHOptimizationsUpdateModelList")
+hook.Add("OnEntityCreated", "SMHOptimizationsUpdateModelList", function(ent)
+    timer.Simple(0, function()
+        if isValid(ent) and ent.GetModel and ent:GetModel() then
+            local model = entGetModel(ent)
+            modelList[ent] = model
+        end
+    end)
+end)
+
+
+hook.Remove("EntityRemoved", "SMHOptimizationsUpdateModelList")
+hook.Add("EntityRemoved", "SMHOptimizationsUpdateModelList", function (ent)
+    modelList[ent] = nil
+end)
+
+---@param entity Entity
+---@return string
+function MGR.EntityGetModel(entity)
+    return modelList[entity]
+end
+
+optEntityGetModel = MGR.EntityGetModel
+
+end
+
 ---@param entity Entity
 ---@param scale number
 ---@return nil
@@ -119,7 +152,7 @@ local entFlexNum = {}
 ---@param entity Entity
 ---@return number
 function MGR.EntityGetFlexNum(entity)
-    local model = entGetModel(entity)
+    local model = optEntityGetModel(entity)
     local flexNum = entFlexNum[model]
     if not flexNum then
         flexNum = entGetFlexNum(entity)
@@ -153,15 +186,17 @@ function MGR.EntitySetNW2Float(entity, key, float)
 end
 
 do
+---@type {[string]: integer}
 local entBoneCount = {}
 
 ---@param entity Entity
 ---@return integer
 function MGR.EntityGetBoneCount(entity)
-    local boneCount = entBoneCount[entity]
+    local model = optEntityGetModel(entity)
+    local boneCount = entBoneCount[model]
     if not boneCount then
         boneCount = entGetBoneCount(entity)
-        entBoneCount[entity] = boneCount
+        entBoneCount[model] = boneCount
     end
     return boneCount
 end
@@ -221,7 +256,7 @@ local physObjIndex = {}
 
 hook.Add("OnEntityCreated", "SMHOptimizationsEntityCreated", function (ent)
     timer.Simple(0, function()
-        if IsValid(ent) and ent:IsRagdoll() then
+        if isValid(ent) and ent:IsRagdoll() then
             physObjIndex[ent] = {}
         end
     end)
@@ -247,12 +282,13 @@ end
 end
 
 do
+---@type {[string]: integer}
 local physObjCount = {}
 
 ---@param entity Entity
 ---@return integer
 function MGR.EntityGetPhysicsObjectCount(entity)
-    local model = entGetModel(entity)
+    local model = optEntityGetModel(entity)
     local count = physObjCount[model]
     if not count then
         count = entGetPhysicsObjectCount(entity)
