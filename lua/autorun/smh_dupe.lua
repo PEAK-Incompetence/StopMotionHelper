@@ -10,7 +10,7 @@ local isSavingDupe
 
 ---There's no guarantee that the concommand table will be filled
 ---at the same tick, so we have to call this at the next tick
-timer.Simple(0, function()
+hook.Add("PostSMHLoaded", "SMHDupe", function()
     local loadDelay = 0.2
     -- Let's use the old dupe functions in case the server owner doesn't
     -- want these new features

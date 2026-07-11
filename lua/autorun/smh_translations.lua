@@ -1,5 +1,12 @@
 -- Bone translation functions, so we can change their functionality here in case the original ones fuck up even more
 
+local opt = SMH and SMH.Optimizations
+local getModel = opt and opt.EntityGetModel
+hook.Add("PostSMHLoaded", "SMHTranslationsGetOptimizations", function(smh)
+	opt = SMH.Optimizations
+	getModel = opt.EntityGetModel
+end)
+
 local MAX_BONE_COUNT = 255
 
 ---@type {[string]: {[integer]: integer}}
@@ -9,7 +16,7 @@ local bonePhysBoneParents = {}
 ---@param bone integer Bone id
 ---@return integer physBone Physics object id
 function GetPhysBoneParentFromBone(entity, bone)
-	local model = entity:GetModel()
+	local model = getModel(entity)
 	if bonePhysBoneParents[model] and bonePhysBoneParents[model][bone] then
 		return bonePhysBoneParents[model][bone]
 	end	
@@ -44,7 +51,7 @@ local physBoneParents = {}
 ---@param bone integer Physics object id
 ---@return integer physBone Parent physics object id
 function GetPhysBoneParent(entity, bone)
-	local model = entity:GetModel()
+	local model = getModel(entity)
 	if physBoneParents[model] and physBoneParents[model][bone] then
 		return physBoneParents[model][bone]
 	end
@@ -81,7 +88,7 @@ local boneToPhysMap = {}
 ---@param bone integer Bone id
 ---@return integer physBone Physics object id
 function BoneToPhysBone(ent, bone)
-	local model = ent:GetModel()
+	local model = getModel(ent)
 	if boneToPhysMap[model] and boneToPhysMap[model][bone] then
 		return boneToPhysMap[model][bone]
 	else

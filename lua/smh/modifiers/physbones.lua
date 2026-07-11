@@ -10,8 +10,8 @@ local wake = opt.PhysObjWake
 
 local getPhysicsObjectNum = opt.EntityGetPhysicsObjectNum
 local getPhysBoneParent = GetPhysBoneParent
-timer.Simple(0, function()
-    getPhysBoneParent = GetPhysBoneParent
+hook.Add("PostSMHLoaded", "SMHPhysbonesGetOptimizations", function()
+	getPhysBoneParent = GetPhysBoneParent
 end)
 
 local lerpLinearVector = SMH.LerpLinearVector

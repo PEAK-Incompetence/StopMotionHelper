@@ -3,7 +3,7 @@ local newDupeSave = CreateConVar("smh_streamsave", "1", { FCVAR_ARCHIVE, FCVAR_C
 local isSavingMap
 local isLoadingMap
 
-timer.Simple(0, function()
+hook.Add("PostSMHLoaded", "SMHSave", function()
     local loadDelay = 0.2
     if not SMH.OldGMSaveFunc then
         local tab = concommand.GetTable()
