@@ -80,10 +80,13 @@ end
 local function forceRenderCallback(cvar, old, new)
     local result = tobool(new)
     if not result then
-        for _, entity in ipairs(RenderEntities) do
-            doRenderBounds(entity, shouldRender)
+        if RenderEntities then
+            for _, entity in ipairs(RenderEntities) do
+                doRenderBounds(entity, shouldRender)
+            end
         end
         hook.Remove("Think", "SMHAlwaysRenderEntities")
+        RenderEntities = nil
     end
 end
 
