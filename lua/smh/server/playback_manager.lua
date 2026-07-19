@@ -108,6 +108,7 @@ local function storeModifierCache(player, entity, modName, mod)
     return mod
 end
 
+---@param player Player
 ---@param entity Entity
 function MGR.UpdateCacheFor(player, entity)
     if playbackCache[player] and IsValid(entity) then
@@ -253,9 +254,9 @@ function MGR.SelectFrame(player, newFrame, settings)
             if 
                 not cached
                 or (prevKeyframe and prevKeyframe.Frame > newFrame) 
-                or (nextKeyframe and nextKeyframe.Frame < newFrame) 
+                or (nextKeyframe and nextKeyframe.Frame <= newFrame)
             then
-                prevKeyframe, nextKeyframe  = getBetweenKeyframes(keyframes, newFrame, false, name, delta, prevKeyframe)
+                prevKeyframe, nextKeyframe  = getBetweenKeyframes(keyframes, newFrame, false, name)
                 invDelta = storePlaybackCache(player, entity, name, prevKeyframe, nextKeyframe)
             end
             if not prevKeyframe then
@@ -317,7 +318,7 @@ function MGR.SetFrame(player, newFrame, settings)
             if 
                 not cached
                 or (prevKeyframe and prevKeyframe.Frame > newFrame) 
-                or (nextKeyframe and nextKeyframe.Frame < newFrame) 
+                or (nextKeyframe and nextKeyframe.Frame <= newFrame) 
             then
                 prevKeyframe, nextKeyframe  = walkBetweenKeyframes(keyframes, newFrame, false, name, delta, prevKeyframe)
                 invDelta = storePlaybackCache(player, entity, name, prevKeyframe, nextKeyframe)
@@ -372,7 +373,7 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
             if 
                 not cached 
                 or (prevKeyframe and prevKeyframe.Frame > newFrame) 
-                or (nextKeyframe and nextKeyframe.Frame < newFrame) 
+                or (nextKeyframe and nextKeyframe.Frame <= newFrame) 
             then
                 prevKeyframe, nextKeyframe = walkBetweenKeyframes(keyframes, newFrame, false, name, delta, prevKeyframe)
                 invDelta = storePlaybackCache(player, entity, name, prevKeyframe, nextKeyframe)
