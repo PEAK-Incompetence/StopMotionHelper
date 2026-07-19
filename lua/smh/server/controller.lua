@@ -442,6 +442,8 @@ local function Load(msgLength, player)
     net.Send(player)
 
     SendLeftoverKeyframes(player, framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers)
+
+    SMH.PlaybackManager.UpdateCacheFor(player, entity)
 end
 
 ---@type Receiver
@@ -859,6 +861,7 @@ local function SpawnEntity(msgLength, player)
     SMH.KeyframeManager.ImportSave(player, entity, serializedKeyframes, entityProperties)
     ---@cast pos Vector
     SMH.Spawner.OffsetKeyframes(player, entity, pos)
+    SMH.PlaybackManager.UpdateCacheFor(player, entity)
 end
 
 ---@type Receiver
