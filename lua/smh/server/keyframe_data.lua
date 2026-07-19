@@ -4,11 +4,9 @@
 ---@param frame integer
 ---@param ignoreCurrentFrame boolean
 ---@param modname Modifiers
----@param delta number
----@param start FrameData?
 ---@return FrameData? prevKeyframe
 ---@return FrameData? nextKeyframe
-function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta, start)
+function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
     if ignoreCurrentFrame == nil then
         ignoreCurrentFrame = false
     end

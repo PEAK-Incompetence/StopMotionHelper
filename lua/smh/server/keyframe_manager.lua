@@ -16,7 +16,7 @@ local function GetExistingKeyframe(player, entity, frame, modnames)
     end
 
     local keyframes = SMH.KeyframeData.Players[player].Entities[entity]
-    for _, keyframe in pairs(keyframes) do
+    for _, keyframe in ipairs(keyframes) do
         for _, name in ipairs(modnames) do
             if keyframe.Frame == frame and keyframe.Modifiers[name] then
                 return keyframe
@@ -56,16 +56,16 @@ end
 
 hook.Add("EntityRemoved", "SMHKeyframesEntityRemoved", function(entity)
 
-    for _, player in pairs(player.GetAll()) do
+    for _, player in ipairs(player.GetAll()) do
         if SMH.KeyframeData.Players[player] and SMH.KeyframeData.Players[player].Entities[entity] then
             local keyframesToDelete = {}
-            for _, keyframe in pairs(SMH.KeyframeData.Players[player].Entities[entity]) do
+            for _, keyframe in ipairs(SMH.KeyframeData.Players[player].Entities[entity]) do
                 table.insert(keyframesToDelete, keyframe.ID)
             end
 
             SMH.KeyframeData.Players[player].Entities[entity] = nil
 
-            for _, keyframeId in pairs(keyframesToDelete) do
+            for _, keyframeId in ipairs(keyframesToDelete) do
                 SMH.KeyframeData:Delete(player, keyframeId)
             end
         end
@@ -101,7 +101,7 @@ function MGR.GetAllForEntity(player, entities)
             continue
         end
 
-        for k, keyframe in pairs(SMH.KeyframeData.Players[player].Entities[entity]) do
+        for k, keyframe in ipairs(SMH.KeyframeData.Players[player].Entities[entity]) do
             table.insert(keyframes, keyframe)
         end
     end
@@ -177,7 +177,7 @@ function MGR.Update(player, keyframeIds, updateData, timeline)
             "EaseIn",
             "EaseOut",
         }
-        for _, field in pairs(updateableFields) do
+        for _, field in ipairs(updateableFields) do
             if updateData[id][field] then
                 if field == "Frame" then
                     if updateData[id][field] == keyframe.Frame then continue end
@@ -343,14 +343,14 @@ end
 function MGR.ImportSave(player, entity, serializedKeyframes, entityProperties)
     if SMH.KeyframeData.Players[player] and SMH.KeyframeData.Players[player].Entities[entity] then
         local deletethis = table.Copy(SMH.KeyframeData.Players[player].Entities[entity])
-        for _, keyframe in pairs(deletethis) do
+        for _, keyframe in ipairs(deletethis) do
             SMH.KeyframeData:Delete(player, keyframe.ID)
         end
     end
 
     SMH.PropertiesManager.SetProperties(player, entity, entityProperties)
 
-    for _, skf in pairs(serializedKeyframes) do
+    for _, skf in ipairs(serializedKeyframes) do
         local keyframe = GetExistingKeyframe(player, entity, skf.Position) -- check for SMH 3.0 save stuff as it has a system with multiple keyframes occupying same frame
 
         if keyframe ~= nil then
