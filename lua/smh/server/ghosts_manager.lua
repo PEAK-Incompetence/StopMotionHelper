@@ -89,6 +89,13 @@ local function CreateGhost(player, entity, color, frame, ghostable, xray)
 
     table.insert(ghostable, g)
 
+    entity:CallOnRemove("SMHGhostRemoval", function (ent, ...)
+        for _, ghost in ipairs(ghostable) do
+            SafeRemoveEntity(ghost)
+        end
+    end)
+
+
     return g
 end
 
