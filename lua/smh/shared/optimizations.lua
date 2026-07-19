@@ -71,36 +71,13 @@ local entSetSubMaterial = ENTITY.SetSubMaterial
 local entSetPoseParameter = ENTITY.SetPoseParameter
 local entSetModelScale = ENTITY.SetModelScale
 
-local optEntityGetModel
-do
-
----@type {[Entity]: string}
-local modelList = {}
-hook.Remove("OnEntityCreated", "SMHOptimizationsUpdateModelList")
-hook.Add("OnEntityCreated", "SMHOptimizationsUpdateModelList", function(ent)
-    timer.Simple(0, function()
-        if isValid(ent) and ent.GetModel and ent:GetModel() then
-            local model = entGetModel(ent)
-            modelList[ent] = model
-        end
-    end)
-end)
-
-
-hook.Remove("EntityRemoved", "SMHOptimizationsUpdateModelList")
-hook.Add("EntityRemoved", "SMHOptimizationsUpdateModelList", function (ent)
-    modelList[ent] = nil
-end)
-
 ---@param entity Entity
 ---@return string
 function MGR.EntityGetModel(entity)
-    return modelList[entity]
+    return entGetModel(entity)
 end
 
-optEntityGetModel = MGR.EntityGetModel
-
-end
+local optEntityGetModel = MGR.EntityGetModel
 
 ---@param entity Entity
 ---@param scale number
