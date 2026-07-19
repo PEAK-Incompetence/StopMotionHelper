@@ -198,6 +198,8 @@ function META:Delete(player, id)
     if self.Players[player].Entities[keyframe.Entity] then
         table.RemoveByValue(self.Players[player].Entities[keyframe.Entity], keyframe)
     end
+    keyframe.Next = nil
+    keyframe.Previous = nil
     self.Players[player].Keyframes[id] = nil
 end
 
