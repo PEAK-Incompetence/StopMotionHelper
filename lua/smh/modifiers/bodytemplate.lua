@@ -15,13 +15,6 @@ local getPhysicsObjectNum = opt.EntityGetPhysicsObjectNum
 local lerpLinearVector = SMH.LerpLinearVector
 local lerpLinearAngle = SMH.LerpLinearAngle
 
-local getPhysBoneParent = GetPhysBoneParent
-local boneToPhysBone = BoneToPhysBone
-hook.Add("PostSMHLoaded", "SMHPhysbonesGetOptimizations", function()
-	getPhysBoneParent = GetPhysBoneParent
-	boneToPhysBone = BoneToPhysBone
-end)
-
 ---@param entity Entity
 ---@return table?
 function MOD:Save(entity)
@@ -35,7 +28,7 @@ function MOD:Save(entity)
     for _, boneName in ipairs(self.BodyEnds) do
         local index = entity:LookupBone(boneName)
         if index then
-            local physIndex = boneToPhysBone(entity, index)
+            local physIndex = BoneToPhysBone(entity, index)
             if index and physIndex ~= -1 then
                 table.insert(endBones, physIndex)
             end
@@ -45,7 +38,7 @@ function MOD:Save(entity)
     for _, physIndex in ipairs(endBones) do
         local walk = physIndex
         while walk ~= -1 do
-            local newWalk = getPhysBoneParent(entity, walk)
+            local newWalk = GetPhysBoneParent(entity, walk)
             if not data[walk] then
                 local pb = getPhysicsObjectNum(entity, walk)
                 local record = false
