@@ -147,7 +147,7 @@ end
 ---This shall be the limit for duped SMH animations
 local MAX_DUPE_FILE_SIZE = 2048000
 
----@type Entity[]
+---@type SMHEntity[]
 local markedDirty = {}
 
 ---Override `duplicator.Copy` to label copied entities as dupes, so SMH can preserve animations in saves

@@ -1,10 +1,18 @@
 
 MOD.Name = "Facial flexes";
 
+local opt = SMH.Optimizations
+local setFlexScale = opt.EntitySetFlexScale
+local setFlexWeight = opt.EntitySetFlexWeight
+local setNW2Float = opt.EntitySetNW2Float
+local getFlexNum = opt.EntityGetFlexNum
+
+local lerpLinear = SMH.LerpLinear
+
 local function networkFlex(entity, index, weight)
     if GetConVar("smh_disablenetworking"):GetInt() > 0 then return end
 
-    entity:SetNW2Float("faceposer_flex" .. index, weight)
+    setNW2Float(entity, "faceposer_flex" .. index, weight)
 end
 
 function MOD:Save(entity)
@@ -13,7 +21,7 @@ function MOD:Save(entity)
         entity = entity.AttachedEntity;
     end
 
-    local count = entity:GetFlexNum();
+    local count = getFlexNum(entity);
     if count <= 0 then return nil; end
 
     local data = {};
@@ -44,14 +52,14 @@ function MOD:Load(entity, data)
         entity = entity.AttachedEntity;
     end
 
-    local count = entity:GetFlexNum();
+    local count = getFlexNum(entity);
     if count <= 0 then return; end --Shouldn't happen, but meh
 
-    entity:SetFlexScale(data.Scale);
-    entity:SetNW2Float("faceposer_scale", data.Scale)
+    setFlexScale(entity, data.Scale);
+    setNW2Float(entity, "faceposer_scale", data.Scale)
 
     for i, f in pairs(data.Weights) do
-        entity:SetFlexWeight(i, f);
+        setFlexWeight(entity, i, f);
         networkFlex(entity, i, f)
     end
 
@@ -63,20 +71,20 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
         entity = entity.AttachedEntity;
     end
 
-    local count = entity:GetFlexNum();
+    local count = getFlexNum(entity);
     if count <= 0 then return; end --Shouldn't happen, but meh
 
-    local scale = SMH.LerpLinear(data1.Scale, data2.Scale, percentage);
-    entity:SetFlexScale(scale);
-    entity:SetNW2Float("faceposer_scale", scale)
+    local scale = lerpLinear(data1.Scale, data2.Scale, percentage);
+    setFlexScale(entity, scale);
+    setNW2Float(entity, "faceposer_scale", scale)
 
     for i = 0, count - 1 do
 
         local w1 = data1.Weights[i];
         local w2 = data2.Weights[i];
-        local w = SMH.LerpLinear(w1, w2, percentage);
+        local w = lerpLinear(w1, w2, percentage);
 
-        entity:SetFlexWeight(i, w);
+        setFlexWeight(entity, i, w);
         networkFlex(entity, i, w)
     end
 

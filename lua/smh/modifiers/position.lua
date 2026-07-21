@@ -1,6 +1,13 @@
 
 MOD.Name = "Position and Rotation";
 
+local opt = SMH.Optimizations
+local setPos = opt.EntitySetPos
+local setAngles = opt.EntitySetAngles
+
+local lerpLinearVector = SMH.LerpLinearVector
+local lerpLinearAngle = SMH.LerpLinearAngle
+
 function MOD:Save(entity)
 
     local data = {};
@@ -20,18 +27,18 @@ end
 
 function MOD:Load(entity, data)
 
-    entity:SetPos(data.Pos);
-    entity:SetAngles(data.Ang);
+    setPos(entity, data.Pos);
+    setAngles(entity, data.Ang);
 
 end
 
 function MOD:LoadBetween(entity, data1, data2, percentage)
 
-    local Pos = SMH.LerpLinearVector(data1.Pos, data2.Pos, percentage);
-    local Ang = SMH.LerpLinearAngle(data1.Ang, data2.Ang, percentage);
+    local Pos = lerpLinearVector(data1.Pos, data2.Pos, percentage);
+    local Ang = lerpLinearAngle(data1.Ang, data2.Ang, percentage);
 
-    entity:SetPos(Pos);
-    entity:SetAngles(Ang);
+    setPos(entity, Pos);
+    setAngles(entity, Ang);
 
 end
 

@@ -1,6 +1,9 @@
 
 MOD.Name = "Volumetric Cloud";
 
+local lerpLinear = SMH.LerpLinear
+local lerpLinearVector = SMH.LerpLinearVector
+
 function MOD:IsVolumeCloud(entity)
 
     return entity:GetClass() == "volume_cloud"
@@ -41,11 +44,11 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
 
     if not self:IsVolumeCloud(entity) then return; end -- can never be too sure?
 
-    entity:Setsize_x(SMH.LerpLinear(data1.size_x, data2.size_x, percentage))
-    entity:Setsize_y(SMH.LerpLinear(data1.size_y, data2.size_y, percentage))
-    entity:Setsize_z(SMH.LerpLinear(data1.size_z, data2.size_z, percentage))
-    entity:Setsubdivisions(SMH.LerpLinear(data1.subdivisions, data2.subdivisions, percentage))
-    entity:Setblur(SMH.LerpLinear(data1.blur, data2.blur, percentage))
-    entity:Setcloud_color(SMH.LerpLinearVector(data1.cloud_color, data2.cloud_color, percentage))
+    entity:Setsize_x(lerpLinear(data1.size_x, data2.size_x, percentage))
+    entity:Setsize_y(lerpLinear(data1.size_y, data2.size_y, percentage))
+    entity:Setsize_z(lerpLinear(data1.size_z, data2.size_z, percentage))
+    entity:Setsubdivisions(lerpLinear(data1.subdivisions, data2.subdivisions, percentage))
+    entity:Setblur(lerpLinear(data1.blur, data2.blur, percentage))
+    entity:Setcloud_color(lerpLinearVector(data1.cloud_color, data2.cloud_color, percentage))
 
 end

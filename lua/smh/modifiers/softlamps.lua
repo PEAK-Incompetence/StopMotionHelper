@@ -1,6 +1,9 @@
 
 MOD.Name = "Soft Lamps";
 
+local lerpLinear = SMH.LerpLinear
+local lerpLinearVector = SMH.LerpLinearVector
+
 function MOD:IsSoftLamp(entity)
 
     if entity:GetClass() ~= "gmod_softlamp" then return false; end
@@ -46,13 +49,13 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
 
     if not self:IsSoftLamp(entity) then return; end -- can never be too sure?
 
-    entity:SetLightFOV(SMH.LerpLinear(data1.FOV, data2.FOV, percentage));
-    entity:SetNearZ(SMH.LerpLinear(data1.Nearz, data2.Nearz, percentage));
-    entity:SetFarZ(SMH.LerpLinear(data1.Farz, data2.Farz, percentage));
-    entity:SetBrightness(SMH.LerpLinear(data1.Brightness, data2.Brightness, percentage));
-    entity:SetLightColor(SMH.LerpLinearVector(data1.Color, data2.Color, percentage));
-    entity:SetShapeRadius(SMH.LerpLinear(data1.ShapeRadius, data2.ShapeRadius, percentage));
-    entity:SetFocalDistance(SMH.LerpLinear(data1.FocalPoint, data2.FocalPoint, percentage));
-    entity:SetLightOffset(SMH.LerpLinearVector(data1.Offset, data2.Offset, percentage));
+    entity:SetLightFOV(lerpLinear(data1.FOV, data2.FOV, percentage));
+    entity:SetNearZ(lerpLinear(data1.Nearz, data2.Nearz, percentage));
+    entity:SetFarZ(lerpLinear(data1.Farz, data2.Farz, percentage));
+    entity:SetBrightness(lerpLinear(data1.Brightness, data2.Brightness, percentage));
+    entity:SetLightColor(lerpLinearVector(data1.Color, data2.Color, percentage));
+    entity:SetShapeRadius(lerpLinear(data1.ShapeRadius, data2.ShapeRadius, percentage));
+    entity:SetFocalDistance(lerpLinear(data1.FocalPoint, data2.FocalPoint, percentage));
+    entity:SetLightOffset(lerpLinearVector(data1.Offset, data2.Offset, percentage));
 
 end

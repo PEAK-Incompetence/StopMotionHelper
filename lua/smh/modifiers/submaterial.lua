@@ -1,6 +1,9 @@
 
 MOD.Name = "Submaterial";
 
+local opt = SMH.Optimizations
+local setSubMaterial = opt.EntitySetSubMaterial
+
 function MOD:Save(entity)
 
     if self:IsEffect(entity) then
@@ -30,7 +33,7 @@ function MOD:Load(entity, data)
     end
 
     for i = 1, #data do
-        entity:SetSubMaterial(i-1, data[i])
+        setSubMaterial(entity, i-1, data[i])
     end
 end
 

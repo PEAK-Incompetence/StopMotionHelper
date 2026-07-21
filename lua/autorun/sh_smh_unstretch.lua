@@ -45,22 +45,24 @@ if SERVER then
 	---Assuming ragdoll has stretch disabled (flag 32768), set ragdoll back to it's original pose
 	---@param ragdoll Entity
 	local function unstretch(ragdoll)
-		local offsets = getOffsets(ragdoll)
-		if not offsets then
-			return
-		end
+		timer.Simple(0.1, function()
+			local offsets = getOffsets(ragdoll)
+			if not offsets then
+				return
+			end
 
-		for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
-			local offset = offsets[i + 1]
-
-			local bPos, bAng = ragdoll:GetBonePosition(ragdoll:TranslatePhysBoneToBone(i))
-			local pos, ang = LocalToWorld(offset[1], offset[2], bPos, bAng)
-			local phys = ragdoll:GetPhysicsObjectNum(i)
-			phys:EnableMotion(false)
-			phys:Wake()
-			phys:SetPos(pos)
-			phys:SetAngles(ang)
-		end
+			for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
+				local offset = offsets[i + 1]
+	
+				local bPos, bAng = ragdoll:GetBonePosition(ragdoll:TranslatePhysBoneToBone(i))
+				local pos, ang = LocalToWorld(offset[1], offset[2], bPos, bAng)
+				local phys = ragdoll:GetPhysicsObjectNum(i)
+				phys:EnableMotion(false)
+				phys:Wake()
+				phys:SetPos(pos)
+				phys:SetAngles(ang)
+			end
+		end)
 	end
 
 	---Use Penol's method to unstretch ragdolls, regardless of stretch state

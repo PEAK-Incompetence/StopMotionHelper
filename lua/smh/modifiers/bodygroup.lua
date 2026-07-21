@@ -1,6 +1,9 @@
 
 MOD.Name = "Bodygroup";
 
+local opt = SMH.Optimizations
+local setBodygroup = opt.EntitySetBodygroup
+
 function MOD:Save(entity)
 
     if self:IsEffect(entity) then
@@ -30,7 +33,7 @@ function MOD:Load(entity, data)
     end
 
     for id, value in pairs(data) do
-        entity:SetBodygroup(id, value);
+        setBodygroup(entity, id, value);
     end
 end
 

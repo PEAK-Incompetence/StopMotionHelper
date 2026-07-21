@@ -1,6 +1,16 @@
 
 MOD.Name = "Nonphysical Bones";
 
+local opt = SMH.Optimizations
+local manipulateBonePosition = opt.EntityManipulateBonePosition
+local manipulateBoneAngles = opt.EntityManipulateBoneAngles
+local manipulateBoneScale = opt.EntityManipulateBoneScale
+local getBoneCount = opt.EntityGetBoneCount
+
+local lerpLinear = SMH.LerpLinear
+local lerpLinearVector = SMH.LerpLinearVector
+local lerpLinearAngle = SMH.LerpLinearAngle
+
 -- Adapted from fingerposer.lua
 -- https://github.com/Facepunch/garrysmod/blob/7eca8adacc38defdfb2c257fda040d44470abf10/garrysmod/gamemodes/sandbox/entities/weapons/gmod_tool/stools/finger.lua
 local function networkFingerVariables(ent)
@@ -60,14 +70,14 @@ function MOD:Load(entity, data)
         entity = entity.AttachedEntity;
     end
 
-    local count = entity:GetBoneCount();
+    local count = getBoneCount(entity);
 
     for b = 0, count - 1 do
 
         local d = data[b];
-        entity:ManipulateBonePosition(b, d.Pos);
-        entity:ManipulateBoneAngles(b, d.Ang);
-        entity:ManipulateBoneScale(b, d.Scale);
+        manipulateBonePosition(entity, b, d.Pos);
+        manipulateBoneAngles(entity, b, d.Ang);
+        manipulateBoneScale(entity, b, d.Scale);
 
     end
 
@@ -80,20 +90,20 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
         entity = entity.AttachedEntity;
     end
 
-    local count = entity:GetBoneCount();
+    local count = getBoneCount(entity);
 
     for b = 0, count - 1 do
 
         local d1 = data1[b];
         local d2 = data2[b];
 
-        local Pos = SMH.LerpLinearVector(d1.Pos, d2.Pos, percentage);
-        local Ang = SMH.LerpLinearAngle(d1.Ang, d2.Ang, percentage);
-        local Scale = SMH.LerpLinear(d1.Scale, d2.Scale, percentage);
+        local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
+        local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
+        local Scale = lerpLinear(d1.Scale, d2.Scale, percentage);
 
-        entity:ManipulateBonePosition(b, Pos);
-        entity:ManipulateBoneAngles(b, Ang);
-        entity:ManipulateBoneScale(b, Scale);
+        manipulateBonePosition(entity, b, Pos);
+        manipulateBoneAngles(entity, b, Ang);
+        manipulateBoneScale(entity, b, Scale);
 
     end
 

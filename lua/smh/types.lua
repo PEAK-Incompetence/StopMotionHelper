@@ -78,6 +78,7 @@
 ---```
 ---
 ---@alias PlaybackCache {[Player]: {[Entity]: {[Modifier]: {[number]: {[1]: FrameData, [2]: FrameData, [3]: number}}}}}
+---@alias ModifierCache {[Player]: {[Entity]: {[Modifiers]: ModifierClass}}}
 
 ---@class Playback
 ---@field StartFrame integer
@@ -97,6 +98,7 @@
 ---@field Frame integer
 ---@field Physbones boolean
 ---@field RagdollWeightData number[]
+---@field smh_OldDoNotDuplicate boolean
 
 ---@class BufferDatum
 ---@field Ids integer[]
@@ -157,13 +159,6 @@
 ---@class ModifierClass
 ---@field Name string
 ---@field Ghost boolean
----@field Load fun(self: ModifierClass, entity: Entity, data: table, settings: Settings)
----@field LoadBetween fun(self: ModifierClass, entity: Entity, prevData: table, nextData: table, lerpMultiplier: number, settings: Settings)
----@field LoadGhostBetween fun(self: ModifierClass, entity: Entity, ghost: SMHEntity, prevData: table, nextData: table, lerpMultiplier: number, settings: Settings?)
----@field LoadGhost fun(self: ModifierClass, entity: Entity, ghost: SMHEntity, data: table, settings: Settings?)
----@field Offset fun(self: ModifierClass, data: table, origindata: table, worldpos: Vector, worldang: Angle, offsetpos: Vector?, offsetang: Angle?)
----@field OffsetDupe fun(self: ModifierClass, entity: Entity, data: table, origindata: table)
----@field Save fun(self: ModifierClass, entity: Entity)
 
 ---@class Modifier A struct of the entity's modifiers
 ---@field physbones FramePose[]?
@@ -234,7 +229,7 @@
 ---@field LastTween boolean
 
 ---@alias GhostSettings {[Player]: Settings}
----@alias SpawnGhost {[Player]: Entity}
+---@alias SpawnGhost {[Player]: SMHEntity}
 ---@alias SpawnGhostData {[Player]: table}
 
 ---@alias GhostData table<Player, GhostDatum>
@@ -252,7 +247,7 @@
 
 ---@class PlayerData
 ---@field Keyframes FrameData[]
----@field Entities {[Entity]: FrameData[]}
+---@field Entities {[SMHEntity]: FrameData[]}
 
 ---@class KeyframeData
 ---@field Players {[Player]: PlayerData}

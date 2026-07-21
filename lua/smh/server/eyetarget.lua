@@ -1,7 +1,7 @@
 
 -- New eye target functions to save eye target vector
 
----@type SMHEntity
+---@class SMHEntity
 local meta = FindMetaTable("Entity");
 
 meta.SetEyeTargetOld = meta.SetEyeTarget;

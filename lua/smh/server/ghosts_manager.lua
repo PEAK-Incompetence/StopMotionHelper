@@ -89,6 +89,13 @@ local function CreateGhost(player, entity, color, frame, ghostable, xray)
 
     table.insert(ghostable, g)
 
+    entity:CallOnRemove("SMHGhostRemoval", function (ent, ...)
+        for _, ghost in ipairs(ghostable) do
+            SafeRemoveEntity(ghost)
+        end
+    end)
+
+
     return g
 end
 
@@ -325,8 +332,10 @@ function MGR.SetSpawnPreview(class, modelpath, data, settings, player)
     GhostSettings[player] = settings
 
     if class == "prop_ragdoll" then
+        ---@diagnostic disable-next-line: assign-type-mismatch
         SpawnGhost[player] = ents.Create("prop_ragdoll")
     else
+        ---@diagnostic disable-next-line: assign-type-mismatch
         SpawnGhost[player] = ents.Create("prop_dynamic")
     end
     local alpha = settings.GhostTransparency * 255

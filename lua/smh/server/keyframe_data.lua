@@ -4,11 +4,9 @@
 ---@param frame integer
 ---@param ignoreCurrentFrame boolean
 ---@param modname Modifiers
----@param delta number
----@param start FrameData?
 ---@return FrameData? prevKeyframe
 ---@return FrameData? nextKeyframe
-function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta, start)
+function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
     if ignoreCurrentFrame == nil then
         ignoreCurrentFrame = false
     end
@@ -198,6 +196,8 @@ function META:Delete(player, id)
     if self.Players[player].Entities[keyframe.Entity] then
         table.RemoveByValue(self.Players[player].Entities[keyframe.Entity], keyframe)
     end
+    keyframe.Next = nil
+    keyframe.Previous = nil
     self.Players[player].Keyframes[id] = nil
 end
 
