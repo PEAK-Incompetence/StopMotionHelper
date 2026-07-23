@@ -22,12 +22,11 @@ jobs:
         with:
           filters: |
             not_in_folder:
-              - '**'
-              - '!.github/**'
+              - '.github/**'
 
   publish:
     needs: check-changes
-    if: ${{ needs.check-changes.outputs.run_job == 'true' }}
+    if: ${{ needs.check-changes.outputs.run_job == 'false' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
