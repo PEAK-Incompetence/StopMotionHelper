@@ -7,7 +7,27 @@ on:
 
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    # Map the step outputs to job outputs so subsequent jobs can use them
+    outputs:
+      run_job: ${{ steps.filter.outputs.not_in_folder }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Filter Path Changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            not_in_folder:
+              - '**'
+              - '!.github/**'
+
   publish:
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.run_job == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
