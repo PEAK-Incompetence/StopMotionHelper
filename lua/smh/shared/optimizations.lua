@@ -185,6 +185,7 @@ end
 ---@param networking boolean?
 ---@return nil
 function MGR.EntityManipulateBonePosition(entity, id, pos, networking)
+    networking = Either(networking ~= nil, networking, true)
     return entManipulateBonePosition(entity, id, pos, networking)
 end
 
@@ -194,6 +195,7 @@ end
 ---@param networking boolean?
 ---@return nil
 function MGR.EntityManipulateBoneAngles(entity, id, ang, networking)
+    networking = Either(networking ~= nil, networking, true)
     return entManipulateBoneAngles(entity, id, ang, networking)
 end
 
