@@ -87,3 +87,10 @@ concommand.Add("smh_refreshmodifiers", function(ply)
 	refreshModifiers()
 	SMH.PlaybackManager.FlushCache(ply)
 end, nil, "Update modifier data")
+
+--A hack to make sure our modifiers use new, detoured functions
+hook.Add("PostSMHLoaded", "FixOutdatedModifiers", function ()
+	SMH.Optimizations.Update()
+	refreshModifiers()
+	SMH.PlaybackManager.FlushCache(ply)
+end)
