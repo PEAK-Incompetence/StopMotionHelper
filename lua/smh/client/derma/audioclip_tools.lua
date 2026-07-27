@@ -3,6 +3,12 @@
 local PANEL = {}
 local deleteConfirmColour = Color(255,0,0)
 
+---@param panel Panel
+local function unavailableStatus(panel)
+	panel:SetTooltip("This is not functional now. We plan to implement this in the near future")
+	panel:SetTooltipDelay(0)
+end
+
 function PANEL:Init()
 
 	self.Visible = false
@@ -16,8 +22,7 @@ function PANEL:Init()
 	self.Label = vgui.Create("DLabel",self)
 	self.Label:SetText("Actions will apply to clip under playhead.")
 	self.Label:SetFont("DefaultSmall")
-		
-
+	
     self.TrimStart = vgui.Create("DButton", self)
     self.TrimStart:SetText("Trim Start")
 	self.TrimStart:SetEnabled(false)
@@ -75,6 +80,12 @@ function PANEL:Init()
         print("unhide all")
     end
 
+	unavailableStatus(self.TrimStart)
+	unavailableStatus(self.TrimEnd)
+	unavailableStatus(self.Hide)
+	unavailableStatus(self.UnhideAll)
+	unavailableStatus(self.Copy)
+	unavailableStatus(self.Paste)
 end
 
 function PANEL:PerformLayout(width, height)
