@@ -716,7 +716,6 @@ function CTRL.SetRendering(rendering)
             table.insert(entities, entity)
         end
     end
-    SMH.Renderer.ForceRenderEntities(entities, SMH.Renderer.IsRendering())
 end
 
 function CTRL.UpdateGhostState()
@@ -1225,12 +1224,7 @@ local function ReceiveModifierIds(msgLength)
 
 end
 
-local function PlaybackResponse(msgLength)
-    local isPlaying = net.ReadBool()
-    local entities = net.ReadTable(true)
-
-    SMH.Renderer.ForceRenderEntities(entities, isPlaying)
-end
+local function PlaybackResponse(msgLength) end
 
 local function Setup()
     net.Receive(SMH.MessageTypes.SetFrameResponse, SetFrameResponse)

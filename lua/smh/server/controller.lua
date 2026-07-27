@@ -356,8 +356,6 @@ local function StartPlayback(msgLength, player)
     end
 
     net.Start(SMH.MessageTypes.PlaybackResponse)
-    net.WriteBool(true)
-    net.WriteTable(entities, true)
     net.Send(player)
 end
 
@@ -373,8 +371,6 @@ local function StopPlayback(msgLength, player)
     end
     
     net.Start(SMH.MessageTypes.PlaybackResponse)
-    net.WriteBool(false)
-    net.WriteTable(entities, true)
     net.Send(player)
 end
 

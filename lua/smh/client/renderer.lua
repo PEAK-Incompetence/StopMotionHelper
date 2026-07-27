@@ -1,4 +1,3 @@
-local RenderEntities = {}
 local RenderCmd = ""
 local IsRendering = false
 
@@ -19,79 +18,6 @@ local Nodes = {}
 local NodeSet = {}
 
 local MGR = {}
-
-local transmitFlags = bit.bor(EFL_IN_SKYBOX, EFL_FORCE_CHECK_TRANSMIT)
-
----@param entity Entity
-local function doRenderBounds(entity, shouldRender)
-    if shouldRender then
-        local mins, maxs = entity.smh_oldCollisionMins, entity.smh_oldCollisionMaxs
-        if not mins then
-            mins, maxs = entity:GetCollisionBounds()
-            entity.smh_oldCollisionMins = mins
-            entity.smh_oldCollisionMaxs = maxs
-            entity.smh_oldEFLSkybox = entity:IsEFlagSet(EFL_IN_SKYBOX)
-            entity.smh_oldEFLCheckTransmit = entity:IsEFlagSet(EFL_FORCE_CHECK_TRANSMIT)
-        end
-        entity:SetCollisionBounds(mins*1000, maxs*1000)
-        entity:AddEFlags(transmitFlags)
-    else
-        if entity.smh_oldCollisionMins then
-            entity:SetCollisionBounds(entity.smh_oldCollisionMins, entity.smh_oldCollisionMaxs)
-        end
-        entity.smh_oldCollisionMins, entity.smh_oldCollisionMaxs = nil, nil
-        if not entity.smh_oldEFLSkybox then
-            entity:RemoveEFlags(EFL_IN_SKYBOX)
-        end
-        if not entity.smh_oldEFLCheckTransmit then
-            entity:RemoveEFlags(EFL_FORCE_CHECK_TRANSMIT)
-        end
-    end
-
-    for _, child in ipairs(entity:GetChildren()) do
-        doRenderBounds(child, shouldRender)
-    end
-end
-
-local function alwaysRenderEntities()
-    for _, entity in ipairs(RenderEntities) do
-        doRenderBounds(entity, true)
-    end
-end
-
-hook.Remove("Think", "SMHAlwaysRenderEntities")
-
----@param entities Entity[]
----@param shouldRender boolean
-function MGR.ForceRenderEntities(entities, shouldRender)
-    if not GetConVar("smh_force_render_entities"):GetBool() then return end
-    if shouldRender then
-        RenderEntities = entities
-        hook.Add("Think", "SMHAlwaysRenderEntities", alwaysRenderEntities)
-    else
-        RenderEntities = nil
-        hook.Remove("Think", "SMHAlwaysRenderEntities")
-    end
-    for _, entity in ipairs(entities) do
-        doRenderBounds(entity, shouldRender)
-    end
-end
-
-local function forceRenderCallback(cvar, old, new)
-    local result = tobool(new)
-    if not result then
-        if RenderEntities then
-            for _, entity in ipairs(RenderEntities) do
-                doRenderBounds(entity, shouldRender)
-            end
-        end
-        hook.Remove("Think", "SMHAlwaysRenderEntities")
-        RenderEntities = nil
-    end
-end
-
-cvars.RemoveChangeCallback("smh_force_render_entities", "forceRenderEntities")
-cvars.AddChangeCallback("smh_force_render_entities", forceRenderCallback, "forceRenderEntities")
 
 ---@return boolean
 function MGR.IsRendering()
