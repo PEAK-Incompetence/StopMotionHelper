@@ -7,10 +7,15 @@ local isValid = IsValid
 
 local MGR = {}
 
+---There is some odd behavior related to detoured functions
+---which cause them not to work with our modifiers.
+---In case that happens, run Update() again to reset everything
+function MGR.Update()
+
 do
 
----@type PhysObj
 local PHYSOBJ = FindMetaTable("PhysObj")
+---@cast PHYSOBJ PhysObj
 local physSetPos = PHYSOBJ.SetPos
 local physSetAngles = PHYSOBJ.SetAngles
 local physEnableMotion = PHYSOBJ.EnableMotion
@@ -48,8 +53,8 @@ end
 
 do
 
----@type Entity
 local ENTITY = FindMetaTable("Entity")
+---@cast ENTITY Entity
 local entSetPos = ENTITY.SetPos
 local entSetAngles = ENTITY.SetAngles
 local entGetModel = ENTITY.GetModel
@@ -72,7 +77,7 @@ local entSetPoseParameter = ENTITY.SetPoseParameter
 local entSetModelScale = ENTITY.SetModelScale
 
 ---@param entity Entity
----@return string
+---@return string?
 function MGR.EntityGetModel(entity)
     return entGetModel(entity)
 end
@@ -131,7 +136,7 @@ local entFlexNum = {}
 function MGR.EntityGetFlexNum(entity)
     local model = optEntityGetModel(entity)
     local flexNum = entFlexNum[model]
-    if not flexNum then
+    if not flexNum and model then
         flexNum = entGetFlexNum(entity)
         entFlexNum[model] = flexNum
     end
@@ -171,7 +176,7 @@ local entBoneCount = {}
 function MGR.EntityGetBoneCount(entity)
     local model = optEntityGetModel(entity)
     local boneCount = entBoneCount[model]
-    if not boneCount then
+    if not boneCount and model then
         boneCount = entGetBoneCount(entity)
         entBoneCount[model] = boneCount
     end
@@ -185,7 +190,6 @@ end
 ---@param networking boolean?
 ---@return nil
 function MGR.EntityManipulateBonePosition(entity, id, pos, networking)
-    networking = Either(networking ~= nil, networking, true)
     return entManipulateBonePosition(entity, id, pos, networking)
 end
 
@@ -195,7 +199,6 @@ end
 ---@param networking boolean?
 ---@return nil
 function MGR.EntityManipulateBoneAngles(entity, id, ang, networking)
-    networking = Either(networking ~= nil, networking, true)
     return entManipulateBoneAngles(entity, id, ang, networking)
 end
 
@@ -269,7 +272,7 @@ local physObjCount = {}
 function MGR.EntityGetPhysicsObjectCount(entity)
     local model = optEntityGetModel(entity)
     local count = physObjCount[model]
-    if not count then
+    if not count and model then
         count = entGetPhysicsObjectCount(entity)
         physObjCount[model] = count
     end
@@ -280,5 +283,8 @@ end
 
 end
 
+end
+
+MGR.Update()
 
 SMH.Optimizations = MGR
