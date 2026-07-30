@@ -99,6 +99,9 @@
 ---@field Physbones boolean
 ---@field RagdollWeightData number[]
 ---@field smh_OldDoNotDuplicate boolean
+---@field smh_RenderBoundsCacheMinOG Vector
+---@field smh_RenderBoundsCacheMaxOG Vector
+---@field smh_RenderBoundsCacheModelScale number
 
 ---@class BufferDatum
 ---@field Ids integer[]
