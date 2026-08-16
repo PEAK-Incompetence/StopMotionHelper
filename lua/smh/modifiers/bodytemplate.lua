@@ -82,7 +82,7 @@ function MOD:Load(entity, data, settings)
 
         local d = data[i];
 
-        if not d then continue end
+        if not d or not pb then continue end
 
 		setPos(pb, d.Pos, true);
 		setAngles(pb, d.Ang);
@@ -114,7 +114,7 @@ function MOD:LoadBetween(entity, data1, data2, percentage, settings)
         local d1 = data1[i];
         local d2 = data2[i];
 
-        if not d1 or not d2 then continue end
+        if not d1 or not d2 or not pb then continue end
 
         local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
         local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);

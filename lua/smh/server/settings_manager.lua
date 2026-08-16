@@ -13,6 +13,7 @@ end
 ---@param player Player
 ---@return Settings
 function MGR.GetPlayerSettings(player)
+    PlayerSettings[player] = PlayerSettings[player] or {}
     return PlayerSettings[player]
 end
 
