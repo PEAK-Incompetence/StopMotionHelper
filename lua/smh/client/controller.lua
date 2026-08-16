@@ -97,15 +97,17 @@ local function RequestDefaultPose()
         entity = entity.AttachedEntity
     end
 
+    ---@diagnostic disable
     local csModel = ClientsideModel(entity:GetModel())
     csModel:DrawModel()
 	csModel:SetupBones()
 	csModel:InvalidateBoneCache()
     local tree = GetDefaultPoseTree(csModel)
     csModel:Remove()
+    ---@diagnostic enable
 
     net.Start(SMH.MessageTypes.RequestDefaultPoseResponse)
-    net.WriteString(entity:GetModel())
+    net.WriteString(entity:GetModel()) ---@diagnostic disable-line: param-type-mismatch
     net.WriteUInt(#tree, 8)
     for i = 1, #tree do
         net.WriteVector(tree[i][1])
@@ -154,6 +156,7 @@ function CTRL.SelectEntity(entity, enttable)
 end
 
 -- AUDIO =========================
+---@param path string
 function CTRL.AddAudio(path)
 	local frame = SMH.State.Frame
 
@@ -162,6 +165,8 @@ function CTRL.AddAudio(path)
 	local audioclips = SMH.AudioClipManager.Create(path, frame)
 end
 
+---@param id integer
+---@param pointer SMHAudioClipPointer
 function CTRL.DeleteAudio(id, pointer)
 	SMH.AudioClipData:Delete(id)
 	if pointer ~= nil then

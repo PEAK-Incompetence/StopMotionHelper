@@ -1,3 +1,4 @@
+---@class AudioClipManager
 local MGR = {}
 
 ---@type {[string]: Wave[]}
@@ -42,8 +43,14 @@ function MGR.GetWaveforms()
 	return Waveforms
 end
 
+---@param path string
+---@param frame integer
+---@param startTime number?
+---@param duration number?
+---@return AudioClipData[]
 function MGR.Create(path, frame, startTime, duration)
 	
+	---@type AudioClipData[]
     local audioclips = {}
 	
 	sound.PlayFile( path, "noplay noblock", function( station, errCode, errStr )
@@ -74,6 +81,8 @@ function MGR.Create(path, frame, startTime, duration)
     return audioclips
 end
 
+---@param id number
+---@param frame integer
 function MGR.TrimStart(id, frame)
 	//get time between start frame and target frame
 	//set start time
@@ -81,6 +90,8 @@ function MGR.TrimStart(id, frame)
 	//move start frame to target frame
 end
 
+---@param id number
+---@param frame integer
 function MGR.TrimEnd(id, frame)
 	//get time between start frame and target frame
 	//modify duration of clip based on frame input

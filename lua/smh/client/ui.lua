@@ -240,7 +240,23 @@ local function NewAudioClipPointer(audioClip)
 		audioClip.Frame = frame
 		SMH.Controller.UpdateServerAudio()
 	end
-	
+
+    pointer.OnCustomMousePressed = function(self, mousecode)
+        if mousecode == MOUSE_RIGHT then
+            local menu = DermaMenu()
+
+            menu:AddOption("Delete", function()
+                SMH.Controller.DeleteAudio(pointer:GetID(), pointer)
+            end)
+            menu:AddOption("Trim Left", function() end)
+            menu:AddOption("Trim Right", function() end)
+            menu:AddOption("Split", function() end)
+            menu:AddOption("Hide", function() end)
+
+            menu:Open()
+        end
+    end
+
 	return pointer
 end
 -- =================================================
