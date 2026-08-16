@@ -98,9 +98,17 @@ local function cacheRenderBounds(entity)
     return renderBounds[1], renderBounds[2], remove
 end
 
+local filter = {
+    ["class CLuaEffect"] = true,
+    ["manipulate_bone"] = true,
+    ["class C_PhysPropClientside"] = true,
+    ["class C_BaseFlex"] = true, -- causes issues with Advanced Bonemerge Tool
+}
+
 local busy = false
 ---@param entity SMHEntity
 local function initializeRenderBounds(entity)
+    if filter[entity:GetClass()] then return end
     if busy then return end
 
     busy = true
