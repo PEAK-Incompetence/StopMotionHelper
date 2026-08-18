@@ -1152,6 +1152,7 @@ local function UpdateModifierResponse(msgLength)
     local timeline = ReceiveProperties()
 
     SMH.UI.UpdateModifier(timeline, changed)
+    CTRL.UpdateTimeline()
 end
 
 ---@type Receiver
