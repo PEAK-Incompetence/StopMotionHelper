@@ -310,9 +310,10 @@ end
 ---@param class string
 ---@param modelpath string
 ---@param data any
+---@param info table Entity table
 ---@param settings Settings
 ---@param player Player
-function MGR.SetSpawnPreview(class, modelpath, data, settings, player)
+function MGR.SetSpawnPreview(class, modelpath, data, info, settings, player)
     if IsValid(SpawnGhost[player]) then
         SpawnGhost[player]:Remove()
     end
@@ -331,22 +332,28 @@ function MGR.SetSpawnPreview(class, modelpath, data, settings, player)
     SpawnGhostData[player] = data
     GhostSettings[player] = settings
 
+    local spawnGhost
     if class == "prop_ragdoll" then
-        ---@diagnostic disable-next-line: assign-type-mismatch
-        SpawnGhost[player] = ents.Create("prop_ragdoll")
+        ---@diagnostic disable-next-line: assign-type-mismatch, cast-local-type
+        spawnGhost = ents.Create("prop_ragdoll")
     else
-        ---@diagnostic disable-next-line: assign-type-mismatch
-        SpawnGhost[player] = ents.Create("prop_dynamic")
+        ---@diagnostic disable-next-line: assign-type-mismatch, cast-local-type
+        spawnGhost = ents.Create("prop_dynamic")
     end
+    ---@cast spawnGhost SMHEntity
     local alpha = settings.GhostTransparency * 255
 
-    SpawnGhost[player]:SetModel(modelpath)
-    SpawnGhost[player]:SetRenderMode(RENDERMODE_TRANSCOLOR)
-    SpawnGhost[player]:SetCollisionGroup(COLLISION_GROUP_NONE)
-    SpawnGhost[player]:SetNotSolid(true)
-    SpawnGhost[player]:SetColor(Color(255, 255, 255, alpha))
-    SpawnGhost[player].DoNotDuplicate = true
-    SpawnGhost[player]:Spawn()
+    if GetConVar("smh_spawn_apply_info"):GetBool() then
+        duplicator.DoGeneric(spawnGhost, info)
+    end
+
+    spawnGhost:SetModel(modelpath)
+    spawnGhost:SetRenderMode(RENDERMODE_TRANSCOLOR)
+    spawnGhost:SetCollisionGroup(COLLISION_GROUP_NONE)
+    spawnGhost:SetNotSolid(true)
+    spawnGhost:SetColor(Color(255, 255, 255, alpha))
+    spawnGhost.DoNotDuplicate = true
+    spawnGhost:Spawn()
 
     for name, mod in pairs(SMH.Modifiers) do
         if name == "color" then continue end
@@ -355,11 +362,13 @@ function MGR.SetSpawnPreview(class, modelpath, data, settings, player)
             local offsetang = OffsetAng[player] or Angle(0, 0, 0)
 
             local offsetdata = mod:Offset(data[name].Modifiers, SpawnOriginData[player][name].Modifiers, offsetpos, offsetang, nil)
-            mod:Load(SpawnGhost[player], offsetdata, GhostSettings[player])
+            mod:Load(spawnGhost, offsetdata, GhostSettings[player])
         elseif data[name] then
-            mod:Load(SpawnGhost[player], data[name].Modifiers, settings)
+            mod:Load(spawnGhost, data[name].Modifiers, settings)
         end
     end
+
+    SpawnGhost[player] = spawnGhost
 end
 
 ---@param player Player

@@ -834,14 +834,15 @@ local function SetPreviewEntity(msgLength, player)
     settings.FreezeAll = true
     local serializedKeyframes = SMH.Saves.Load(path, player)
 
-    local class, modelpath, data, neworigin = SMH.Spawner.SetPreviewEntity(path, model, player, serializedKeyframes)
+    local class, modelpath, data, info, neworigin = SMH.Spawner.SetPreviewEntity(path, model, player, serializedKeyframes)
     if not class then return end
     if neworigin then
         SMH.GhostsManager.SetSpawnOrigin(data, player)
     end
 
     ---@cast modelpath string
-    SMH.GhostsManager.SetSpawnPreview(class, modelpath, data, settings, player)
+    ---@cast info table
+    SMH.GhostsManager.SetSpawnPreview(class, modelpath, data, info, settings, player)
 end
 
 ---@type Receiver

@@ -12,12 +12,12 @@ MGR.OriginData = {}
 ---@param serializedKeyframes SMHFile
 ---@param model string
 ---@param doRecursive boolean Iterate over the children table if this is set to true
----@return string[] # Model paths
----@return string[] # Classes
----@return {[string]: ModifierDataInfo}[] # Modifier info
----@return table # Entity table
----@return integer[] # Parent indices where the child index keys to the parent
----@return string[] # Property names
+---@return string[] classes 
+---@return string[] modelpaths
+---@return {[string]: ModifierDataInfo}[] modifierInfo
+---@return table entityTable
+---@return integer[] parentIndices
+---@return string[] names
 local function GetPosData(serializedKeyframes, model, doRecursive)
     local classes, modelpaths, data, info, parents, names = {}, {}, {}, {}, {}, {}
 
@@ -108,10 +108,11 @@ end
 ---@param model string
 ---@param player Player
 ---@param serializedKeyframes SMHFile
----@return string?
----@return string?
----@return table?
----@return boolean?
+---@return string? class Preview entity class (`prop_ragdoll`, `prop_physics`, etc.) 
+---@return string? modelPath The model to use for the spawn ghost preview
+---@return ModifierDataInfo? modifierInfo Modifier info for spawning
+---@return table? entityTable Appearance information
+---@return boolean? boolean Has new origin?
 function MGR.SetPreviewEntity(path, model, player, serializedKeyframes)
     if not Active[player] then return nil end
     local classes, modelpaths, dataSet, infos, parents = GetPosData(serializedKeyframes, model, false)
@@ -128,7 +129,7 @@ function MGR.SetPreviewEntity(path, model, player, serializedKeyframes)
         neworigin = true
     end
 
-    return classes[1], modelpaths[1], dataSet[1], neworigin
+    return classes[1], modelpaths[1], dataSet[1], infos[1], neworigin
 end
 
 ---@param state any
@@ -176,7 +177,7 @@ local bonemergeClasses = {
 ---@param modelpath string
 ---@param class string
 ---@param info table Entity table
----@return SMHEntity
+---@return SMHEntity spawnedEntity
 local function genericSpawn(modelpath, class, info)
     
     local entity = ents.Create(class)
@@ -194,9 +195,9 @@ end
 ---@param settings Settings
 ---@param player Player
 ---@param serializedKeyframes SMHFile
----@return SMHEntity[]? # spawned entity and its child entities (indices after 1 are descendants)
----@return Vector? # origin position
----@return string[]? # names
+---@return SMHEntity[]? entities Array of spawned entities, where the first index is the parent entity, and the latter indices are descendant entities
+---@return Vector? origin The origin of the animation when spawned
+---@return string[]? names The names of the spawned entities for the properties menu
 function MGR.Spawn(model, settings, player, serializedKeyframes)
     if not Active[player] then return end
     local classes, modelpaths, dataSet, infos, parents, names = GetPosData(serializedKeyframes, model, spawnChildren:GetBool())
@@ -311,7 +312,7 @@ end
 ---@param model string
 ---@param player Player
 ---@param serializedKeyframes SMHFile
----@return nil
+---@return Vector? origin The position which the animation will take place
 function MGR.SetOrigin(model, player, serializedKeyframes)
     local classes, modelpaths, dataSet = GetPosData(serializedKeyframes, model, false)
     if not classes[1] then
