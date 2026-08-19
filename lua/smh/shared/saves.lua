@@ -55,6 +55,7 @@ local function ProcessKeyframes(keyframes, entityMappedKeyframes, properties, pl
                 local mdl = GetModelName(entity)
                 local entTable = table.Copy(duplicator.CopyEntTable(entity))
                 entTable.EntityMods["SMHPackage"] = nil -- Do not duplicate animation data again!
+                entTable.CompositeAttachment = entity:GetParentAttachment() -- Required for Composite Bonemerged Entities TODO: do a more general approach for different addons?
                 frameData = {
                     Model = mdl,
                     Properties = {

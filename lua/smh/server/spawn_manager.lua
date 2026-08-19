@@ -137,11 +137,38 @@ function MGR.SetGhost(state, player)
     Active[player] = state
 end
 
+-- TODO: Movev this into another file?
 local bonemergeClasses = {
+    -- Advanced Bonemerge Tool
     ["ent_advbonemerge"] = function(player, info, parent)
         local target = duplicator.CreateEntityFromTable(player, info)
         local entity = CreateAdvBonemergeEntity(target, parent, player, false, false, player:GetInfoNum("advbonemerge_matchnames", 0) == 1)
         local const = constraint.AdvBoneMerge(parent, entity, player)
+        return entity
+    end,
+    -- Easy Bonemerge Tool
+    ["ent_bonemerged"] = function(player, info, parent)
+        local target = duplicator.CreateEntityFromTable(player, info)
+        local entity = rb655_ApplyBonemerge(target, parent)
+        return entity
+    end,
+    -- Composite Bonemerge Tool
+    ["ent_composite"] = function(player, info, parent)
+        local target = duplicator.CreateEntityFromTable(player, info)
+        local instance = CompositeEntities.CompositeEntitiesServer:GetInstance()
+        local entity = instance:duplicateEntity(parent, target, nil, true, true, tonumber(info.CompositeAttachment) == 0)
+        return entity
+    end,
+    -- Bone Merger
+    ["phys_bonemerge"] = function(player, info, parent)
+        local target = duplicator.CreateEntityFromTable(player, info)
+        constraint.BoneMerge(parent, target)
+        return entity
+    end,
+    -- Bone Merger
+    ["phys_bonemerge_parent"] = function(player, info, parent)
+        local target = duplicator.CreateEntityFromTable(player, info)
+        constraint.BoneMergeParent(parent, target)
         return entity
     end
 }
