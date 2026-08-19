@@ -204,12 +204,18 @@
 ---@field Model string? The model path of the entity
 ---@field IsWorld boolean?
 
+---@class ModifierDataInfo A middle-man used for spawning
+---@field Modifiers table
+---@field Frame integer
+
 ---@class Data The animation data for each entity
 ---@field Frames SerializedFrameData[] An array of the data seen in the SMH timeline
 ---@field Model string The model path of the entity
 ---@field Properties Properties The animation properties of the entity
 ---@field IsWorld boolean?
 ---@field Settings Settings
+---@field Children string[]? Array of children owned by this entity
+---@field Info table? Entity table that describes the entity. This is only used for spawning; it creates an exact copy of the entity, without other bonemerged items.
 
 ---@class PackageData SMH Package data
 ---@field save string The path of the save file, with respect to smh/

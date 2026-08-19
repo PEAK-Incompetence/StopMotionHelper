@@ -1,5 +1,5 @@
-local disableExitSaves = CreateConVar("smh_disableexitsaves", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, it prevents the server from making saves per user if the server gracefully closes (map change, `quit` command, `reload` (singleplayer-only), etc.)")
-local disableNetworking = CreateConVar("smh_disablenetworking", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, faceposer, fingerposer, and eyeposer values won't be sent to the client.")
+local disableExitSaves = CreateConVar("smh_disableexitsaves", "0", {FCVAR_PROTECTED, FCVAR_ARCHIVE}, "If set to 1, it prevents the server from making saves per user if the server gracefully closes (map change, `quit` command, `reload` (singleplayer-only), etc.)")
+local disableNetworking = CreateConVar("smh_disablenetworking", "0", {FCVAR_PROTECTED, FCVAR_ARCHIVE}, "If set to 1, faceposer, fingerposer, and eyeposer values won't be sent to the client.")
 
 local INT_BITCOUNT = 32
 local KFRAMES_PER_MSG = 60
@@ -859,21 +859,23 @@ local function SpawnEntity(msgLength, player)
     local modelName = net.ReadString()
     local settings = net.ReadTable()
     settings.FreezeAll = true
+
     local serializedKeyframes = SMH.Saves.Load(path, player)
 
-    local entity, pos = SMH.Spawner.Spawn(modelName, settings, player, serializedKeyframes)
-    if not entity then return end
+    local entities, pos, names = SMH.Spawner.Spawn(modelName, settings, player, serializedKeyframes)
+    if not entities or not names then return end
     local serializedKeyframes, entityProperties
 
-    serializedKeyframes, entityProperties = SMH.Saves.LoadForEntity(path, modelName, player)
-    ---@cast serializedKeyframes SMHFile
-    ---@cast entityProperties Properties
-
-    SMH.PropertiesManager.AddEntity(player, {entity})
-    SMH.KeyframeManager.ImportSave(player, entity, serializedKeyframes, entityProperties)
-    ---@cast pos Vector
-    SMH.Spawner.OffsetKeyframes(player, entity, pos)
-    SMH.PlaybackManager.UpdateCacheFor(player, entity)
+    SMH.PropertiesManager.AddEntity(player, entities)
+    for i, entity in ipairs(entities) do
+        serializedKeyframes, entityProperties = SMH.Saves.LoadForEntity(path, names[i], player)
+        ---@cast serializedKeyframes SMHFile
+        ---@cast entityProperties Properties
+        SMH.KeyframeManager.ImportSave(player, entity, serializedKeyframes, entityProperties)
+        ---@cast pos Vector
+        SMH.Spawner.OffsetKeyframes(player, entity, pos)
+        SMH.PlaybackManager.UpdateCacheFor(player, entity)
+    end
 end
 
 ---@type Receiver

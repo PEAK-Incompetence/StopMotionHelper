@@ -29,20 +29,33 @@ end
 ---@param keyframes FrameData[]
 ---@param entityMappedKeyframes table<Entity, Data>
 ---@param properties any
----@param player any
+---@param player Player
 ---@param settings Settings
 local function ProcessKeyframes(keyframes, entityMappedKeyframes, properties, player, settings)
-    for _, keyframe in pairs(keyframes) do
+    local entityChildren = {}
+    local childToParent = {}
+    local childSet = {}
+    for _, keyframe in ipairs(keyframes) do
         local entity = keyframe.Entity
         if not IsValid(entity) then
             continue
         end
+        if not entityChildren[entity] then
+            entityChildren[entity] = {}
+            childSet[entity] = {}
+            for _, child in ipairs(entity:GetChildren()) do
+                entityChildren[entity][child] = true
+                childToParent[child] = entity
+            end
+        end
 
-        if entity ~= player then
-            if not entityMappedKeyframes[entity] then
+        local frameData = entityMappedKeyframes[entity]
+        if not frameData then
+            if entity ~= player then
                 local mdl = GetModelName(entity)
-
-                entityMappedKeyframes[entity] = {
+                local entTable = table.Copy(duplicator.CopyEntTable(entity))
+                entTable.EntityMods["SMHPackage"] = nil -- Do not duplicate animation data again!
+                frameData = {
                     Model = mdl,
                     Properties = {
                         Name = properties[entity].Name,
@@ -51,13 +64,13 @@ local function ProcessKeyframes(keyframes, entityMappedKeyframes, properties, pl
                     },
                     Settings = settings[entity],
                     Frames = {},
+                    Children = {},
+                    Info = entTable,
                 }
-            end
-        else
-            if not entityMappedKeyframes[entity] then
+                entityMappedKeyframes[entity] = frameData
+            else
                 local mdl = "world"
-
-                entityMappedKeyframes[entity] = {
+                frameData = {
                     Model = mdl,
                     Properties = {
                         Name = properties[entity].Name,
@@ -66,14 +79,33 @@ local function ProcessKeyframes(keyframes, entityMappedKeyframes, properties, pl
                     Settings = settings[entity],
                     Frames = {},
                 }
+                entityMappedKeyframes[entity] = frameData
             end
         end
-        table.insert(entityMappedKeyframes[entity].Frames, {
+        table.insert(frameData.Frames, {
             Position = keyframe.Frame,
             EaseIn = table.Copy(keyframe.EaseIn), ---@diagnostic disable-line
             EaseOut = table.Copy(keyframe.EaseOut), ---@diagnostic disable-line
             EntityData = table.Copy(keyframe.Modifiers),
         })
+    end
+
+    -- Store children for spawning
+    for _, keyframe in ipairs(keyframes) do
+        local entity = keyframe.Entity
+        
+        local parent = childToParent[entity]
+        local frameData = entityMappedKeyframes[entity]
+        local parentData = entityMappedKeyframes[parent]
+        if parentData and parentData.Children and frameData.Properties.Name then
+            if not childSet[parent] then
+                childSet[parent] = {}
+            end
+            if not childSet[parent][entity] then
+                childSet[parent][entity] = true
+                table.insert(parentData.Children, frameData.Properties.Name)
+            end
+        end
     end
 end
 
