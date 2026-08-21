@@ -587,6 +587,7 @@ end
 function CTRL.RequestPack(path)
     net.Start(SMH.MessageTypes.RequestPack)
     net.WriteString(path)
+    net.WriteTable(SMH.Settings.GetAll(true))
     net.SendToServer()
 end
 
