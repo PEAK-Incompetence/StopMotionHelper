@@ -207,7 +207,6 @@ local function CreateKeyframe(msgLength, player)
 
     SMH.PropertiesManager.AddEntity(player, entities)
     local totaltimelines = SMH.PropertiesManager.GetTimelines(player)
-    print(totaltimelines)
     if timeline > totaltimelines then timeline = 1 end
 
     local keyframes = SMH.KeyframeManager.Create(player, entities, frame, timeline)
