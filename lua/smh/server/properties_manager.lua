@@ -67,10 +67,12 @@ local function FindEntity(player) -- I use this to find entity that doesn't have
     return nil
 end
 
-hook.Add("PlayerInitialSpawn", "SMHInitPlayerProperties", function(player)
+local function initializePlayer(player)
     SMH.Properties.Players[player] = { Entities = {}, TimelineSetting = {} }
     usednames[player] = {}
-end)
+end
+
+hook.Add("PlayerInitialSpawn", "SMHInitPlayerProperties", initializePlayer)
 
 hook.Add("PlayerDisconnected", "SMHDeleteProperties", function(player)
     SMH.Properties.Players[player] = nil
@@ -89,6 +91,11 @@ hook.Add("EntityRemoved", "SMHPropertiesEntityRemoved", function(entity)
 end)
 
 local MGR = {}
+
+---@param player Player
+function MGR.InitializePlayer(player)
+    initializePlayer(player)
+end
 
 ---@param player Player
 ---@return table
