@@ -207,6 +207,7 @@ local function CreateKeyframe(msgLength, player)
 
     SMH.PropertiesManager.AddEntity(player, entities)
     local totaltimelines = SMH.PropertiesManager.GetTimelines(player)
+    print(totaltimelines)
     if timeline > totaltimelines then timeline = 1 end
 
     local keyframes = SMH.KeyframeManager.Create(player, entities, frame, timeline)
@@ -983,7 +984,7 @@ end
 ---@type Receiver
 local function RequestNewSession(msgLength, player)
     SMH.KeyframeData.Players[player] = nil
-    SMH.PropertiesManager.InitializePlayer(player)
+    SMH.PropertiesManager.Reset(player)
     SMH.PlaybackManager.FlushCache(player)
 
     GetServerEntities(msgLength, player)

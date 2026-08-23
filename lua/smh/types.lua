@@ -204,6 +204,18 @@
 ---@field Model string? The model path of the entity
 ---@field IsWorld boolean?
 
+---@class EntityProperties
+---@field Name string
+---@field Class string?
+---@field Model string?
+
+---@class PlayerProperties
+---@field Entities {[Entity]: EntityProperties}
+---@field TimelineSetting TimelineSetting
+
+---@class PropertiesManager
+---@field Players {[Player]: PlayerProperties}
+
 ---@class Data The animation data for each entity
 ---@field Frames SerializedFrameData[] An array of the data seen in the SMH timeline
 ---@field Model string The model path of the entity

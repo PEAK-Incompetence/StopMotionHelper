@@ -1,3 +1,4 @@
+---@type PropertiesManager
 SMH.Properties = {
     Players = {}
 }
@@ -68,7 +69,10 @@ local function FindEntity(player) -- I use this to find entity that doesn't have
 end
 
 local function initializePlayer(player)
-    SMH.Properties.Players[player] = { Entities = {}, TimelineSetting = {} }
+    SMH.Properties.Players[player] = { Entities = {}, TimelineSetting = {
+        Timelines = 1,
+        TimelineMods = {}
+    } }
     usednames[player] = {}
 end
 
@@ -92,9 +96,13 @@ end)
 
 local MGR = {}
 
----@param player Player
-function MGR.InitializePlayer(player)
+function MGR.Reset(player)
+    -- If we're resetting our session for the player, we remove entity data, but preserve
+    -- timeline settings
+    local old = SMH.Properties.Players[player]
     initializePlayer(player)
+    SMH.Properties.Players[player].TimelineSetting = old.TimelineSetting
+    usednames[player] = {}
 end
 
 ---@param player Player
@@ -157,7 +165,9 @@ end
 ---@param entities Entities
 function MGR.AddEntity(player, entities)
     if not SMH.Properties.Players[player] then
-        SMH.Properties.Players[player] = { Entities = {}, TimelineSetting = {} }
+        local old = usednames[player]
+        initializePlayer(player)
+        usednames[player] = old
     end
 
     for _, entity in ipairs(entities) do
@@ -205,7 +215,9 @@ end
 ---@param timelineInfo TimelineSetting
 function MGR.InitTimelineSetting(player, timelineInfo)
     if not SMH.Properties.Players[player] then
-        SMH.Properties.Players[player] = { Entities = {}, TimelineSetting = {} }
+        local old = usednames[player]
+        initializePlayer(player)
+        usednames[player] = old
     end
 
     local timelines
