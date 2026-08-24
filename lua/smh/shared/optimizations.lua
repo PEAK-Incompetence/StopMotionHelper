@@ -172,13 +172,15 @@ do
 local entBoneCount = {}
 
 ---@param entity Entity
----@return integer
+---@return integer boneCount
 function MGR.EntityGetBoneCount(entity)
     local model = optEntityGetModel(entity)
     local boneCount = entBoneCount[model]
     if not boneCount and model then
         boneCount = entGetBoneCount(entity)
         entBoneCount[model] = boneCount
+    elseif not model then
+        boneCount = 0
     end
     return boneCount
 end
@@ -268,13 +270,15 @@ do
 local physObjCount = {}
 
 ---@param entity Entity
----@return integer
+---@return integer physObjCount
 function MGR.EntityGetPhysicsObjectCount(entity)
     local model = optEntityGetModel(entity)
     local count = physObjCount[model]
     if not count and model then
         count = entGetPhysicsObjectCount(entity)
         physObjCount[model] = count
+    elseif not model then
+        count = 0
     end
     return count
 end

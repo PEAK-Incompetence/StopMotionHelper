@@ -19,7 +19,7 @@ local lerpLinearAngle = SMH.LerpLinearAngle
 ---@return table?
 function MOD:Save(entity)
 
-    local count = getPhysicsObjectCount(entity);
+    local count = entity:GetPhysicsObjectCount();
     if count <= 0 then return nil; end
 
     local data = {};
@@ -73,7 +73,7 @@ function MOD:Load(entity, data, settings)
         return;
     end
 
-    local count = getPhysicsObjectCount(entity);
+    local count = entity:GetPhysicsObjectCount();
     local freezeAll = settings and settings.FreezeAll
 
     for i = 0, count - 1 do
@@ -105,7 +105,7 @@ function MOD:LoadBetween(entity, data1, data2, percentage, settings)
         return;
     end
 
-    local count = getPhysicsObjectCount(entity);
+    local count = entity:GetPhysicsObjectCount();
     local freezeAll = settings and settings.FreezeAll
 
     for i = 0, count - 1 do
