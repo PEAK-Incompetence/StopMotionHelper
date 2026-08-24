@@ -751,7 +751,6 @@ function MGR.SetKeyframes(keyframes, isreceiving)
     if not PropertiesMenu:GetUsingWorld() then
         for _, keyframe in pairs(keyframes) do
             for name, _ in pairs(keyframe.Modifiers) do
-                -- print(name)
                 local modname = modnames[name]
                 if Modifiers[modname] then
                     if not FrameToKeyframe[keyframe.Frame] then
@@ -828,14 +827,14 @@ function MGR.UpdateKeyframe(keyframe)
         --     WorldClicker.MainMenu.FramePanel:DeleteFramePointer(pointer)
         -- end
     end
-    local k, name = next(PropertiesMenu:GetCurrentModifiers())
-    while not keyframe.EaseIn[name] and k do
-        k, name = next(PropertiesMenu:GetCurrentModifiers(), k)
+    local modId = next(PropertiesMenu:GetCurrentModifiers())
+    while not keyframe.EaseIn[modId] do
+        modId = next(PropertiesMenu:GetCurrentModifiers(), modId)
     end
 
     KeyframeEasingData[KeyframeIDs[keyframe.ID]] = {
-        EaseIn = keyframe.EaseIn[name],
-        EaseOut = keyframe.EaseOut[name],
+        EaseIn = keyframe.EaseIn[modId],
+        EaseOut = keyframe.EaseOut[modId],
     }
 
     KeyframePointers[KeyframeIDs[keyframe.ID]]:SetFrame(keyframe.Frame)
@@ -848,7 +847,7 @@ function MGR.UpdateKeyframe(keyframe)
     end
     FrameToKeyframe[keyframe.Frame] = KeyframeIDs[keyframe.ID]
     if keyframe.Frame == SMH.State.Frame then
-        WorldClicker.MainMenu:ShowEasingControls(keyframe.EaseIn[name] or 0, keyframe.EaseOut[name] or 0)
+        WorldClicker.MainMenu:ShowEasingControls(keyframe.EaseIn[modId] or 0, keyframe.EaseOut[modId] or 0)
     end
 end
 
