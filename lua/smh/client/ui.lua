@@ -710,6 +710,8 @@ function MGR.SetFrame(frame)
         else
             WorldClicker.MainMenu:HideEasingControls()
         end
+    else
+        WorldClicker.MainMenu:HideEasingControls()
     end
 end
 
