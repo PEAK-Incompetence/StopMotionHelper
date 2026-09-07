@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Technical Design &#8212; StopMotionHelper  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <link rel="stylesheet" type="text/css" href="_static/lua.css" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Client Controller" href="client-controller.html" />
+    <link rel="prev" title="Stop Motion Helper Documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="technical-design">
+<h1>Technical Design<a class="headerlink" href="#technical-design" title="Link to this heading">¶</a></h1>
+<p>SMH code should follow these basic principles:</p>
+<ul class="simple">
+<li><p>Code should be as client-authoritive as possible, all logic that can sensibly be done in client, should be</p></li>
+<li><p>Communication between modules and client-server communication should happen through the Controller</p></li>
+<li><p>SMH should not be dependent on any other addons, and support for other addons should be completely conditional</p></li>
+</ul>
+<section id="architecture-overview">
+<h2>Architecture overview<a class="headerlink" href="#architecture-overview" title="Link to this heading">¶</a></h2>
+<p><img alt="Architecture" src="_images/smh_architecture.png" /></p>
+<p>The central piece of SMH code architecture is the Controller. It is responsible for communication between modules and client/server.
+It also stores the state and settings, so that it is accessible by all modules.</p>
+<p>For example, say we issue the console command <code class="docutils literal notranslate"><span class="pre">smh_next</span></code>:</p>
+<ul class="simple">
+<li><p>Concommand module invokes controller to move to next frame</p></li>
+<li><p>Controller calculates what the next frame is (is it current+1 or back to first frame?)</p></li>
+<li><p>Controller sends “set frame” command to server</p></li>
+<li><p>Server controller receives command and invokes keyframe manager to configure entities</p></li>
+<li><p>Server sends an ack message back to client</p></li>
+<li><p>Client controller invokes an event corresponding to the ack</p></li>
+<li><p>UI listens to the event and moves the playhead to the correct position</p></li>
+</ul>
+</section>
+<section id="module-details">
+<h2>Module details<a class="headerlink" href="#module-details" title="Link to this heading">¶</a></h2>
+<section id="server">
+<h3>Server<a class="headerlink" href="#server" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Controller</strong> - Communicate with clients, receive requests from clients</p></li>
+<li><p><strong>KeyframeManager</strong> - Create, update and delete keyframes for players</p></li>
+<li><p><strong>PlaybackManager</strong> - Position entities for keyframe playback</p></li>
+<li><p><strong>KeyframeData</strong> - Data container for keyframes</p></li>
+</ul>
+</section>
+<section id="client">
+<h3>Client<a class="headerlink" href="#client" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Controller</strong> - Communicate with server, send commands to server</p></li>
+<li><p><strong>Highlighter</strong> - Render currently selected entity halo</p></li>
+<li><p><strong>Renderer</strong> - Screenshot rendering</p></li>
+<li><p><strong>ConCommands</strong> - Register and handle console commands</p></li>
+<li><p><strong>UI</strong> - Derma UI setup and logic</p></li>
+<li><p><strong>Settings</strong> - Register and handle settings (console variables)</p></li>
+<li><p><strong>KeyframeData</strong> - Data container for keyframes</p></li>
+<li><p><strong>State</strong> - Data container for client state (frame position, playback settings)</p></li>
+</ul>
+</section>
+</section>
+<section id="keyframe-data">
+<h2>Keyframe data<a class="headerlink" href="#keyframe-data" title="Link to this heading">¶</a></h2>
+<p>On serverside, a keyframe consists of</p>
+<ul class="simple">
+<li><p>Keyframe ID, a shared unique identifier of the keyframe</p></li>
+<li><p>Frame, aka position of the keyframe</p></li>
+<li><p>Easing data</p></li>
+<li><p>Modifier data, aka entity state data for the keyframe</p></li>
+</ul>
+<p>Whenever updated keyframe data is sent to client, Modifier data is omitted. The client has to separately ask for modifier data to use for saving or ghost rendering.</p>
+<p>KeyframeData stores keyframes in the following format:</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="p">[</span><span class="nv">player</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nv">Keyframes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="p">[</span><span class="nv">ID</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nv">keyframe</span><span class="p">]</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nv">Entities</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="p">[</span><span class="nv">Entity</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="p">[</span><span class="nv">keyframe</span><span class="p">]</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Keyframes can be used to lookup keyframe data with it’s ID, and Entities can be used to lookup keyframe data for a specific entity. Both reference the same data (the same Lua table).</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">StopMotionHelper</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Technical Design</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#architecture-overview">Architecture overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-details">Module details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#keyframe-data">Keyframe data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="client-controller.html">Client Controller</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ui.html">User Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server-controller.html">Server Controller</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Stop Motion Helper Documentation</a></li>
+      <li>Next: <a href="client-controller.html" title="next chapter">Client Controller</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, vlazed, PenolAkushari.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/design.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

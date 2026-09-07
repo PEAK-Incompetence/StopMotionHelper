@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Server Controller &#8212; StopMotionHelper  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <link rel="stylesheet" type="text/css" href="_static/lua.css" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="User Interface" href="ui.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="server-controller">
+<h1>Server Controller<a class="headerlink" href="#server-controller" title="Link to this heading">¶</a></h1>
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-SMH.ServerController">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ServerController</span></span><a class="headerlink" href="#lua-SMH.ServerController" title="Link to this definition">¶</a></dt>
+<dd><p>[SERVER]</p>
+<p>Handles requests from the client and optionally sends back responses</p>
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ServerController.StopPhysicsRecordResponse">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">StopPhysicsRecordResponse</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">player</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Player</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ServerController.StopPhysicsRecordResponse" title="Link to this definition">¶</a></dt>
+<dd><p>Tell the client that the physics recorder has stopped</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ServerController.PlayAudio">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PlayAudio</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">player</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Player</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ServerController.PlayAudio" title="Link to this definition">¶</a></dt>
+<dd><p>During playback, play audio of a specific <code class="docutils literal notranslate"><span class="pre">id</span></code> for the <code class="docutils literal notranslate"><span class="pre">player</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ServerController.StopAudio">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">StopAudio</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">player</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Player</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ServerController.StopAudio" title="Link to this definition">¶</a></dt>
+<dd><p>During playback, stop audio of a specific <code class="docutils literal notranslate"><span class="pre">id</span></code> for the <code class="docutils literal notranslate"><span class="pre">player</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ServerController.StopAllAudio">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">StopAllAudio</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">player</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Player</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ServerController.StopAllAudio" title="Link to this definition">¶</a></dt>
+<dd><p>Stop all audio for the <code class="docutils literal notranslate"><span class="pre">player</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">StopMotionHelper</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="design.html">Technical Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client-controller.html">Client Controller</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ui.html">User Interface</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Server Controller</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lua-SMH.ServerController"><code class="docutils literal notranslate"><span class="pre">ServerController</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="ui.html" title="previous chapter">User Interface</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, vlazed, PenolAkushari.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/server-controller.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

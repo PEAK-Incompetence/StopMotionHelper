@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Client Controller &#8212; StopMotionHelper  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <link rel="stylesheet" type="text/css" href="_static/lua.css" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User Interface" href="ui.html" />
+    <link rel="prev" title="Technical Design" href="design.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="client-controller">
+<h1>Client Controller<a class="headerlink" href="#client-controller" title="Link to this heading">¶</a></h1>
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ClientController</span></span><a class="headerlink" href="#lua-SMH.ClientController" title="Link to this definition">¶</a></dt>
+<dd><p>[CLIENT]</p>
+<p>Sends requests to the server</p>
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.SetFrame">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetFrame</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.SetFrame" title="Link to this definition">¶</a></dt>
+<dd><p>Set to a <code class="docutils literal notranslate"><span class="pre">frame</span></code> of the animation</p>
+<p>This method also sends the (entity) settings.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.SelectEntity">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SelectEntity</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">entity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Player</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">SMHEntity</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">enttable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Set</span></code><span class="p"><span class="pre">&lt;</span></span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Entity</span></code><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.SelectEntity" title="Link to this definition">¶</a></dt>
+<dd><p>Select the <code class="docutils literal notranslate"><span class="pre">entity</span></code> record keyframes.</p>
+<p>For multi-selection, this function gets called again, but with an accumulating <code class="docutils literal notranslate"><span class="pre">enttable</span></code> argument
+which is usually comes from the <code class="docutils literal notranslate"><span class="pre">SMH.State.Entity</span></code> field</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.DeleteAudio">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DeleteAudio</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">SMHAudioClipPointer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.DeleteAudio" title="Link to this definition">¶</a></dt>
+<dd><p>Delete the audio clip from its <code class="docutils literal notranslate"><span class="pre">id</span></code> and its associated <code class="docutils literal notranslate"><span class="pre">pointer</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.DeleteAllAudio">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DeleteAllAudio</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.DeleteAllAudio" title="Link to this definition">¶</a></dt>
+<dd><p>Delete all audio clips</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.UpdateServerAudio">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateServerAudio</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.UpdateServerAudio" title="Link to this definition">¶</a></dt>
+<dd><p>Notify the server of changes to audio updates.</p>
+<p><strong>This must be called after any functions that add or delete audio</strong></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.Record">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Record</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">frame?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.Record" title="Link to this definition">¶</a></dt>
+<dd><p>Record a keyframe, either at a specified <code class="docutils literal notranslate"><span class="pre">frame</span></code> or on the playhead (<code class="docutils literal notranslate"><span class="pre">SMH.State.Frame</span></code>)</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.Stretch">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Stretch</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">SMHFramePointer</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">amount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><br /><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.Stretch" title="Link to this definition">¶</a><br /></dt>
+<dd><p>Modify the animation length, composed by the selected group of keyframes.</p>
+<p>Two types of behavior happen with stretching / compression</p>
+<ol class="arabic simple">
+<li><p>If stretching, this will replace keyframes outside of the selected keyframes</p></li>
+<li><p>If compressing, this will replace keyframes inside the selected keyframes</p></li>
+</ol>
+<p>The stretching / compression pivot is the first frame.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.Smooth">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Smooth</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">maxPasses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.Smooth" title="Link to this definition">¶</a></dt>
+<dd><p>Apply the arc trick (Eltorro64Rus’s smoothing method) to reduce the jerkiness of a motion</p>
+<p>Smoothing is applied to the animator’s selected <code class="docutils literal notranslate"><span class="pre">frames</span></code>. The <code class="docutils literal notranslate"><span class="pre">maxPasses</span></code> is the smoothing factor:
+higher results in a smoother result.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.UpdateKeyframe">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateKeyframe</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">keyframeId</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">updateData</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">singledata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><br /><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.UpdateKeyframe" title="Link to this definition">¶</a><br /></dt>
+<dd><p>If internal <code class="docutils literal notranslate"><span class="pre">updateData``</span> <span class="pre">for</span> <span class="pre">a</span> <span class="pre">keyframe</span> <span class="pre">of</span> <span class="pre">a</span> <span class="pre">specific</span> </code>keyframeId` has been modified,
+then update the keyframe data on the server realm</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.CopyKeyframe">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CopyKeyframe</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">keyframeId</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.CopyKeyframe" title="Link to this definition">¶</a></dt>
+<dd><p>Copies an array of keyframe data and move them to a new place on the timeline</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.DeleteKeyframe">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DeleteKeyframe</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">keyframeId</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.DeleteKeyframe" title="Link to this definition">¶</a></dt>
+<dd><p>Delete the keyframes of the specified <code class="docutils literal notranslate"><span class="pre">keyframeId</span></code>s</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.StartPlayback">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">StartPlayback</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">startFrame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.StartPlayback" title="Link to this definition">¶</a></dt>
+<dd><p>Signal the playback manager to animate all entities owned by the client</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.StopPlayback">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">StopPlayback</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.StopPlayback" title="Link to this definition">¶</a></dt>
+<dd><p>Signal the playback manager to stop for the client</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.GetServerSaves">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GetServerSaves</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.GetServerSaves" title="Link to this definition">¶</a></dt>
+<dd><p>Get all animation saves owned by the server</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.GetModelList">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GetModelList</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">loadFromClient?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.GetModelList" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of models for an animation save of the specified <code class="docutils literal notranslate"><span class="pre">path</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.GetServerEntities">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GetServerEntities</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.GetServerEntities" title="Link to this definition">¶</a></dt>
+<dd><p>Get all animatable entities owned by the client from the server</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.Load">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Load</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">modelName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">loadFromClient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><br /><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.Load" title="Link to this definition">¶</a><br /></dt>
+<dd><p>Load an animation save from the <code class="docutils literal notranslate"><span class="pre">path</span></code> for an entity specified by its <code class="docutils literal notranslate"><span class="pre">modelName</span></code> (usually the model or its name defined by the Properties menu)</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.GetModelInfo">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GetModelInfo</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">modelName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">loadFromClient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><br /><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.GetModelInfo" title="Link to this definition">¶</a><br /></dt>
+<dd><p>For an animation save defined by <code class="docutils literal notranslate"><span class="pre">path</span></code>, get more information about the entity of <code class="docutils literal notranslate"><span class="pre">modelName</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.Save">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Save</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">isAutoSave?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.Save" title="Link to this definition">¶</a></dt>
+<dd><p>Request the server to save an animation into the <code class="docutils literal notranslate"><span class="pre">path</span></code>.</p>
+<p>If we are using the autosave feature, <code class="docutils literal notranslate"><span class="pre">isAutoSave</span></code> is set to <code class="docutils literal notranslate"><span class="pre">true</span></code>, which
+lets the server handle the autosaved animation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.QuickSave">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">QuickSave</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.QuickSave" title="Link to this definition">¶</a></dt>
+<dd><p>Uses the <code class="docutils literal notranslate"><span class="pre">Save</span></code> function to save an animation to the root</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.RequestUnpack">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RequestUnpack</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.RequestUnpack" title="Link to this definition">¶</a></dt>
+<dd><p>Request the server to remove <code class="docutils literal notranslate"><span class="pre">SMHPackage</span></code> info from every animatable entity</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.RequestPack">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RequestPack</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.RequestPack" title="Link to this definition">¶</a></dt>
+<dd><p>Request the server to pack animation data into an <code class="docutils literal notranslate"><span class="pre">SMHPackage</span></code> for every animatable entity</p>
+<p>Depending on the value of <code class="docutils literal notranslate"><span class="pre">smh_packentity</span></code>, <code class="docutils literal notranslate"><span class="pre">path</span></code> gets stored in the <code class="docutils literal notranslate"><span class="pre">SMHPackage</span></code> of an entity</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.DeleteSave">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DeleteSave</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">isFolder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">deleteFromClient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><br /><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.DeleteSave" title="Link to this definition">¶</a><br /></dt>
+<dd><p>Request the server to delete the animation file. If <code class="docutils literal notranslate"><span class="pre">deleteFromClient</span></code> is <code class="docutils literal notranslate"><span class="pre">true</span></code>, then
+delete the animation file directly</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.SaveAudioSeq">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SaveAudioSeq</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.SaveAudioSeq" title="Link to this definition">¶</a></dt>
+<dd><p>Save the audio clips on the timeline to an audio sequence file (defined as .txt)</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.DeleteAudioSeq">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DeleteAudioSeq</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.DeleteAudioSeq" title="Link to this definition">¶</a></dt>
+<dd><p>Delete the audio sequence file</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.LoadAudioSeq">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LoadAudioSeq</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">setFrameRate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.LoadAudioSeq" title="Link to this definition">¶</a></dt>
+<dd><p>Load the audio sequence file from the <code class="docutils literal notranslate"><span class="pre">path</span></code>.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">setFrameRate</span></code> is <code class="docutils literal notranslate"><span class="pre">true</span></code>, this also sets the frame count and FPS</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.ToggleRendering">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ToggleRendering</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">renderCmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">StartFrame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.ToggleRendering" title="Link to this definition">¶</a></dt>
+<dd><p>Start or stop the rendering process, depending on <code class="docutils literal notranslate"><span class="pre">SMH.Renderer</span></code> state</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">StartFrame</span></code> can be specified to begin the render at a specific frame</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.OpenMenu">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">OpenMenu</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.OpenMenu" title="Link to this definition">¶</a></dt>
+<dd><p>Open the timeline</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.CloseMenu">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CloseMenu</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.CloseMenu" title="Link to this definition">¶</a></dt>
+<dd><p>Close the timeline</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.UpdateState">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateState</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">newState</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">NewState</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">updatePlaybackControls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.UpdateState" title="Link to this definition">¶</a></dt>
+<dd><p>Update <code class="docutils literal notranslate"><span class="pre">SMH.State</span></code> with <code class="docutils literal notranslate"><span class="pre">newState</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.UpdateSettings">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateSettings</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">newSettings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.UpdateSettings" title="Link to this definition">¶</a></dt>
+<dd><p>Update settings for the selected entities</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.UpdateUISetting">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateUISetting</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.UpdateUISetting" title="Link to this definition">¶</a></dt>
+<dd><p>Update the <code class="docutils literal notranslate"><span class="pre">setting</span></code> on the UI to a <code class="docutils literal notranslate"><span class="pre">value</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.SetRendering">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetRendering</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">rendering</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.SetRendering" title="Link to this definition">¶</a></dt>
+<dd><p>Notify the server about the new <code class="docutils literal notranslate"><span class="pre">rendering</span></code> state</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.UpdateGhostState">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateGhostState</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.UpdateGhostState" title="Link to this definition">¶</a></dt>
+<dd><p>Update the server ghost data</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.ApplyEntityName">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ApplyEntityName</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">ent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Entity</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.ApplyEntityName" title="Link to this definition">¶</a></dt>
+<dd><p>Update the entity’s name from the Properties menu for the server</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.UpdateTimeline">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateTimeline</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.UpdateTimeline" title="Link to this definition">¶</a></dt>
+<dd><p>Update the timeline for selected entities</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.RequestModifiers">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RequestModifiers</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.RequestModifiers" title="Link to this definition">¶</a></dt>
+<dd><p>Request new modifier data from the server</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.AddTimeline">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AddTimeline</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.AddTimeline" title="Link to this definition">¶</a></dt>
+<dd><p>Add a timeline</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.RemoveTimeline">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RemoveTimeline</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.RemoveTimeline" title="Link to this definition">¶</a></dt>
+<dd><p>Remove a timeline</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.UpdateModifier">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateModifier</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.UpdateModifier" title="Link to this definition">¶</a></dt>
+<dd><p>Notify the server of an updated modifier state</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.UpdateKeyframeColor">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateKeyframeColor</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Color</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">timeline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.UpdateKeyframeColor" title="Link to this definition">¶</a></dt>
+<dd><p>Give a new keyframe <code class="docutils literal notranslate"><span class="pre">color</span></code> to the server, for a specified <code class="docutils literal notranslate"><span class="pre">timeline</span></code>.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.SetPreviewEntity">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetPreviewEntity</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">loadFromClient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.SetPreviewEntity" title="Link to this definition">¶</a></dt>
+<dd><p>Show the preview entity of the first frame of an animation (specified by <code class="docutils literal notranslate"><span class="pre">path</span></code>), with a given <code class="docutils literal notranslate"><span class="pre">model</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.SpawnEntity">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SpawnEntity</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">loadFromClient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.SpawnEntity" title="Link to this definition">¶</a></dt>
+<dd><p>Spawn an animated entity for an animation save specified by <code class="docutils literal notranslate"><span class="pre">path</span></code> and the animation specified by <code class="docutils literal notranslate"><span class="pre">model</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.SetTimeline">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetTimeline</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Properties</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">presetname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.SetTimeline" title="Link to this definition">¶</a></dt>
+<dd><p>Change the timeline to modify on the server</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.RequestTimelineInfo">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RequestTimelineInfo</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.RequestTimelineInfo" title="Link to this definition">¶</a></dt>
+<dd><p>Get new timeline information of specified <code class="docutils literal notranslate"><span class="pre">name</span></code> from the server</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.RequestWorldData">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RequestWorldData</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.RequestWorldData" title="Link to this definition">¶</a></dt>
+<dd><p>Get world keyframe data from the server for a specified <code class="docutils literal notranslate"><span class="pre">frame</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.UpdateWorld">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateWorld</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.UpdateWorld" title="Link to this definition">¶</a></dt>
+<dd><p>Update world keyframe data on the server</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.StartPhysicsRecord">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">StartPhysicsRecord</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">framecount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">entities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">&lt;</span></span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Entity</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">&gt;</span></span><br /><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.StartPhysicsRecord" title="Link to this definition">¶</a><br /></dt>
+<dd><p>Tell the server to start its physics recorder</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.StopPhysicsRecord">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">StopPhysicsRecord</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.StopPhysicsRecord" title="Link to this definition">¶</a></dt>
+<dd><p>Tell the server to stop its physics recorder</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.ClientController.RequestNewSession">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RequestNewSession</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.ClientController.RequestNewSession" title="Link to this definition">¶</a></dt>
+<dd><p>Begin a new slate. Also tell the server to remove everything</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">StopMotionHelper</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="design.html">Technical Design</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Client Controller</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lua-SMH.ClientController"><code class="docutils literal notranslate"><span class="pre">ClientController</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ui.html">User Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server-controller.html">Server Controller</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="design.html" title="previous chapter">Technical Design</a></li>
+      <li>Next: <a href="ui.html" title="next chapter">User Interface</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, vlazed, PenolAkushari.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/client-controller.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

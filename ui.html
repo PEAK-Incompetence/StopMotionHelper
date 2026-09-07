@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>User Interface &#8212; StopMotionHelper  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <link rel="stylesheet" type="text/css" href="_static/lua.css" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Server Controller" href="server-controller.html" />
+    <link rel="prev" title="Client Controller" href="client-controller.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="user-interface">
+<h1>User Interface<a class="headerlink" href="#user-interface" title="Link to this heading">¶</a></h1>
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-SMH.UI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UI</span></span><a class="headerlink" href="#lua-SMH.UI" title="Link to this definition">¶</a></dt>
+<dd><p>[CLIENT]</p>
+<p>A user interface module which handles user events and sends them to the <code class="docutils literal notranslate"><span class="pre">SMH.ClientController</span></code></p>
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.Open">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Open</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.Open" title="Link to this definition">¶</a></dt>
+<dd><p>Open the timeline and all other SMH UI</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.Close">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Close</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.Close" title="Link to this definition">¶</a></dt>
+<dd><p>Close the timeline</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.ScrubAudio">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ScrubAudio</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">lastFrame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">sampleTime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.ScrubAudio" title="Link to this definition">¶</a></dt>
+<dd><p>Play audio clips when dragging the frame pointer</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetFrame">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetFrame</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetFrame" title="Link to this definition">¶</a></dt>
+<dd><p>Move the playhead to a frame</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.IsFrameKeyframe">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IsFrameKeyframe</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><a class="headerlink" href="#lua-SMH.UI.IsFrameKeyframe" title="Link to this definition">¶</a></dt>
+<dd><p>Check if a frame contains a keyframe</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetKeyframes">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetKeyframes</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">keyframes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">isreceiving?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetKeyframes" title="Link to this definition">¶</a></dt>
+<dd><p>Populate the timeline with keyframes from the server</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.UpdateKeyframe">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateKeyframe</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">keyframe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">FrameData</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.UpdateKeyframe" title="Link to this definition">¶</a></dt>
+<dd><p>Update a keyframe’s data, including its easing controls</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.DeleteKeyframe">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DeleteKeyframe</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">keyframeId</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.DeleteKeyframe" title="Link to this definition">¶</a></dt>
+<dd><p>Delete a keyframe using its <code class="docutils literal notranslate"><span class="pre">keyframeId</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetOffsets">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetOffsets</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">SMHFramePointer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetOffsets" title="Link to this definition">¶</a></dt>
+<dd><p>Constrain the frame pointer to offsets</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.MoveChildren">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MoveChildren</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">SMHFramePointer</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.MoveChildren" title="Link to this definition">¶</a></dt>
+<dd><p>Moves keyframes along with the frame pointer</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.ClearFrames">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ClearFrames</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.ClearFrames" title="Link to this definition">¶</a></dt>
+<dd><p>i don’t think i need this</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.ShiftSelect">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ShiftSelect</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">SMHFramePointer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.ShiftSelect" title="Link to this definition">¶</a></dt>
+<dd><p>Select keyframes within a range</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SelectAll">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SelectAll</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SelectAll" title="Link to this definition">¶</a></dt>
+<dd><p>Select all keyframes</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.ToggleSelect">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ToggleSelect</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">SMHFramePointer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.ToggleSelect" title="Link to this definition">¶</a></dt>
+<dd><p>Toggle the selection of a keyframe</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.GetSelected">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GetSelected</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="p"><span class="pre">[</span></span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">SMHFramePointer</span></code><span class="p"><span class="pre">}</span></span><a class="headerlink" href="#lua-SMH.UI.GetSelected" title="Link to this definition">¶</a></dt>
+<dd><p>Get selected keyframes</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetSelectedEntity">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetSelectedEntity</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">entities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Set</span></code><span class="p"><span class="pre">&lt;</span></span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Entity</span></code><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetSelectedEntity" title="Link to this definition">¶</a></dt>
+<dd><p>Set the selected entity</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetServerSaves">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetServerSaves</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">folders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">saves</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetServerSaves" title="Link to this definition">¶</a></dt>
+<dd><p>Set list of saves to display on the save and load menus</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetModelList">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetModelList</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">models</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">map?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetModelList" title="Link to this definition">¶</a></dt>
+<dd><p>Set the model list in the load menu for a given animation file</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetEntityList">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetEntityList</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">entities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">&lt;</span></span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Player</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">SMHEntity</span></code><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetEntityList" title="Link to this definition">¶</a></dt>
+<dd><p>Set the entity list in the properties menu</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetModelName">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetModelName</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetModelName" title="Link to this definition">¶</a></dt>
+<dd><p>Set the model name to load from in the load menu</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.UpdateName">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateName</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.UpdateName" title="Link to this definition">¶</a></dt>
+<dd><p>Update the name of the selected entity</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SaveExistsWarning">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SaveExistsWarning</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SaveExistsWarning" title="Link to this definition">¶</a></dt>
+<dd><p>If a save exists, display the warning along with any entities that may be lost in the operation</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.AppendWindow">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AppendWindow</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">savenames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">gamenames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.AppendWindow" title="Link to this definition">¶</a></dt>
+<dd><p>Show the appending window, with list of entities in save and list of entities in game</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savenames</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p">[</span><span class="p">]</span>) – List of entity names in the save file</p></li>
+<li><p><strong>gamenames</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p">[</span><span class="p">]</span>) – List of entity names in game</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.AddSaveFile">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AddSaveFile</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.AddSaveFile" title="Link to this definition">¶</a></dt>
+<dd><p>Add a save to the save menu</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.RemoveSaveFile">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RemoveSaveFile</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">isFolder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.RemoveSaveFile" title="Link to this definition">¶</a></dt>
+<dd><p>Remove the save from the save menu</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.InitModifiers">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">InitModifiers</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.InitModifiers" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the timeline modifiers in the properties menu</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.RefreshTimelineSettings">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RefreshTimelineSettings</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.RefreshTimelineSettings" title="Link to this definition">¶</a></dt>
+<dd><p>Re-update the Properties timeline settings</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.UpdateUISetting">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateUISetting</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.UpdateUISetting" title="Link to this definition">¶</a></dt>
+<dd><p>Update a setting with a new value</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.UpdateUISettings">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateUISettings</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Settings</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.UpdateUISettings" title="Link to this definition">¶</a></dt>
+<dd><p>Update the settings</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetTimeline">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetTimeline</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">timeline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">TimelineSetting</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetTimeline" title="Link to this definition">¶</a></dt>
+<dd><p>Set to a new <code class="docutils literal notranslate"><span class="pre">timeline</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.UpdateState">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateState</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">newState</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">State</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">updatePlaybackControls?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.UpdateState" title="Link to this definition">¶</a></dt>
+<dd><p>Update the playback and audio UI state.</p>
+<p>modified for loading playback length and rate from audio sequence save</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.UpdateModifier">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateModifier</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">timelineinfo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">TimelineSetting</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">changed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.UpdateModifier" title="Link to this definition">¶</a></dt>
+<dd><p>Update modifier settings and what modifiers have changed in the properties menu</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.UpdateKeyColor">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpdateKeyColor</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">timelineinfo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">TimelineSetting</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.UpdateKeyColor" title="Link to this definition">¶</a></dt>
+<dd><p>Update the keyframe color for the timeline</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.PaintKeyframes">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PaintKeyframes</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Color</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.PaintKeyframes" title="Link to this definition">¶</a></dt>
+<dd><p>Set the colors of the keyframes</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetUsingWorld">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetUsingWorld</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">set?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetUsingWorld" title="Link to this definition">¶</a></dt>
+<dd><p>Store world setting in Properties menu.</p>
+<p>This hides the easing controls if we are using World Keyframes (<code class="docutils literal notranslate"><span class="pre">set</span></code> is true).
+Otherwise, it hides the World Keyframe UI in the properties menu.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.SetWorldData">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SetWorldData</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">console</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">push</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">release</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.SetWorldData" title="Link to this definition">¶</a></dt>
+<dd><p>Set world keyframe data in the properties menu</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.GetKeyframesOnFrame">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GetKeyframesOnFrame</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">integer</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">?</span></span><a class="headerlink" href="#lua-SMH.UI.GetKeyframesOnFrame" title="Link to this definition">¶</a></dt>
+<dd><p>Get all keyframes on a <code class="docutils literal notranslate"><span class="pre">frame</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.CreateAudioClipPointer">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CreateAudioClipPointer</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">audioClip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">AudioClip</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.CreateAudioClipPointer" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new audio clip pointer from the <code class="docutils literal notranslate"><span class="pre">audioClip</span></code></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.DeleteAudioClipPointer">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DeleteAudioClipPointer</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">pointer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">SMHAudioClipPointer</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.DeleteAudioClipPointer" title="Link to this definition">¶</a></dt>
+<dd><p>Delete an audio clip pointer on the timeline</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-SMH.UI.DeleteAllAudioClipPointers">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DeleteAllAudioClipPointers</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-SMH.UI.DeleteAllAudioClipPointers" title="Link to this definition">¶</a></dt>
+<dd><p>Deletes all audio clip pointers on the timeline</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">StopMotionHelper</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="design.html">Technical Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="client-controller.html">Client Controller</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">User Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lua-SMH.UI"><code class="docutils literal notranslate"><span class="pre">UI</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="server-controller.html">Server Controller</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="client-controller.html" title="previous chapter">Client Controller</a></li>
+      <li>Next: <a href="server-controller.html" title="next chapter">Server Controller</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, vlazed, PenolAkushari.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/ui.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
