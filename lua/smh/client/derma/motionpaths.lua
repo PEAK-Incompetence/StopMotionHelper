@@ -1,5 +1,5 @@
----@class SMHMotionPaths: DFrame
----@field BaseClass DFrame
+--- @class SMHMotionPaths: DFrame
+--- @field BaseClass DFrame
 local PANEL = {}
 
 local PRECISION = 10000
@@ -11,41 +11,41 @@ function PANEL:Init()
         local slider = vgui.Create("DNumSlider", self)
 
         -- overriding default functions as it used to clamp result between mix and max, and we kinda want to go over the max if need be
-        ---@param panel DNumSlider
-        ---@param val number
+        --- @param panel DNumSlider
+        --- @param val number
         slider.SetValue = function(panel, val)
 
             if ( panel:GetValue() == val ) then return end
 
-            ---@diagnostic disable-next-line
+            --- @diagnostic disable-next-line
             panel.Scratch:SetValue( val )
 
             panel:ValueChanged( panel:GetValue() )
 
         end
 
-        ---@param panel DNumSlider
-        ---@param val number
+        --- @param panel DNumSlider
+        --- @param val number
         slider.ValueChanged = function(panel, val)
 
-            ---@diagnostic disable-next-line
+            --- @diagnostic disable-next-line
             if ( panel.TextArea != vgui.GetKeyboardFocus() ) then
-                ---@diagnostic disable-next-line
+                --- @diagnostic disable-next-line
                 panel.TextArea:SetValue( panel.Scratch:GetTextValue() )
             end
 
-            ---@diagnostic disable-next-line
+            --- @diagnostic disable-next-line
             panel.Slider:SetSlideX( panel.Scratch:GetFraction( val ) )
 
             if component then
-                ---@diagnostic disable-next-line
+                --- @diagnostic disable-next-line
                 local currentOffset = GetConVar(self.m_strConVar)
                 local offsets = currentOffset:GetString():Split(" ")
                 offsets[component] = math.floor(val * PRECISION) / PRECISION
                 self:ConVarChanged(table.concat(offsets, " "))
             end
 
-            ---@diagnostic disable-next-line
+            --- @diagnostic disable-next-line
             panel:OnValueChanged( val )
 
         end
@@ -108,10 +108,10 @@ function PANEL:Init()
 
 end
 
----Initialize a starting position. Every call to this function will add to the pos variable 
----@param pos number Initial position
----@param offset number
----@return fun(panel: Panel)
+--- Initialize a starting position. Every call to this function will add to the pos variable 
+--- @param pos number Initial position
+--- @param offset number
+--- @return fun(panel: Panel)
 local function setPosition(pos, offset)
     return function(panel)
         panel:SetPos(5, pos)
@@ -134,7 +134,7 @@ function PANEL:PerformLayout(width, height)
 
     local setPos = setPosition(25, 30)
 
-    ---@diagnostic disable-next-line
+    --- @diagnostic disable-next-line
     self.BaseClass.PerformLayout(self, width, height)
 
     setPos(self.PathRange)

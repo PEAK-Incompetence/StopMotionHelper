@@ -1,5 +1,5 @@
----@class SMHKeyframeSettings: DFrame
----@field BaseClass DFrame
+--- @class SMHKeyframeSettings: DFrame
+--- @field BaseClass DFrame
 local PANEL = {}
 
 function PANEL:Init()
@@ -14,7 +14,7 @@ function PANEL:Init()
 
     local function CreateSlider(label, min, max, default, func)
         local slider = vgui.Create("DNumSlider", self)
-        ---@diagnostic disable: undefined-field
+        --- @diagnostic disable: undefined-field
         -- overriding default functions as it used to clamp result between mix and max, and we kinda want to go over the max if need be
         slider.SetValue = function(self, val)
 
@@ -46,7 +46,7 @@ function PANEL:Init()
         slider.OnValueChanged = func
         slider:GetTextArea().OnValueChange = func
 
-        ---@diagnostic enable
+        --- @diagnostic enable
 
         return slider
     end
@@ -115,10 +115,12 @@ function PANEL:Init()
 
 end
 
----Initialize a starting position. Every call to this function will add to the pos variable 
----@param pos number Initial position
----@param offset number
----@return fun(panel: Panel)
+--- Initialize a starting position for the x-coordinate. 
+--- 
+--- Every call to this function will add to the pos variable 
+--- @param pos number Initial position
+--- @param offset number
+--- @return fun(panel: Panel)
 local function setPositionX(pos, height, offset)
     return function(panel)
         panel:SetPos(pos, height)
@@ -126,6 +128,12 @@ local function setPositionX(pos, height, offset)
     end
 end
 
+--- Initialize a starting position for the y-coordinate. 
+--- 
+--- Every call to this function will add to the pos variable 
+--- @param pos number Initial position
+--- @param offset number
+--- @return fun(panel: Panel)
 local function setPositionY(pos, height, offset)
     return function(panel)
         panel:SetPos(height, pos)
@@ -139,7 +147,7 @@ function PANEL:PerformLayout(width, height)
     local topButtonWidth = width / 3 - topMargin * 0.75
     local setButtonPos = setPositionX(topMargin, height * 0.275, topButtonWidth)
 
-    ---@diagnostic disable-next-line
+    --- @diagnostic disable-next-line
     self.BaseClass.PerformLayout(self, width, height)
 
     setButtonPos(self.SelectLeftButton)

@@ -1,12 +1,12 @@
 ---@class AudioClipManager
 local MGR = {}
 
----@type {[string]: Wave[]}
+--- @type {[string]: Wave[]}
 local Waveforms = {}
 local WAVEGENERATOR_ID = "SMH_WaveformGenerator_"
 local SAMPLE_INTERVAL = 0.001
 
----@param path string
+--- @param path string
 local function GenerateWaveform(path)
 	if Waveforms[path] then
 		return Waveforms[path]

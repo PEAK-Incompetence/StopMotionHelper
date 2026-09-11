@@ -1,4 +1,4 @@
----@class SMHTooltip: DLabel
+--- @class SMHTooltip: DLabel
 local PANEL = {}
 
 surface.CreateFont( "smh_tooltip", {
@@ -31,7 +31,7 @@ function PANEL:Init()
 
 end
 
----@param entityName string
+--- @param entityName string
 function PANEL:SetTooltip(entityName)
     self:SetVisible(#entityName > 0)
     self:SetText(entityName)

@@ -1,4 +1,8 @@
 if not SMH then
+    --- [SHARED]
+    --- 
+    --- Stop Motion Helper Singleton
+    --- @class SMH
     SMH = {}
 end
 
@@ -110,6 +114,7 @@ end
 cleanup.Register("smhentity")
 CreateConVar("sbox_maxsmhentity", 20, FCVAR_NOTIFY)
 
+include("shared/easing.lua")
 include("shared/saves.lua")
 include("shared/tablesplit.lua")
 include("shared/audioseq_saves.lua")

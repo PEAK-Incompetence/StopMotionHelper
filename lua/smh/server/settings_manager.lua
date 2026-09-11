@@ -1,26 +1,29 @@
 
----@type {[Player]: Settings}
+--- @type {[Player]: Settings}
 local PlayerSettings = {}
 
+--- [SERVER]
+--- 
+--- @class SMH.SettingsManager
 local MGR = {}
 
----@param player Player
----@param settings Settings
+--- @param player Player
+--- @param settings Settings
 function MGR.StorePlayerSettings(player, settings)
     PlayerSettings[player] = settings
 end
 
----@param player Player
----@return Settings
+--- @param player Player
+--- @return Settings
 function MGR.GetPlayerSettings(player)
     PlayerSettings[player] = PlayerSettings[player] or {}
     return PlayerSettings[player]
 end
 
----@param settings Settings
----@param name string
----@param entity Entity
----@return any
+--- @param settings Settings
+--- @param name string
+--- @param entity Entity
+--- @return any
 function MGR.CheckSetting(settings, name, entity)
     if IsValid(entity) and settings[entity] then
         return settings[entity][name]
@@ -29,9 +32,9 @@ function MGR.CheckSetting(settings, name, entity)
     end
 end
 
----@param settings Settings
----@param entity Entity
----@return Settings
+--- @param settings Settings
+--- @param entity Entity
+--- @return Settings
 function MGR.GetSetting(settings, entity)
     if IsValid(entity) and settings[entity] then
         return settings[entity]

@@ -1,5 +1,7 @@
 local AUD = {}
 
+--- @param id integer
+---@return IGModAudioChannel
 local function GetAudioChannelByID(id)
 	if SMH.AudioClipData.AudioClips[id] then
 		return SMH.AudioClipData.AudioClips[id].AudioChannel
@@ -15,6 +17,8 @@ end
 
 // Audio channel start/stop
 
+--- @param id integer
+--- @param startTime number?
 function AUD.Play(id, startTime)
 	local audioChannel = GetAudioChannelByID(id)
 	local audioData = GetAudioClipData(id)

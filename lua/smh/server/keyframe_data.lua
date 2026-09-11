@@ -1,11 +1,11 @@
----Legacy keyframe getter
----TODO: Make `WalkBetweenKeyframes` behavior the same as `GetBetweenKeyframes` 
----@param keyframes FrameData[]
----@param frame integer
----@param ignoreCurrentFrame boolean
----@param modname Modifiers
----@return FrameData? prevKeyframe
----@return FrameData? nextKeyframe
+--- Legacy keyframe getter
+--- TODO: Make `WalkBetweenKeyframes` behavior the same as `GetBetweenKeyframes` 
+--- @param keyframes FrameData[]
+--- @param frame integer
+--- @param ignoreCurrentFrame boolean
+--- @param modname Modifiers
+--- @return FrameData? prevKeyframe
+--- @return FrameData? nextKeyframe
 function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
     if ignoreCurrentFrame == nil then
         ignoreCurrentFrame = false
@@ -40,15 +40,15 @@ function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
     return prevKeyframe, nextKeyframe
 end
 
----Playback performant keyframe getter
----@param keyframes FrameData[]
----@param frame integer
----@param ignoreCurrentFrame boolean
----@param modname Modifiers
----@param delta number
----@param start FrameData?
----@return FrameData? prevKeyframe
----@return FrameData? nextKeyframe
+--- Playback performant keyframe getter
+--- @param keyframes FrameData[]
+--- @param frame integer
+--- @param ignoreCurrentFrame boolean
+--- @param modname string
+--- @param delta number
+--- @param start FrameData?
+--- @return FrameData? prevKeyframe
+--- @return FrameData? nextKeyframe
 function SMH.WalkBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta, start)
     if ignoreCurrentFrame == nil then
         ignoreCurrentFrame = false
@@ -94,14 +94,14 @@ end
 local GetBetweenKeyframes = SMH.GetBetweenKeyframes
 local WalkBetweenKeyframes = SMH.WalkBetweenKeyframes
 
----@param keyframes FrameData[]
----@param frame integer
----@param ignoreCurrentFrame boolean
----@param modname Modifiers
----@param delta number
----@return FrameData? prevKeyframe
----@return FrameData? nextKeyframe
----@return integer
+--- @param keyframes FrameData[]
+--- @param frame integer
+--- @param ignoreCurrentFrame boolean
+--- @param modname string
+--- @param delta number
+--- @return FrameData? prevKeyframe
+--- @return FrameData? nextKeyframe
+--- @return integer
 function SMH.GetClosestKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta)
     local prevKeyframe, nextKeyframe = WalkBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta)
 
@@ -109,8 +109,8 @@ function SMH.GetClosestKeyframes(keyframes, frame, ignoreCurrentFrame, modname, 
         return nil, nil, 0
     end
 
-    ---@cast prevKeyframe FrameData
-    ---@cast nextKeyframe FrameData
+    --- @cast prevKeyframe FrameData
+    --- @cast nextKeyframe FrameData
 
     local lerpMultiplier = 0
     if prevKeyframe.Frame ~= nextKeyframe.Frame then
@@ -121,14 +121,14 @@ function SMH.GetClosestKeyframes(keyframes, frame, ignoreCurrentFrame, modname, 
     return prevKeyframe, nextKeyframe, lerpMultiplier
 end
 
----@param player Player
----@param entity Entity
+--- @param player Player
+--- @param entity Entity
 function SMH.SortKeyframes(player, entity)
     local keyframes = SMH.KeyframeData.Players[player].Entities[entity]
     if keyframes then
         table.sort(keyframes, function (a, b)
-            ---@cast a FrameData
-            ---@cast b FrameData
+            --- @cast a FrameData
+            --- @cast b FrameData
             
             a.Previous = nil
             a.Next = nil
@@ -138,7 +138,7 @@ function SMH.SortKeyframes(player, entity)
         end)
     end
 
-    ---@type FrameData
+    --- @type FrameData
     local prevKeyframe
     for i, keyframe in ipairs(keyframes) do
         keyframe.Previous = prevKeyframe
@@ -149,13 +149,13 @@ function SMH.SortKeyframes(player, entity)
     end
 end
 
----@class KeyframeData
+--- @class KeyframeData
 local META = {}
 META.__index = META
 
----@param player Player
----@param entity Entity
----@return FrameData
+--- @param player Player
+--- @param entity Entity
+--- @return FrameData
 function META:New(player, entity)
     local keyframe = {
         ID = self.NextKeyframeId,
@@ -185,8 +185,8 @@ function META:New(player, entity)
     return keyframe
 end
 
----@param player Player
----@param id integer
+--- @param player Player
+--- @param id integer
 function META:Delete(player, id)
     if not self.Players[player] or not self.Players[player].Keyframes[id] then
         return
@@ -201,8 +201,8 @@ function META:Delete(player, id)
     self.Players[player].Keyframes[id] = nil
 end
 
----@type KeyframeData
----@diagnostic disable-next-line
+--- @type KeyframeData
+--- @diagnostic disable-next-line
 SMH.KeyframeData = {
     NextKeyframeId = 0,
     Players = {},

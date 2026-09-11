@@ -10,16 +10,16 @@ local function doublePrecision(x)
     return math.floor(x * 100)
 end
 
----@param framecount number
----@param IDs table<integer, number>
----@param ents table<number, Entity>
----@param Frame table
----@param In table
----@param Out table
----@param ModCount table
----@param Modifiers table
----@param loop integer?
----@return integer leftover Leftover frames
+--- @param framecount number
+--- @param IDs table<integer, number>
+--- @param ents table<number, Entity>
+--- @param Frame table
+--- @param In table
+--- @param Out table
+--- @param ModCount table
+--- @param Modifiers table
+--- @param loop integer?
+--- @return integer leftover Leftover frames
 local function SendKeyframes(framecount, IDs, ents, Frame, In, Out, ModCount, Modifiers, loop)
     if not loop then loop = 0 end
 
@@ -31,19 +31,23 @@ local function SendKeyframes(framecount, IDs, ents, Frame, In, Out, ModCount, Mo
         net.WriteEntity(ents[i])
         net.WriteUInt(Frame[i], INT_BITCOUNT)
         net.WriteUInt(ModCount[i], INT_BITCOUNT)
+
+        local modifierRow = Modifiers[i] or {}
+        local inRow = In[i] or {}
+        local outRow = Out[i] or {}
         for j = 1, ModCount[i] do
-            net.WriteUInt(SMH.ModifierInfo.Ids[Modifiers[i][j]], MAX_MODIFIER_BITS)
-            net.WriteUInt(doublePrecision(In[i][j]), DECIMAL_BITS)
-            net.WriteUInt(doublePrecision(Out[i][j]), DECIMAL_BITS)
+            net.WriteUInt(SMH.ModifierInfo.Ids[modifierRow[j]], MAX_MODIFIER_BITS)
+            net.WriteUInt(doublePrecision(inRow[j]), DECIMAL_BITS)
+            net.WriteUInt(doublePrecision(outRow[j]), DECIMAL_BITS)
         end
     end
     return framecount - KFRAMES_PER_MSG
 end
 
----@param Timelines integer
----@param KeyColor table<integer, Color>
----@param ModCount table
----@param Modifiers table
+--- @param Timelines integer
+--- @param KeyColor table<integer, Color>
+--- @param ModCount table
+--- @param Modifiers table
 local function SendProperties(Timelines, KeyColor, ModCount, Modifiers)
     net.WriteUInt(Timelines, INT_BITCOUNT)
     for i=1, Timelines do
@@ -55,7 +59,7 @@ local function SendProperties(Timelines, KeyColor, ModCount, Modifiers)
     end
 end
 
----@return TimelineSetting
+--- @return TimelineSetting
 local function ReceiveProperties()
     local Timelines = SMH.TableSplit.StartAProperties(net.ReadUInt(INT_BITCOUNT))
     for i=1, Timelines do
@@ -67,15 +71,15 @@ local function ReceiveProperties()
     return SMH.TableSplit.GetProperties()
 end
 
----@param player Player
----@param framecount integer
----@param IDs table
----@param entities table<integer, Entity>
----@param Frame integer[]
----@param In number[]
----@param Out number[]
----@param ModCount table
----@param Modifiers table
+--- @param player Player
+--- @param framecount integer
+--- @param IDs table
+--- @param entities table<integer, Entity>
+--- @param Frame integer[]
+--- @param In number[]
+--- @param Out number[]
+--- @param ModCount table
+--- @param Modifiers table
 local function SendLeftoverKeyframes(player, framecount, IDs, entities, Frame, In, Out, ModCount, Modifiers)
     if framecount < 0 then return end
 
@@ -90,7 +94,7 @@ local function SendLeftoverKeyframes(player, framecount, IDs, entities, Frame, I
     end
 end
 
----@param player Player
+--- @param player Player
 local function SendSaves(player)
     local dirs, files, path = SMH.Saves.ListFiles(player)
 
@@ -111,7 +115,6 @@ local function SendSaves(player)
     net.Send(player)
 end
 
----@type Receiver
 local function SetFrame(msgLength, player)
     local newFrame = net.ReadUInt(INT_BITCOUNT)
     local settings = net.ReadTable()
@@ -127,10 +130,9 @@ local function SetFrame(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function RequestDefaultPoseResponse(msgLength, player)
     local modelPath = net.ReadString()
-    ---@type PoseTree
+    --- @type PoseTree
     local tree = {}
     local nodeCount = net.ReadUInt(8)
     for i = 0, nodeCount - 1 do
@@ -153,10 +155,9 @@ local function RequestDefaultPoseResponse(msgLength, player)
     SMH.GhostsManager.SetTree(modelPath, tree)
 end
 
----@type Receiver
 local function SelectEntity(msgLength, player)
     local entity = net.ReadEntity()
-    ---@cast entity SMHEntity
+    --- @cast entity SMHEntity
     local entities = {}
 
     if entity.SMHGhost then
@@ -193,7 +194,6 @@ local function SelectEntity(msgLength, player)
     SendLeftoverKeyframes(player, framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers)
 end
 
----@type Receiver
 local function CreateKeyframe(msgLength, player)
     local entities = {}
     for i = 1, net.ReadUInt(INT_BITCOUNT) do
@@ -228,8 +228,8 @@ local function CreateKeyframe(msgLength, player)
     SMH.GhostsManager.UpdateKeyframe(player)
 end
 
----@param player Player
----@param keyframes FrameData[]
+--- @param player Player
+--- @param keyframes FrameData[]
 local function flushPlaybackCacheFromKeyframes(player, keyframes)
     local flushedEnts = {}
     for _, keyframe in ipairs(keyframes) do
@@ -240,10 +240,9 @@ local function flushPlaybackCacheFromKeyframes(player, keyframes)
     end
 end
 
----@type {[Player]: BufferDatum}
+--- @type {[Player]: BufferDatum}
 local bufferData = {}
 
----@type Receiver
 local function UpdateKeyframe(msgLength, player)
     if not bufferData[player] then
         bufferData[player] = {Ids = {}, UpdateData = {}, Timeline = 1}
@@ -269,7 +268,6 @@ local function UpdateKeyframe(msgLength, player)
     bufferData[player].Timeline = net.ReadUInt(INT_BITCOUNT)
 end
 
----@type Receiver
 local function UpdateKeyframeExecute(msgLength, player)
     local keyframes = SMH.KeyframeManager.Update(player, bufferData[player].Ids, bufferData[player].UpdateData, bufferData[player].Timeline)
 
@@ -287,7 +285,6 @@ local function UpdateKeyframeExecute(msgLength, player)
     SMH.GhostsManager.UpdateKeyframe(player)
 end
 
----@type Receiver
 local function CopyKeyframe(msgLength, player)
     if not bufferData[player] then
         bufferData[player] = {Ids = {}, Frames = {}, Timeline = 1}
@@ -303,7 +300,6 @@ local function CopyKeyframe(msgLength, player)
     bufferData[player].Timeline = net.ReadUInt(INT_BITCOUNT)
 end
 
----@type Receiver
 local function CopyKeyframeExecute(msgLength, player)
     local keyframes = SMH.KeyframeManager.Copy(player, bufferData[player].Ids, bufferData[player].Frames, bufferData[player].Timeline)
     
@@ -321,7 +317,6 @@ local function CopyKeyframeExecute(msgLength, player)
     SMH.GhostsManager.UpdateKeyframe(player)
 end
 
----@type Receiver
 local function DeleteKeyframe(msgLength, player)
     local count, timeline = net.ReadUInt(INT_BITCOUNT), net.ReadUInt(INT_BITCOUNT)
 
@@ -338,7 +333,6 @@ local function DeleteKeyframe(msgLength, player)
     end
 end
 
----@type Receiver
 local function StartPlayback(msgLength, player)
     local startFrame = net.ReadUInt(INT_BITCOUNT)
     local endFrame = net.ReadUInt(INT_BITCOUNT)
@@ -359,7 +353,6 @@ local function StartPlayback(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function StopPlayback(msgLength, player)
     SMH.PlaybackManager.StopPlayback(player)
 
@@ -374,7 +367,6 @@ local function StopPlayback(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function UpdateGhostState(msgLength, player)
     local settings = net.ReadTable()
     local timeline = SMH.PropertiesManager.GetTimelinesInfo(player)
@@ -386,12 +378,10 @@ local function UpdateGhostState(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function GetServerSaves(msgLength, player)
     SendSaves(player)
 end
 
----@type Receiver
 local function GetModelList(msgLength, player)
     local path = net.ReadString()
 
@@ -406,7 +396,6 @@ local function GetModelList(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function GetServerEntities(msgLength, player)
     local entities, keys, count = SMH.TableSplit.DTable(SMH.PropertiesManager.GetAllEntitiesNames(player))
 
@@ -419,12 +408,11 @@ local function GetServerEntities(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function Load(msgLength, player)
     local entity = net.ReadEntity()
     local loadFromClient = net.ReadBool()
 
-    ---@cast entity SMHEntity
+    --- @cast entity SMHEntity
 
     local serializedKeyframes, entityProperties, isWorld, settings
     if loadFromClient then
@@ -438,8 +426,8 @@ local function Load(msgLength, player)
 
     if isWorld then entity = player end
 
-    ---@cast serializedKeyframes SMHFile
-    ---@cast entityProperties Properties
+    --- @cast serializedKeyframes SMHFile
+    --- @cast entityProperties Properties
 
     SMH.PropertiesManager.AddEntity(player, {entity})
     SMH.KeyframeManager.ImportSave(player, entity, serializedKeyframes, entityProperties)
@@ -458,14 +446,13 @@ local function Load(msgLength, player)
     SMH.PlaybackManager.UpdateCacheFor(player, entity)
 end
 
----@type Receiver
 local function GetModelInfo(msgLength, player)
     local path = net.ReadString()
     local entityName = net.ReadString()
 
     local modelName, class = SMH.Saves.GetModelName(path, entityName, player)
-    ---@cast modelName string
-    ---@cast class string
+    --- @cast modelName string
+    --- @cast class string
 
     net.Start(SMH.MessageTypes.GetModelInfoResponse)
     net.WriteString(modelName)
@@ -473,7 +460,6 @@ local function GetModelInfo(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function RequestSave(msgLength, player)
     local saveToClient = net.ReadBool()
     local isFolder = net.ReadBool()
@@ -526,7 +512,6 @@ local function RequestSave(msgLength, player)
     end
 end
 
----@type Receiver
 local function Save(msgLength, player)
     local path = net.ReadString()
     local isAutoSave = net.ReadBool()
@@ -544,7 +529,6 @@ local function Save(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function RequestGoToFolder(msgLength, player)
     local toClient = net.ReadBool()
     local path = net.ReadString()
@@ -559,7 +543,6 @@ local function RequestGoToFolder(msgLength, player)
     SendSaves(player)
 end
 
----@type Receiver
 local function RequestAppend(msgLength, player)
     local path = net.ReadString()
 
@@ -579,7 +562,6 @@ local function RequestAppend(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function Append(msgLength, player)
     local path = net.ReadString()
     local settings = net.ReadTable()
@@ -605,14 +587,12 @@ local function Append(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function RequestUnpack(msgLength, player)
     for _, entity in ipairs(ents.GetAll()) do
         duplicator.ClearEntityModifier(entity, "SMHPackage")
     end
 end
 
----@type Receiver
 local function RequestPack(msgLength, player)
     RequestUnpack(msgLength, player)
 
@@ -645,7 +625,6 @@ local function RequestPack(msgLength, player)
     return SMH.Packer.NotifyPack(player, path)
 end
 
----@type Receiver
 local function DeleteSave(msgLength, player)
     local isFolder = net.ReadBool()
     local path = net.ReadString()
@@ -663,25 +642,22 @@ local function DeleteSave(msgLength, player)
 
 end
 
----@type Receiver
 local function SetRendering(msgLength, player)
     local rendering = net.ReadBool()
     SMH.GhostsManager.IsRendering = rendering
 end
 
----@type Receiver
 local function ApplyEntityName(msgLength, player)
     local ent = net.ReadEntity()
     local name = net.ReadString()
     if not IsValid(ent) or not name then return end
-    name = SMH.PropertiesManager.SetName(player, ent, name) ---@diagnostic disable-line
-    ---@cast name string
+    name = SMH.PropertiesManager.SetName(player, ent, name) --- @diagnostic disable-line
+    --- @cast name string
     net.Start(SMH.MessageTypes.ApplyEntityNameResponse)
     net.WriteString(name)
     net.Send(player)
 end
 
----@type Receiver
 local function UpdateTimeline(msgLength, player)
     local entities = {}
     for i = 1, net.ReadUInt(INT_BITCOUNT) do
@@ -698,7 +674,6 @@ local function UpdateTimeline(msgLength, player)
     SendLeftoverKeyframes(player, framecount, IDs, ents, Frame, In, Out, KModCount, KModifiers)
 end
 
----@type Receiver
 local function RequestModifiers(msgLength, player)
     local list = {}
 
@@ -712,7 +687,6 @@ local function RequestModifiers(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function SetTimeline(msgLength, player)
     local isdefault = net.ReadBool()
     local timeline
@@ -728,16 +702,15 @@ local function SetTimeline(msgLength, player)
     local timelineinfo = SMH.PropertiesManager.GetTimelinesInfo(player)
     local Timelines, KeyColor, ModCount, Modifiers = SMH.TableSplit.DProperties(timelineinfo)
 
-    ---@cast Timelines integer
-    ---@cast KeyColor Color
-    ---@cast ModCount integer[]
-    ---@cast Modifiers table
+    --- @cast Timelines integer
+    --- @cast KeyColor Color
+    --- @cast ModCount integer[]
+    --- @cast Modifiers table
     net.Start(SMH.MessageTypes.UpdateTimelineInfoResponse)
     SendProperties(Timelines, KeyColor, ModCount, Modifiers)
     net.Send(player)
 end
 
----@type Receiver
 local function RequestTimelineInfo(msgLength, player)
     local name = net.ReadString()
     if name == "" or name == "default" then return end -- just in case
@@ -745,49 +718,46 @@ local function RequestTimelineInfo(msgLength, player)
     local timelineinfo = SMH.PropertiesManager.GetTimelinesInfo(player)
     local Timelines, KeyColor, ModCount, Modifiers = SMH.TableSplit.DProperties(timelineinfo)
 
-    ---@cast Timelines integer
-    ---@cast KeyColor Color
-    ---@cast ModCount integer[]
-    ---@cast Modifiers table
+    --- @cast Timelines integer
+    --- @cast KeyColor Color
+    --- @cast ModCount integer[]
+    --- @cast Modifiers table
     net.Start(SMH.MessageTypes.RequestTimelineInfoResponse)
     net.WriteString(name)
     SendProperties(Timelines, KeyColor, ModCount, Modifiers)
     net.Send(player)
 end
 
----@type Receiver
 local function AddTimeline(msgLength, player)
     SMH.PropertiesManager.SetTimelines(player, true)
 
     local timeline = SMH.PropertiesManager.GetTimelinesInfo(player)
     local Timelines, KeyColor, ModCount, Modifiers = SMH.TableSplit.DProperties(timeline)
 
-    ---@cast Timelines integer
-    ---@cast KeyColor Color
-    ---@cast ModCount integer[]
-    ---@cast Modifiers table
+    --- @cast Timelines integer
+    --- @cast KeyColor Color
+    --- @cast ModCount integer[]
+    --- @cast Modifiers table
     net.Start(SMH.MessageTypes.UpdateTimelineInfoResponse)
     SendProperties(Timelines, KeyColor, ModCount, Modifiers)
     net.Send(player)
 end
 
----@type Receiver
 local function RemoveTimeline(msgLength, player)
     SMH.PropertiesManager.SetTimelines(player, false)
 
     local timeline = SMH.PropertiesManager.GetTimelinesInfo(player)
     local Timelines, KeyColor, ModCount, Modifiers = SMH.TableSplit.DProperties(timeline)
 
-    ---@cast Timelines integer
-    ---@cast KeyColor Color
-    ---@cast ModCount integer[]
-    ---@cast Modifiers table
+    --- @cast Timelines integer
+    --- @cast KeyColor Color
+    --- @cast ModCount integer[]
+    --- @cast Modifiers table
     net.Start(SMH.MessageTypes.UpdateTimelineInfoResponse)
     SendProperties(Timelines, KeyColor, ModCount, Modifiers)
     net.Send(player)
 end
 
----@type Receiver
 local function UpdateModifier(msgLength, player)
     local itimeline = net.ReadUInt(INT_BITCOUNT)
     local name = net.ReadString()
@@ -797,18 +767,17 @@ local function UpdateModifier(msgLength, player)
     local timeline = SMH.PropertiesManager.GetTimelinesInfo(player)
     local Timelines, KeyColor, ModCount, Modifiers = SMH.TableSplit.DProperties(timeline)
 
-    ---@cast changed string
-    ---@cast Timelines integer
-    ---@cast KeyColor Color
-    ---@cast ModCount integer[]
-    ---@cast Modifiers table
+    --- @cast changed string
+    --- @cast Timelines integer
+    --- @cast KeyColor Color
+    --- @cast ModCount integer[]
+    --- @cast Modifiers table
     net.Start(SMH.MessageTypes.UpdateModifierResponse)
     net.WriteString(changed)
     SendProperties(Timelines, KeyColor, ModCount, Modifiers)
     net.Send(player)
 end
 
----@type Receiver
 local function UpdateKeyframeColor(msgLength, player)
     local timeline = net.ReadUInt(INT_BITCOUNT)
     local color = net.ReadColor()
@@ -817,16 +786,15 @@ local function UpdateKeyframeColor(msgLength, player)
     local timelineinfo = SMH.PropertiesManager.GetTimelinesInfo(player)
     local Timelines, KeyColor, ModCount, Modifiers = SMH.TableSplit.DProperties(timelineinfo)
 
-    ---@cast Timelines integer
-    ---@cast KeyColor Color
-    ---@cast ModCount integer[]
-    ---@cast Modifiers table
+    --- @cast Timelines integer
+    --- @cast KeyColor Color
+    --- @cast ModCount integer[]
+    --- @cast Modifiers table
     net.Start(SMH.MessageTypes.UpdateKeyframeColorResponse)
     SendProperties(Timelines, KeyColor, ModCount, Modifiers)
     net.Send(player)
 end
 
----@type Receiver
 local function SetPreviewEntity(msgLength, player)
     local path = net.ReadString()
     local model = net.ReadString()
@@ -840,11 +808,10 @@ local function SetPreviewEntity(msgLength, player)
         SMH.GhostsManager.SetSpawnOrigin(data, player)
     end
 
-    ---@cast modelpath string
+    --- @cast modelpath string
     SMH.GhostsManager.SetSpawnPreview(class, modelpath, data, settings, player)
 end
 
----@type Receiver
 local function SetSpawnGhost(msgLength, player)
     local state = net.ReadBool()
     SMH.Spawner.SetGhost(state, player)
@@ -853,7 +820,6 @@ local function SetSpawnGhost(msgLength, player)
     end
 end
 
----@type Receiver
 local function SpawnEntity(msgLength, player)
     local path = net.ReadString()
     local modelName = net.ReadString()
@@ -866,30 +832,27 @@ local function SpawnEntity(msgLength, player)
     local serializedKeyframes, entityProperties
 
     serializedKeyframes, entityProperties = SMH.Saves.LoadForEntity(path, modelName, player)
-    ---@cast serializedKeyframes SMHFile
-    ---@cast entityProperties Properties
+    --- @cast serializedKeyframes SMHFile
+    --- @cast entityProperties Properties
 
     SMH.PropertiesManager.AddEntity(player, {entity})
     SMH.KeyframeManager.ImportSave(player, entity, serializedKeyframes, entityProperties)
-    ---@cast pos Vector
+    --- @cast pos Vector
     SMH.Spawner.OffsetKeyframes(player, entity, pos)
     SMH.PlaybackManager.UpdateCacheFor(player, entity)
 end
 
----@type Receiver
 local function SpawnReset(msgLength, player)
     SMH.Spawner.SpawnReset(player)
     SMH.GhostsManager.ClearSpawnOrigin(player)
 end
 
----@type Receiver
 local function SetSpawnOffsetMode(msgLength, player)
     local set = net.ReadBool()
     SMH.Spawner.SetOffsetMode(set, player)
     SMH.GhostsManager.RefreshSpawnPreview(player, set)
 end
 
----@type Receiver
 local function SetSpawnOrigin(msgLength, player)
     local path = net.ReadString()
     local model = net.ReadString()
@@ -901,21 +864,18 @@ local function SetSpawnOrigin(msgLength, player)
     end
 end
 
----@type Receiver
 local function OffsetPos(msgLength, player)
     local pos = net.ReadVector()
     SMH.Spawner.SetPosOffset(pos, player)
     SMH.GhostsManager.SetPosOffset(pos, player)
 end
 
----@type Receiver
 local function OffsetAng(msgLength, player)
     local ang = net.ReadAngle()
     SMH.Spawner.SetAngleOffset(ang, player)
     SMH.GhostsManager.SetAngleOffset(ang, player)
 end
 
----@type Receiver
 local function RequestWorldData(msgLength, player)
     local frame = net.ReadUInt(INT_BITCOUNT)
     local console, push, release = SMH.KeyframeManager.GetWorldData(player, frame)
@@ -927,7 +887,6 @@ local function RequestWorldData(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function UpdateWorld(msgLength, player)
     local str = net.ReadString()
     local key = net.ReadString()
@@ -936,7 +895,6 @@ local function UpdateWorld(msgLength, player)
     SMH.KeyframeManager.UpdateWorldKeyframe(player, frame, str, key)
 end
 
----@type Receiver
 local function StartPhysicsRecord(msgLength, player)
     local framecount = net.ReadUInt(INT_BITCOUNT)
     local interval = net.ReadUInt(INT_BITCOUNT)
@@ -959,12 +917,10 @@ local function StartPhysicsRecord(msgLength, player)
     SMH.PhysRecord.RecordStart(player, framecount, interval, frame, playbackrate, totalframes, entities, timelines, settings)
 end
 
----@type Receiver
 local function StopPhysicsRecord(msgLength, player)
     SMH.PhysRecord.RecordStop(player)
 end
 
----@type Receiver
 local function RequestNodes(msgLength, player)
     local settings = net.ReadTable()
     local nodes = SMH.GhostsManager.RequestNodes(player, settings)
@@ -980,10 +936,9 @@ local function RequestNodes(msgLength, player)
     net.Send(player)
 end
 
----@type Receiver
 local function RequestNewSession(msgLength, player)
     SMH.KeyframeData.Players[player] = nil
-    SMH.Properties.Players[player] = nil
+    SMH.PropertiesManager.Reset(player)
     SMH.PlaybackManager.FlushCache(player)
 
     GetServerEntities(msgLength, player)
@@ -991,38 +946,46 @@ local function RequestNewSession(msgLength, player)
     return RequestUnpack(msgLength, player)
 end
 
+--- [SERVER]
+--- 
+--- Handles requests from the client and optionally sends back responses
+--- @class SMH.ServerController
 local MGR = {}
 
----@param player Player
+---Tell the client that the physics recorder has stopped
+--- @param player Player
 function MGR.StopPhysicsRecordResponse(player)
     net.Start(SMH.MessageTypes.StopPhysicsRecordResponse)
     net.Send(player)
 end
 
 -- AUDIO =========================
----@param id integer
----@param player Player
+
+--- During playback, play audio of a specific `id` for the `player`
+--- @param id integer
+--- @param player Player
 function MGR.PlayAudio(id, player)
 	net.Start(SMH.MessageTypes.PlayAudio)
 	net.WriteUInt(id, INT_BITCOUNT)
 	net.Send(player)
 end
 
----@param id integer
----@param player Player
+--- During playback, stop audio of a specific `id` for the `player`
+--- @param id integer
+--- @param player Player
 function MGR.StopAudio(id, player)
 	net.Start(SMH.MessageTypes.StopAudio)
 	net.WriteUInt(id, INT_BITCOUNT)
 	net.Send(player)
 end
 
----@param player Player
+--- Stop all audio for the `player`
+--- @param player Player
 function MGR.StopAllAudio(player)
 	net.Start(SMH.MessageTypes.StopAllAudio)
 	net.Send(player)
 end
 
----@type Receiver
 local function UpdateServerAudio(len, ply)
 	SMH.PlaybackManager.UpdateServerAudio(len, ply)
 end
@@ -1042,7 +1005,7 @@ hook.Add("player_activate", "SMHRecordSteamID", function(data)
     if not IsValid(player) then return end
 
     local accountId = player:AccountID()
-    ---Sometimes, account id might report -1, so we'll just do it again until we get a positive number
+    --- Sometimes, account id might report -1, so we'll just do it again until we get a positive number
     while accountId < 0 do
         accountId = player:AccountID()
     end

@@ -1,5 +1,4 @@
----@class SMHSettings: DFrame
----@field BaseClass DFrame
+--- @class SMHSettings: DFrame
 local PANEL = {}
 
 function PANEL:Init()
@@ -87,10 +86,10 @@ function PANEL:Init()
 
 end
 
----Initialize a starting position. Every call to this function will add to the pos variable 
----@param pos number Initial position
----@param offset number
----@return fun(panel: Panel)
+--- Initialize a starting position. Every call to this function will add to the pos variable 
+--- @param pos number Initial position
+--- @param offset number
+--- @return fun(panel: Panel)
 local function setPosition(pos, offset)
     return function(panel)
         panel:SetPos(5, pos)
@@ -102,7 +101,7 @@ function PANEL:PerformLayout(width, height)
 
     local setCheckboxPos = setPosition(25, 20)
 
-    ---@diagnostic disable-next-line
+    --- @diagnostic disable-next-line
     self.BaseClass.PerformLayout(self, width, height)
 
     setCheckboxPos(self.FreezeAll)
@@ -134,7 +133,7 @@ function PANEL:PerformLayout(width, height)
 
 end
 
----@param settings Settings
+--- @param settings Settings
 function PANEL:ApplySettings(settings)
     self._changingSettings = true
 
@@ -158,7 +157,9 @@ function PANEL:ApplySettings(settings)
             self[key]:SetChecked(settings[key])
         end
         if globals[key] then
-            self[key]:SetChecked(globals[key]:GetValue())
+            local result = globals[key]:GetValue()
+            ---@cast result boolean
+            self[key]:SetChecked(result)
         end
     end
 
@@ -169,7 +170,7 @@ function PANEL:ApplySettings(settings)
     self._changingSettings = false
 end
 
----@param settings Settings
+--- @param settings Settings
 function PANEL:OnSettingsUpdated(settings) end
 function PANEL:UpdateSelectedEnt(entity)
     local settings = SMH.Settings.GetAll()

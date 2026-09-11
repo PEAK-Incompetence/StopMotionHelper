@@ -1,5 +1,5 @@
----This file replaces the `dupe_arm` and `dupe_save` functions, to allow larger animations to be stored in
----a dupe. 
+--- This file replaces the `dupe_arm` and `dupe_save` functions, to allow larger animations to be stored in
+--- a dupe. 
 
 local newDupeSave = CreateConVar("smh_streamdupes", "1", { FCVAR_ARCHIVE, FCVAR_CHEAT, FCVAR_REPLICATED }, "If set to 1, this allows one to dupes with a bigger file sizes (greater than 256KB). It reduces the likelihood of getting kicked when loading big dupes.", 0, 1)
 
@@ -8,8 +8,8 @@ local DUPE_SEND_SIZE = 60000
 local isLoadingDupe
 local isSavingDupe
 
----There's no guarantee that the concommand table will be filled
----at the same tick, so we have to call this at the next tick
+--- There's no guarantee that the concommand table will be filled
+--- at the same tick, so we have to call this at the next tick
 hook.Add("PostSMHLoaded", "SMHDupe", function()
     local loadDelay = 0.2
     -- Let's use the old dupe functions in case the server owner doesn't

@@ -1,4 +1,4 @@
----@class SMHFramePanel: DPanel
+--- @class SMHFramePanel: DPanel
 local PANEL = {}
 
 Derma_Install_Convar_Functions(PANEL)
@@ -67,7 +67,7 @@ function PANEL:PerformLayout(width, height)
 	
 end
 
----@param newMajor integer
+--- @param newMajor integer
 function PANEL:UpdateMajor(newMajor)
     self.major = newMajor
     self.majorFactorSet = {}
@@ -86,11 +86,11 @@ function PANEL:UpdateMajor(newMajor)
     end
 end
 
----Triangle sine wave function with range [0, 4*a/p] 
----@param x number point
----@param a number amplitude
----@param p number period
----@return number
+--- Triangle sine wave function with range [0, 4*a/p] 
+--- @param x number point
+--- @param a number amplitude
+--- @param p number period
+--- @return number
 local function triangle(x, a, p)
     return 4 * a / p * math.abs(((x - p * 0.5) % p) - p * 0.5)
 end
@@ -209,6 +209,7 @@ function PANEL:GetAudioClipPointerAtFrame(frame)
 	end
 end
 
+--- @param audioClip AudioClip
 function PANEL:CreateAudioClipPointer(audioClip)
     local pointer = vgui.Create("SMHAudioClipPointer", self)
 	pointer:Setup(audioClip)

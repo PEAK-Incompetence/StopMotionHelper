@@ -18,7 +18,7 @@ local function networkFingerVariables(ent)
 
     if not ent.FingerIndex then return end
 
-    ---Network all finger values over. The client will choose the correct hand
+    --- Network all finger values over. The client will choose the correct hand
     local VarsOnHand = 30
 	
     for i = 1, VarsOnHand do

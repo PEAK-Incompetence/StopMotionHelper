@@ -1,10 +1,10 @@
 local shouldRemap = CreateClientConVar("sync_smh_to_facepose_remap", "0", true, false, "If set to 1, this applies a remapping correction for the default faceposer, or for any faceposer tool that remaps its flexes. Set this to 0 for the Improved Faceposer or Enhanced Faceposer", 0, 1)
 
----Generate a think hook that updates an entity when the SMH state changes
----@param convar string
----@param hookName string
----@param callback fun(ent: SMHEntity)
----@param enabledByDefault boolean?
+--- Generate a think hook that updates an entity when the SMH state changes
+--- @param convar string
+--- @param hookName string
+--- @param callback fun(ent: SMHEntity)
+--- @param enabledByDefault boolean?
 function SMHEntitySyncFactory(convar, hookName, callback, enabledByDefault)
 	local enableSync = CreateClientConVar(convar, Either(enabledByDefault ~= nil, tobool(enabledByDefault) and "1" or "0", "1"), true, false, nil, 0, 1)
 	local enabled = enableSync:GetBool()
@@ -47,7 +47,7 @@ end)
 
 -- On frame change, set the eye on the finger poser UI
 entitySyncFactory("sync_smh_to_eyepose", "syncEyePoseSMH", function(ent)
-	---@type Vector
+	--- @type Vector
 	local eyeTarget = ent:GetNW2Vector("eyeposer_target")
 
 	local attachment = ent:GetAttachment(ent:LookupAttachment("eyes"))
@@ -76,9 +76,9 @@ end)
 
 local VarsOnHand = 15
 
----Returns true if it has TF2 hands
----@param pEntity Entity
----@return boolean
+--- Returns true if it has TF2 hands
+--- @param pEntity Entity
+--- @return boolean
 local function HasTF2Hands(pEntity)
 	return pEntity:LookupBone("bip_hand_L") ~= nil
 end

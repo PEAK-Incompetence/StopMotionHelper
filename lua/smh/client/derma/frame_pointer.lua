@@ -11,10 +11,10 @@
         :filter(function(mousecode) return mousecode == MOUSE_MIDDLE or (mousecode == MOUSE_RIGHT and input.IsKeyDown(KEY_LCONTROL)) end);
 ]]
 
----@class SMHFramePointer: DPanel
----@field GetParent fun(self: SMHFramePointer): SMHFramePanel
----@field NewID integer
----@field keyframeId integer
+--- @class SMHFramePointer: DPanel
+--- @field GetParent fun(self: SMHFramePointer): SMHFramePanel
+--- @field NewID integer
+--- @field keyframeId integer
 local PANEL = {}
 
 function PANEL:Init()
@@ -215,11 +215,11 @@ function PANEL:OnCursorMoved()
     end
 end
 
----@param newFrame integer
+--- @param newFrame integer
 function PANEL:OnFrameChanged(newFrame) end
----@param frame integer
+--- @param frame integer
 function PANEL:OnPointerReleased(frame) end
----@param mousecode integer
+--- @param mousecode integer
 function PANEL:OnCustomMousePressed(mousecode) end
 
 vgui.Register("SMHFramePointer", PANEL, "DPanel")

@@ -1,9 +1,9 @@
----@class SMHAudioClipTools: DFrame
----@field BaseClass DFrame
+--- @class SMHAudioClipTools: DFrame
+--- @field BaseClass DFrame
 local PANEL = {}
 local deleteConfirmColour = Color(255,0,0)
 
----@param panel Panel
+--- @param panel Panel
 local function unavailableStatus(panel)
 	panel:SetTooltip("This is not functional now. We plan to implement this in the near future")
 	panel:SetTooltipDelay(0)
@@ -90,7 +90,7 @@ end
 
 function PANEL:PerformLayout(width, height)
 
-    ---@diagnostic disable-next-line
+    --- @diagnostic disable-next-line
     self.BaseClass.PerformLayout(self, width, height)
 	
 	self.Label:SetPos(25, 25)

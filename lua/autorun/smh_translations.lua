@@ -9,12 +9,12 @@ end)
 
 local MAX_BONE_COUNT = 255
 
----@type {[string]: {[integer]: integer}}
+--- @type {[string]: {[integer]: integer}}
 local bonePhysBoneParents = {}
 
----@param entity Entity Entity to translate bone
----@param bone integer Bone id
----@return integer physBone Physics object id
+--- @param entity Entity Entity to translate bone
+--- @param bone integer Bone id
+--- @return integer physBone Physics object id
 function GetPhysBoneParentFromBone(entity, bone)
 	local model = getModel(entity)
 	if bonePhysBoneParents[model] and bonePhysBoneParents[model][bone] then
@@ -44,12 +44,12 @@ function GetPhysBoneParentFromBone(entity, bone)
 	return -1
 end
 
----@type {[string]: {[integer]: integer}}
+--- @type {[string]: {[integer]: integer}}
 local physBoneParents = {}
 
----@param entity Entity Entity to translate bone
----@param bone integer Physics object id
----@return integer physBone Parent physics object id
+--- @param entity Entity Entity to translate bone
+--- @param bone integer Physics object id
+--- @return integer physBone Parent physics object id
 function GetPhysBoneParent(entity, bone)
 	local model = getModel(entity)
 	if physBoneParents[model] and physBoneParents[model][bone] then
@@ -74,19 +74,19 @@ function GetPhysBoneParent(entity, bone)
 	return -1
 end
 
----@param ent Entity Entity to translate bone
----@param bone integer Physics object id
----@return integer b Bone id
+--- @param ent Entity Entity to translate bone
+--- @param bone integer Physics object id
+--- @return integer b Bone id
 function PhysBoneToBone(ent, bone)
 	return ent:TranslatePhysBoneToBone(bone)
 end
 
----@type {[string]: {[integer]: integer}}
+--- @type {[string]: {[integer]: integer}}
 local boneToPhysMap = {}
 
----@param ent Entity Entity to translate bone
----@param bone integer Bone id
----@return integer physBone Physics object id
+--- @param ent Entity Entity to translate bone
+--- @param bone integer Bone id
+--- @return integer physBone Physics object id
 function BoneToPhysBone(ent, bone)
 	local model = getModel(ent)
 	if boneToPhysMap[model] and boneToPhysMap[model][bone] then

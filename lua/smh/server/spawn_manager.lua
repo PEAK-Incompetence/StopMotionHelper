@@ -1,15 +1,19 @@
 local Active = {}
+
+--- [SERVER]
+--- 
+--- @class SMH.Spawner
 local MGR = {}
 
 MGR.OffsetPos, MGR.OffsetAng, MGR.OffsetMode = {}, {}, {}
 
 MGR.OriginData = {}
 
----@param serializedKeyframes SMHFile
----@param model any
----@return string?
----@return string?
----@return table?
+--- @param serializedKeyframes SMHFile
+--- @param model any
+--- @return string?
+--- @return string?
+--- @return table?
 local function GetPosData(serializedKeyframes, model)
     for i, sEntity in pairs(serializedKeyframes.Entities) do
         local listname
@@ -37,8 +41,8 @@ local function GetPosData(serializedKeyframes, model)
     end
 end
 
----@param serializedKeyframes SMHFile
----@return FrameData
+--- @param serializedKeyframes SMHFile
+--- @return FrameData
 local function GetDupeData(serializedKeyframes)
     local data = {}
     for _, kframe in ipairs(serializedKeyframes.Entities[1].Frames) do
@@ -52,10 +56,10 @@ local function GetDupeData(serializedKeyframes)
     return data
 end
 
----@param player Player
----@param modname string
----@param keyframe FrameData
----@param pos Vector
+--- @param player Player
+--- @param modname string
+--- @param keyframe FrameData
+--- @param pos Vector
 local function SetOffset(player, modname, keyframe, pos)
     local mod = SMH.Modifiers[modname]
 
@@ -65,24 +69,24 @@ local function SetOffset(player, modname, keyframe, pos)
     keyframe.Modifiers[modname] = mod:Offset(keyframe.Modifiers[modname], MGR.OriginData[player][modname].Modifiers, offsetpos, offsetang, pos)
 end
 
----@param entity SMHEntity
----@param modname string
----@param keyframe FrameData
----@param firstkey FrameData
+--- @param entity SMHEntity
+--- @param modname string
+--- @param keyframe FrameData
+--- @param firstkey FrameData
 local function SetDupeOffset(entity, modname, keyframe, firstkey)
     local mod = SMH.Modifiers[modname]
 
     keyframe.Modifiers[modname] = mod:OffsetDupe(entity, keyframe.Modifiers[modname], firstkey[modname].Modifiers)
 end
 
----@param path string
----@param model string
----@param player Player
----@param serializedKeyframes SMHFile
----@return string?
----@return string?
----@return table?
----@return boolean?
+--- @param path string
+--- @param model string
+--- @param player Player
+--- @param serializedKeyframes SMHFile
+--- @return string?
+--- @return string?
+--- @return table?
+--- @return boolean?
 function MGR.SetPreviewEntity(path, model, player, serializedKeyframes)
     if not Active[player] then return nil end
     local class, modelpath, data = GetPosData(serializedKeyframes, model)
@@ -102,18 +106,18 @@ function MGR.SetPreviewEntity(path, model, player, serializedKeyframes)
     return class, modelpath, data, neworigin
 end
 
----@param state any
----@param player Player
+--- @param state any
+--- @param player Player
 function MGR.SetGhost(state, player)
     Active[player] = state
 end
 
----@param model string
----@param settings Settings
----@param player Player
----@param serializedKeyframes SMHFile
----@return SMHEntity?
----@return Vector?
+--- @param model string
+--- @param settings Settings
+--- @param player Player
+--- @param serializedKeyframes SMHFile
+--- @return SMHEntity?
+--- @return Vector?
 function MGR.Spawn(model, settings, player, serializedKeyframes)
     if not Active[player] then return end
     local class, modelpath, data = GetPosData(serializedKeyframes, model)
@@ -122,8 +126,8 @@ function MGR.Spawn(model, settings, player, serializedKeyframes)
         return
     end
 
-    ---@cast modelpath string
-    ---@cast data any
+    --- @cast modelpath string
+    --- @cast data any
 
     if IsValid(player) and not player:CheckLimit("smhentity") then return end
 
@@ -137,7 +141,7 @@ function MGR.Spawn(model, settings, player, serializedKeyframes)
     end
 
     local entity = ents.Create(class)
-    ---@cast entity SMHEntity
+    --- @cast entity SMHEntity
     local tracepos = nil
     if MGR.OffsetMode[player] then
         tracepos = player:GetEyeTraceNoCursor().HitPos
@@ -167,14 +171,14 @@ function MGR.Spawn(model, settings, player, serializedKeyframes)
         end
     end
 
-    ---@cast entity SMHEntity
+    --- @cast entity SMHEntity
 
     return entity, tracepos
 end
 
----@param player Player
----@param entity Entity
----@param offsetpos Vector
+--- @param player Player
+--- @param entity Entity
+--- @param offsetpos Vector
 function MGR.OffsetKeyframes(player, entity, offsetpos)
     for id, keyframe in pairs(SMH.KeyframeData.Players[player].Entities[entity]) do
         local hasphysics = keyframe.Modifiers["physbones"] and true or false
@@ -192,9 +196,9 @@ function MGR.OffsetKeyframes(player, entity, offsetpos)
     end
 end
 
----@param player Player
----@param entity SMHEntity
----@param serializedKeyframes SMHFile
+--- @param player Player
+--- @param entity SMHEntity
+--- @param serializedKeyframes SMHFile
 function MGR.DupeOffsetKeyframes(player, entity, serializedKeyframes)
     local originData = GetDupeData(serializedKeyframes)
 
@@ -214,10 +218,10 @@ function MGR.DupeOffsetKeyframes(player, entity, serializedKeyframes)
     end
 end
 
----@param model string
----@param player Player
----@param serializedKeyframes SMHFile
----@return nil
+--- @param model string
+--- @param player Player
+--- @param serializedKeyframes SMHFile
+--- @return nil
 function MGR.SetOrigin(model, player, serializedKeyframes)
     local class, modelpath, data = GetPosData(serializedKeyframes, model)
     if not class then
@@ -229,25 +233,25 @@ function MGR.SetOrigin(model, player, serializedKeyframes)
     return data
 end
 
----@param player Player
+--- @param player Player
 function MGR.SpawnReset(player)
     MGR.OriginData[player] = nil
 end
 
----@param set any
----@param player Player
+--- @param set any
+--- @param player Player
 function MGR.SetOffsetMode(set, player)
     MGR.OffsetMode[player] = set
 end
 
----@param pos Vector
----@param player Player
+--- @param pos Vector
+--- @param player Player
 function MGR.SetPosOffset(pos, player)
     MGR.OffsetPos[player] = pos
 end
 
----@param ang Angle
----@param player Player
+--- @param ang Angle
+--- @param player Player
 function MGR.SetAngleOffset(ang, player)
     MGR.OffsetAng[player] = ang
 end

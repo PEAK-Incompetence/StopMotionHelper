@@ -1,17 +1,17 @@
 -- Modified version of the following script for SMH:
 -- https://gist.github.com/vlazed/117fdf704c91c48a0bda31b56a8788f6
----@alias PhysObjBoneOffset {[1]: Vector, [2]: Angle}
+--- @alias PhysObjBoneOffset {[1]: Vector, [2]: Angle}
 
 if not game.SinglePlayer() then
 	return
 end
 
 if SERVER then
-	---@type {[string]: PhysObjBoneOffset[]}
+	--- @type {[string]: PhysObjBoneOffset[]}
 	local physObjToBoneOffsets = {}
 
-	---@param ragdoll Entity
-	---@return PhysObjBoneOffset[] | false
+	--- @param ragdoll Entity
+	--- @return PhysObjBoneOffset[] | false
 	local function getOffsets(ragdoll)
 		local model = ragdoll:GetModel()
 		if physObjToBoneOffsets[model] then
@@ -42,8 +42,8 @@ if SERVER then
 		return offsets
 	end
 
-	---Assuming ragdoll has stretch disabled (flag 32768), set ragdoll back to it's original pose
-	---@param ragdoll Entity
+	--- Assuming ragdoll has stretch disabled (flag 32768), set ragdoll back to it's original pose
+	--- @param ragdoll Entity
 	local function unstretch(ragdoll)
 		timer.Simple(0.1, function()
 			local offsets = getOffsets(ragdoll)
@@ -65,8 +65,8 @@ if SERVER then
 		end)
 	end
 
-	---Use Penol's method to unstretch ragdolls, regardless of stretch state
-	---@param ragdoll Entity
+	--- Use Penol's method to unstretch ragdolls, regardless of stretch state
+	--- @param ragdoll Entity
 	local function peakUnstretch(ragdoll)
 		if util.NetworkStringToID("RagUnstretch_Client1") == 0 then
 			return
@@ -93,7 +93,7 @@ if SERVER then
 	util.AddNetworkString("smh_unstretch")
 	net.Receive("smh_unstretch", function(len, ply)
 		local doPeakUnstretch = net.ReadBool()
-		---@type Entity[]
+		--- @type Entity[]
 		local ragdolls = net.ReadTable(true)
 		for _, ragdoll in ipairs(ragdolls) do
 			local success, err = pcall(doPeakUnstretch and peakUnstretch or unstretch, ragdoll)
@@ -116,7 +116,7 @@ local doPeakUnstretch = CreateClientConVar(
 	1
 )
 
----@param ragdolls Entity[]
+--- @param ragdolls Entity[]
 local function unstretch(ragdolls)
 	net.Start("smh_unstretch")
 	net.WriteBool(doPeakUnstretch:GetBool())
@@ -125,7 +125,7 @@ local function unstretch(ragdolls)
 end
 
 concommand.Add("smh_unstretch_picker", function(ply, cmd, args, argStr)
-	---@type TraceResult
+	--- @type TraceResult
 	local tr = ply:GetEyeTrace()
 	local ent = tr.Entity
 
@@ -158,7 +158,7 @@ concommand.Add("smh_unstretch", function(ply, cmd, args, argStr)
 	unstretch(ragdolls)
 end)
 
----Dirty thing that ensures that my global is available on the next frame
+--- Dirty thing that ensures that my global is available on the next frame
 timer.Simple(0, function()
 	SMHEntitySyncFactory("smh_unstretch_sync", "unstretch_smh_sync", function(ent)
 		if ent:IsRagdoll() then

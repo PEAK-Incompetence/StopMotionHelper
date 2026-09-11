@@ -1,0 +1,10 @@
+{
+    "workspace.library": [
+        "lua/smh/shared/types.lua"
+    ],
+    "diagnostics.disable": [
+        "undefined-global",
+        "duplicate-set-field",
+        "inject-field"
+    ]
+}

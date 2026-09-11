@@ -1,11 +1,14 @@
 local SMHRecorderID = "SMH_Recording_Timer"
 
+--- [SERVER]
+--- 
+--- @class SMH.ServerPhysRecord
 local MGR = {}
 
----@param player Player
----@param entities Entities
----@param timelines any
----@param frame integer
+--- @param player Player
+--- @param entities Entities
+--- @param timelines any
+--- @param frame integer
 local function RecordPhys(player, entities, timelines, frame)
     SMH.PropertiesManager.AddEntity(player, entities)
 
@@ -17,15 +20,16 @@ local function RecordPhys(player, entities, timelines, frame)
     end
 end
 
----@param player Player
----@param framecount integer
----@param interval integer
----@param frame integer
----@param playbackrate integer
----@param endframe integer
----@param entities Entities
----@param timelines any
----@param settings Settings
+--- Start recording keyframes for the selected `entities`
+--- @param player Player
+--- @param framecount integer
+--- @param interval integer
+--- @param frame integer
+--- @param playbackrate integer
+--- @param endframe integer
+--- @param entities Entities
+--- @param timelines any
+--- @param settings Settings
 function MGR.RecordStart(player, framecount, interval, frame, playbackrate, endframe, entities, timelines, settings)
     if framecount < 3 then framecount = 3 end
     if interval < 0 then interval = 0 end
@@ -33,7 +37,7 @@ function MGR.RecordStart(player, framecount, interval, frame, playbackrate, endf
     RecordPhys(player, entities, timelines, frame)
     
     local startFrame = frame
-    ---@type Playback
+    --- @type Playback
     local playback = {
             CurrentFrame = frame,
             PlaybackRate = playbackrate,
@@ -67,7 +71,8 @@ function MGR.RecordStart(player, framecount, interval, frame, playbackrate, endf
 
 end
 
----@param player Player
+--- Stop the physics recorder
+--- @param player Player
 function MGR.RecordStop(player)
     timer.Remove(SMHRecorderID .. player:EntIndex())
     player:ChatPrint( "SMH Physics Recorder stopped.")

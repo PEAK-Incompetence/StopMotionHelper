@@ -1,8 +1,8 @@
 -- Prevent props from disappearing when resized.
 
----@type fun(index: integer): SMHEntity
+--- @type fun(index: integer): SMHEntity
 local Entity = Entity
----@class Entity
+--- @class Entity
 local ENTITY = FindMetaTable("Entity")
 
 if SERVER then
@@ -46,9 +46,9 @@ function ENTITY:EnableMatrix(matrixType, matrix, ...)
     return self:smh_EnableMatrix(matrixType, matrix, ...)
 end
 
----@param ent SMHEntity
----@param boneID number
----@param scale Vector|number
+--- @param ent SMHEntity
+--- @param boneID number
+--- @param scale Vector|number
 local function setScaledRenderBounds(ent, boneID, scale)
     if IsValid(ent) then
         local oldMin, oldMax = ent.smh_RenderBoundsCacheMinOG, ent.smh_RenderBoundsCacheMaxOG
@@ -61,18 +61,18 @@ local function setScaledRenderBounds(ent, boneID, scale)
     end
 end
 
----@type Set<string>
+--- @type Set<string>
 local invalidEntities = {
     ["class CLuaEffect"] = true
 }
 
----@type Set<{[1]: Vector, [2]: Vector}>
+--- @type Set<{[1]: Vector, [2]: Vector}>
 local modelRenderBounds = {}
 
----@param entity SMHEntity
----@return Vector
----@return Vector
----@return function
+--- @param entity SMHEntity
+--- @return Vector
+--- @return Vector
+--- @return function
 local function cacheRenderBounds(entity)
     local model = entity:GetModel()
     local renderBounds = modelRenderBounds[model]
@@ -106,7 +106,7 @@ local filter = {
 }
 
 local busy = false
----@param entity SMHEntity
+--- @param entity SMHEntity
 local function initializeRenderBounds(entity)
     if filter[entity:GetClass()] then return end
     if busy then return end
@@ -135,9 +135,9 @@ local function initializeRenderBounds(entity)
     busy = false
 end
 
----@param ent SMHEntity
----@param index integer
----@param scale Vector
+--- @param ent SMHEntity
+--- @param index integer
+--- @param scale Vector
 local function setEntityRenderBounds(ent, index, scale)
     initializeRenderBounds(ent)
     setScaledRenderBounds(ent, index, scale)

@@ -1,10 +1,10 @@
----@class rgmPlayer
----@field Bone integer
----@field Entity Entity
----@field rgmEntLocks {[Entity] : {[Entity]: {id: number, ent: Entity, poseid: number}}}
----@field rgmAngLocks {[Entity] : {[number]: PhysObj}}
----@field rgmPosLocks {[Entity] : {[number]: PhysObj}}
----@field rgmOffsetTable table
+--- @class rgmPlayer
+--- @field Bone integer
+--- @field Entity Entity
+--- @field rgmEntLocks {[Entity] : {[Entity]: {id: number, ent: Entity, poseid: number}}}
+--- @field rgmAngLocks {[Entity] : {[number]: PhysObj}}
+--- @field rgmPosLocks {[Entity] : {[number]: PhysObj}}
+--- @field rgmOffsetTable table
 
 if CLIENT then
 	local lastBone
@@ -54,8 +54,8 @@ if CLIENT then
 		end
 		smhBone = smhBone or GetConVar("smh_motionpathbone")
 		local pl = LocalPlayer()
-		---@type rgmPlayer
-		---@diagnostic disable-next-line
+		--- @type rgmPlayer
+		--- @diagnostic disable-next-line
 		local plTable = RAGDOLLMOVER and RAGDOLLMOVER[pl]
 		if not plTable or not plTable.Bone or not IsValid(plTable.Entity) then
 			return
@@ -72,12 +72,12 @@ if CLIENT then
 		lastBone = bone
 	end)
 
-	---@diagnostic disable
-	---Hack for getting Ragdoll Mover gizmos to update properly with nonphysical bone changes, since this doesn't happen automatically
-	---like they usually do with PhysicsObjects.
-	---
-	---It requires rgmSendBonePos to be a global function in stools/ragdollmover.lua. This is the main hack, unless we can adjust
-	---how external bone positions update the gizmo somehow in ragdoll mover itself
+	--- @diagnostic disable
+	--- Hack for getting Ragdoll Mover gizmos to update properly with nonphysical bone changes, since this doesn't happen automatically
+	--- like they usually do with PhysicsObjects.
+	--- 
+	--- It requires rgmSendBonePos to be a global function in stools/ragdollmover.lua. This is the main hack, unless we can adjust
+	--- how external bone positions update the gizmo somehow in ragdoll mover itself
 	local sendBonePos = rgmSendBonePos
 	timer.Simple(0, function()
 		sendBonePos = rgmSendBonePos
@@ -137,8 +137,8 @@ else
 		end,
 	}
 	net.Receive("RAGDOLLMOVER_SMH_SYNC", function(len, pl)
-		---@type rgmPlayer
-		---@diagnostic disable-next-line: undefined-global
+		--- @type rgmPlayer
+		--- @diagnostic disable-next-line: undefined-global
 		local plTable = RAGDOLLMOVER[pl]
 		local parent = plTable.Entity
 
@@ -151,14 +151,14 @@ else
 
 		local physcount = parent:GetPhysicsObjectCount() - 1
 		for child, info in pairs(plTable.rgmEntLocks[parent]) do
-			---@source https://github.com/vlazed/RagdollMover/blob/c2ea1fa0a9a6eb744b4a7bd3fd24744174323e68/lua/weapons/gmod_tool/stools/ragdollmover.lua#L2565
+			--- @source https://github.com/vlazed/RagdollMover/blob/c2ea1fa0a9a6eb744b4a7bd3fd24744174323e68/lua/weapons/gmod_tool/stools/ragdollmover.lua#L2565
 			local bone = info.id
 			local obj = parent:GetPhysicsObjectNum(bone)
 			if not IsValid(obj) then
 				continue
 			end
 
-			---@diagnostic disable-next-line: undefined-global
+			--- @diagnostic disable-next-line: undefined-global
 			local postable = rgm.SetOffsets(
 				fakeTool,
 				parent,

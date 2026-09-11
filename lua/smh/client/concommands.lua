@@ -8,10 +8,10 @@ local motionPathOffset = CreateClientConVar("smh_motionpathoffset", "0 0 0", tru
 CreateClientConVar("smh_majortickinterval", "3", true, false, "Set the interval for the ticks on the frame panel", 3, 16)
 local autosaveTime = CreateClientConVar("smh_autosavetime", "5", true, false, "Set the autosave interval in minutes. Set to 0 to disable", 0)
 cvars.AddChangeCallback("smh_autosavetime", function (convar, oldValue, newValue)
-    newValue = tonumber(newValue)
+    local newValue = tonumber(newValue)
     if not newValue or not isnumber(newValue) then
         local val = tonumber(oldValue)
-        ---@cast val number
+        --- @cast val number
         autosaveTime:SetFloat(val)
         return
     end
@@ -36,7 +36,7 @@ end)
 
 -- Helper functions for incrementing the playhead position on the timeline
 
----@param n Falsy<integer>?
+--- @param n Falsy<integer>?
 local function nextFrame(n)
 	n = n or 1
 	local pos = SMH.State.Frame + n
@@ -46,7 +46,7 @@ local function nextFrame(n)
     SMH.Controller.SetFrame(pos)
 end
 
----@param n Falsy<integer>?
+--- @param n Falsy<integer>?
 local function previousFrame(n)
 	n = n or 1
 	local pos = SMH.State.Frame - n
@@ -82,8 +82,8 @@ concommand.Add("smh_resetsession", function (ply, cmd, args, argStr)
 end)
 
 do
-    ---@param command string
-    ---@return string[]
+    --- @param command string
+    --- @return string[]
     local function suggestFrames(command)
         local options = {
             command
@@ -96,13 +96,13 @@ do
 
     concommand.Add("smh_next", function(_, _, _, argStr) 
         local n = tonumber(argStr)
-        ---@cast n number
+        --- @cast n number
         nextFrame(isnumber(n) and math.Round(math.abs(n)))
     end, suggestFrames, "Increment the playhead by n, where n is a whole number. If not specified, increment by 1")
 
     concommand.Add("smh_previous", function(_, _, _, argStr) 
         local n = tonumber(argStr)
-        ---@cast n number
+        --- @cast n number
         previousFrame(isnumber(n) and math.Round(math.abs(n)))
     end, suggestFrames, "Decrement the playhead by n, where n is a whole number. If not specified, decrement by 1")
 end
@@ -161,7 +161,7 @@ end, nil, "Apply additional keyframes to produce a smoother result", nil)
 
 concommand.Add("smh_motionpath_offsetfromview", function()
     local player = LocalPlayer()
-    ---@type TraceResult
+    --- @type TraceResult
     local trace = SMH.UI.IsOpen() and player:GetEyeTraceNoCursor() or player:GetEyeTrace()
 
     local pos, ang = SMH.Renderer.GetBonePoseFromFrame()

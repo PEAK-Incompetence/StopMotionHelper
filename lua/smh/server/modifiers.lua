@@ -1,48 +1,48 @@
 local MAX_MODIFIER_BITS = 8
 
----@class ModifierClass
+--- @class ModifierClass
 local MODBASE = {}
----@package
+--- @package
 MODBASE.__index = MODBASE
 MODBASE.Name = "Unnamed"
 
----@param entity SMHEntity|Player
----@return any
+--- @param entity SMHEntity|Player
+--- @return any
 function MODBASE:Save(entity) end
----@param entity SMHEntity
----@param data any
----@param settings Settings?
+--- @param entity SMHEntity
+--- @param data any
+--- @param settings Settings?
 function MODBASE:Load(entity, data, settings) end
----@param entity Entity
----@param ghost SMHEntity
----@param data any
----@param settings Settings?
+--- @param entity Entity
+--- @param ghost SMHEntity
+--- @param data any
+--- @param settings Settings?
 function MODBASE:LoadGhost(entity, ghost, data, settings) end
----@param entity SMHEntity
----@param data1 any
----@param data2 any
----@param percentage number
----@param settings Settings?
+--- @param entity SMHEntity
+--- @param data1 any
+--- @param data2 any
+--- @param percentage number
+--- @param settings Settings?
 function MODBASE:LoadBetween(entity, data1, data2, percentage, settings) end
----@param entity SMHEntity
----@param ghost SMHEntity
----@param data1 any
----@param data2 any
----@param percentage number
----@param settings Settings?
+--- @param entity SMHEntity
+--- @param ghost SMHEntity
+--- @param data1 any
+--- @param data2 any
+--- @param percentage number
+--- @param settings Settings?
 function MODBASE:LoadGhostBetween(entity, ghost, data1, data2, percentage, settings) end
----@param data any
----@param origindata any
----@param worldvector Vector
----@param worldangle Angle
----@param offsetpos Vector?
----@param offsetang Angle?
----@return any
+--- @param data any
+--- @param origindata any
+--- @param worldvector Vector
+--- @param worldangle Angle
+--- @param offsetpos Vector?
+--- @param offsetang Angle?
+--- @return any
 function MODBASE:Offset(data, origindata, worldvector, worldangle, offsetpos, offsetang) end
----@param entity SMHEntity
----@param data any
----@param origindata any
----@return any
+--- @param entity SMHEntity
+--- @param data any
+--- @param origindata any
+--- @return any
 function MODBASE:OffsetDupe(entity, data, origindata) end
 
 function MODBASE:IsEffect(entity) -- checking if the entity is an effect prop
@@ -50,13 +50,13 @@ function MODBASE:IsEffect(entity) -- checking if the entity is an effect prop
     return false
 end
 
----@type {[string]: ModifierClass}
+--- @type {[string]: ModifierClass}
 SMH.Modifiers = {}
 
 SMH.ModifierInfo = {}
----@type string[]
+--- @type string[]
 SMH.ModifierInfo.Names = {}
----@type {[string]: integer}
+--- @type {[string]: integer}
 SMH.ModifierInfo.Ids = {}
 
 local path = "smh/modifiers/"
@@ -92,5 +92,5 @@ end, nil, "Update modifier data")
 hook.Add("PostSMHLoaded", "FixOutdatedModifiers", function ()
 	SMH.Optimizations.Update()
 	refreshModifiers()
-	SMH.PlaybackManager.FlushCache(ply)
+	SMH.PlaybackManager.FlushCache()
 end)

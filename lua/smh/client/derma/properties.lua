@@ -1,9 +1,16 @@
----@class SMHProperties: DFrame
----@field BaseClass DFrame
+--- @class SMHCollapsibleCategory: DCollapsibleCategory
+--- @field Contents SMHContents
+
+---@class SMHContents: DPanel
+---@field Checker table<string, DCheckBoxLabel>
+
+--- @class SMHProperties: DFrame
+--- @field TimelinesUI SMHCollapsibleCategory[]
 local PANEL = {}
 local EntsTable = {}
 local BonemergedEntsTable = {}
-local PropertyTable = {}
+---@type TimelineSetting
+local PropertyTable = {} ---@diagnostic disable-line: missing-fields
 local ModifierList, ModifierNames, ModifierIds = {}, {}, {}
 local Fallback = "none"
 local selectedEntity = nil
@@ -52,12 +59,12 @@ local function FindEntity(name)
     return nil
 end
 
-local function UpdateName(name)
-    if not IsValid(selectedEntity) then return end
-    if EntsTable then
-        EntsTable[selectedEntity].Name = name
-    end
-end
+-- local function UpdateName(name)
+--     if not IsValid(selectedEntity) then return end
+--     if EntsTable then
+--         EntsTable[selectedEntity].Name = name
+--     end
+-- end
 
 local function TransformToEntityTable(tab)
     local newtab = {}
@@ -109,7 +116,7 @@ function PANEL:Init()
     self.EntityList.OnRowSelected = function(_, rowIndex, row)
         local _, selectedName = self.EntityList:GetSelectedLine()
         if not IsValid(selectedName) then return end
-        ---@cast selectedName DListView_Line
+        --- @cast selectedName DListView_Line
         local selectedEntity = FindEntity(selectedName:GetValue(1))
         if not IsValid(selectedEntity) then return end
         self:SelectEntity(selectedEntity, input.IsKeyDown(KEY_LSHIFT) and 1 or 0)
@@ -118,7 +125,7 @@ function PANEL:Init()
     self.BonemergedList.OnRowSelected = function(_, rowIndex, row)
         local _, selectedName = self.BonemergedList:GetSelectedLine()
         if not IsValid(selectedName) then return end
-        ---@cast selectedName DListView_Line
+        --- @cast selectedName DListView_Line
         local selectedEntity = FindBonemergedEntity(selectedName:GetValue(1))
         if not IsValid(selectedEntity) then return end
 
@@ -167,6 +174,7 @@ function PANEL:Init()
     self.ColorLabel = vgui.Create("DLabel", self.ColorPanel)
     self.ColorLabel:SetText("Keyframe Color for timeline: " .. "none")
  
+    ---@class SMHColorPicker: DColorMixer
     self.ColorPicker = vgui.Create("DColorMixer", self.ColorPanel)
     self.ColorPicker:SetPalette(false)
     self.ColorPicker:SetAlphaBar(false)
@@ -221,7 +229,7 @@ end
 
 function PANEL:PerformLayout(width, height)
 
-    ---@diagnostic disable-next-line
+    --- @diagnostic disable-next-line
     self.BaseClass.PerformLayout(self, width, height)
 
     self.EntitiesPanel:SetPos(4, 30)
@@ -376,6 +384,7 @@ end
 
 function PANEL:BuildTimelineinfo()
     self.TimelinesCList:Clear()
+    ---@type SMHCollapsibleCategory[]
     self.TimelinesUI = {}
 
     self.ColorLabel:SetText("Keyframe Color for timeline: " .. "none")
@@ -492,6 +501,7 @@ function PANEL:GetUsingWorld()
     return UsingWorld
 end
 
+---@param timelineinfo TimelineSetting
 function PANEL:UpdateColor(timelineinfo)
     PropertyTable = table.Copy(timelineinfo)
 end

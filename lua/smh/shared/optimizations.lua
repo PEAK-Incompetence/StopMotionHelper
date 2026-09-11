@@ -1,50 +1,50 @@
----Micro-optimizations
----We want to get as much performance out of playback as possible.
----To do that, we try to reduce `__index`ing calls and also use
----Lua to cache the data
+--- Micro-optimizations
+--- We want to get as much performance out of playback as possible.
+--- To do that, we try to reduce `__index`ing calls and also use
+--- Lua to cache the data
 
 local isValid = IsValid
 
 local MGR = {}
 
----There is some odd behavior related to detoured functions
----which cause them not to work with our modifiers.
----In case that happens, run Update() again to reset everything
+--- There is some odd behavior related to detoured functions
+--- which cause them not to work with our modifiers.
+--- In case that happens, run Update() again to reset everything
 function MGR.Update()
 
 do
 
 local PHYSOBJ = FindMetaTable("PhysObj")
----@cast PHYSOBJ PhysObj
+--- @cast PHYSOBJ PhysObj
 local physSetPos = PHYSOBJ.SetPos
 local physSetAngles = PHYSOBJ.SetAngles
 local physEnableMotion = PHYSOBJ.EnableMotion
 local physWake = PHYSOBJ.Wake
 
----@param po PhysObj
----@param pos Vector
----@param teleport boolean?
----@return nil
+--- @param po PhysObj
+--- @param pos Vector
+--- @param teleport boolean?
+--- @return nil
 function MGR.PhysObjSetPos(po, pos, teleport)
     return physSetPos(po, pos, teleport)
 end
 
----@param po PhysObj
----@param ang Angle
----@return nil
+--- @param po PhysObj
+--- @param ang Angle
+--- @return nil
 function MGR.PhysObjSetAngles(po, ang)
     return physSetAngles(po, ang)
 end
 
----@param po PhysObj
----@param motion boolean
----@return nil
+--- @param po PhysObj
+--- @param motion boolean
+--- @return nil
 function MGR.PhysObjEnableMotion(po, motion)
     return physEnableMotion(po, motion)
 end
 
----@param po PhysObj
----@return nil
+--- @param po PhysObj
+--- @return nil
 function MGR.PhysObjWake(po)
     return physWake(po)
 end
@@ -54,7 +54,7 @@ end
 do
 
 local ENTITY = FindMetaTable("Entity")
----@cast ENTITY Entity
+--- @cast ENTITY Entity
 local entSetPos = ENTITY.SetPos
 local entSetAngles = ENTITY.SetAngles
 local entGetModel = ENTITY.GetModel
@@ -76,63 +76,63 @@ local entSetSubMaterial = ENTITY.SetSubMaterial
 local entSetPoseParameter = ENTITY.SetPoseParameter
 local entSetModelScale = ENTITY.SetModelScale
 
----@param entity Entity
----@return string?
+--- @param entity Entity
+--- @return string?
 function MGR.EntityGetModel(entity)
     return entGetModel(entity)
 end
 
 local optEntityGetModel = MGR.EntityGetModel
 
----@param entity Entity
----@param scale number
----@return nil
+--- @param entity Entity
+--- @param scale number
+--- @return nil
 function MGR.EntitySetModelScale(entity, scale)
     return entSetModelScale(entity, scale)
 end
 
----@param entity Entity
----@param poseName string|integer
----@param poseValue number
----@return nil
+--- @param entity Entity
+--- @param poseName string|integer
+--- @param poseValue number
+--- @return nil
 function MGR.EntitySetPoseParameter(entity, poseName, poseValue)
     return entSetPoseParameter(entity, poseName, poseValue)
 end
 
----@param entity Entity
----@param index integer
----@param submaterial string
----@return nil
+--- @param entity Entity
+--- @param index integer
+--- @param submaterial string
+--- @return nil
 function MGR.EntitySetSubMaterial(entity, index, submaterial)
     return entSetSubMaterial(entity, index, submaterial)
 end
 
----@param entity Entity
----@param material string
----@return nil
+--- @param entity Entity
+--- @param material string
+--- @return nil
 function MGR.EntitySetMaterial(entity, material)
     return entSetMaterial(entity, material)
 end
 
----@param entity Entity
----@param bodyGroupId integer
----@param subModelId integer
----@return nil
+--- @param entity Entity
+--- @param bodyGroupId integer
+--- @param subModelId integer
+--- @return nil
 function MGR.EntitySetBodygroup(entity, bodyGroupId, subModelId)
     return entSetBodygroup(entity, bodyGroupId, subModelId)
 end
 
----@param entity Entity
----@param color Color
----@return nil
+--- @param entity Entity
+--- @param color Color
+--- @return nil
 function MGR.EntitySetColor(entity, color)
     return entSetColor(entity, color)
 end
 
 do 
 local entFlexNum = {}
----@param entity Entity
----@return number
+--- @param entity Entity
+--- @return number
 function MGR.EntityGetFlexNum(entity)
     local model = optEntityGetModel(entity)
     local flexNum = entFlexNum[model]
@@ -144,96 +144,98 @@ function MGR.EntityGetFlexNum(entity)
 end
 end
 
----@param entity Entity
----@param scale number
----@return nil
+--- @param entity Entity
+--- @param scale number
+--- @return nil
 function MGR.EntitySetFlexScale(entity, scale)
     return entSetFlexScale(entity, scale)
 end
 
----@param entity Entity
----@param flex integer
----@param weight number
----@return nil
+--- @param entity Entity
+--- @param flex integer
+--- @param weight number
+--- @return nil
 function MGR.EntitySetFlexWeight(entity, flex, weight)
     return entSetFlexWeight(entity, flex, weight)
 end
 
----@param entity Entity
----@param key string
----@param float number
----@return nil
+--- @param entity Entity
+--- @param key string
+--- @param float number
+--- @return nil
 function MGR.EntitySetNW2Float(entity, key, float)
     return entSetNW2Float(entity, key, float)
 end
 
 do
----@type {[string]: integer}
+--- @type {[string]: integer}
 local entBoneCount = {}
 
----@param entity Entity
----@return integer
+--- @param entity Entity
+--- @return integer boneCount
 function MGR.EntityGetBoneCount(entity)
     local model = optEntityGetModel(entity)
     local boneCount = entBoneCount[model]
     if not boneCount and model then
         boneCount = entGetBoneCount(entity)
         entBoneCount[model] = boneCount
+    elseif not model then
+        boneCount = 0
     end
     return boneCount
 end
 end
 
----@param entity Entity
----@param id integer
----@param pos Vector
----@param networking boolean?
----@return nil
+--- @param entity Entity
+--- @param id integer
+--- @param pos Vector
+--- @param networking boolean?
+--- @return nil
 function MGR.EntityManipulateBonePosition(entity, id, pos, networking)
     return entManipulateBonePosition(entity, id, pos, networking)
 end
 
----@param entity Entity
----@param id integer
----@param ang Angle
----@param networking boolean?
----@return nil
+--- @param entity Entity
+--- @param id integer
+--- @param ang Angle
+--- @param networking boolean?
+--- @return nil
 function MGR.EntityManipulateBoneAngles(entity, id, ang, networking)
     return entManipulateBoneAngles(entity, id, ang, networking)
 end
 
----@param entity Entity
----@param id integer
----@param scale Vector
----@return nil
+--- @param entity Entity
+--- @param id integer
+--- @param scale Vector
+--- @return nil
 function MGR.EntityManipulateBoneScale(entity, id, scale)
     return entManipulateBoneScale(entity, id, scale)
 end
 
 
----@param ent Entity
----@param skin number
----@return nil
+--- @param ent Entity
+--- @param skin number
+--- @return nil
 function MGR.EntitySetSkin(ent, skin)
     return entSetSkin(ent, skin)
 end
 
----@param ent Entity
----@param pos Vector
----@return nil
+--- @param ent Entity
+--- @param pos Vector
+--- @return nil
 function MGR.EntitySetPos(ent, pos)
     return entSetPos(ent, pos)
 end
 
----@param ent Entity
----@param ang Angle
----@return nil
+--- @param ent Entity
+--- @param ang Angle
+--- @return nil
 function MGR.EntitySetAngles(ent, ang)
     return entSetAngles(ent, ang)
 end
 
 do
----@type {[Entity]: PhysObj[]}
+--- @type {[Entity]: PhysObj[]}
 local physObjIndex = {}
 
 hook.Add("OnEntityCreated", "SMHOptimizationsEntityCreated", function (ent)
@@ -248,9 +250,9 @@ hook.Add("EntityRemoved", "SMHOptimizationsEntityRemoved", function (ent)
     physObjIndex[ent] = nil
 end)
 
----@param entity Entity
----@param index integer
----@return PhysObj
+--- @param entity Entity
+--- @param index integer
+--- @return PhysObj
 function MGR.EntityGetPhysicsObjectNum(entity, index)
     
     physObjIndex[entity] = physObjIndex[entity] or {}
@@ -264,17 +266,19 @@ end
 end
 
 do
----@type {[string]: integer}
+--- @type {[string]: integer}
 local physObjCount = {}
 
----@param entity Entity
----@return integer
+--- @param entity Entity
+--- @return integer physObjCount
 function MGR.EntityGetPhysicsObjectCount(entity)
     local model = optEntityGetModel(entity)
     local count = physObjCount[model]
     if not count and model then
         count = entGetPhysicsObjectCount(entity)
         physObjCount[model] = count
+    elseif not model then
+        count = 0
     end
     return count
 end

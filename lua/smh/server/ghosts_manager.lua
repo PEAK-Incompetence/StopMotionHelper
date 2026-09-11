@@ -1,23 +1,23 @@
----@type GhostData
+--- @type GhostData
 local GhostData = {}
 local LastFrame = 0
 local LastTimeline = 1
----@type SpawnGhost, SpawnGhostData, GhostSettings
+--- @type SpawnGhost, SpawnGhostData, GhostSettings
 local SpawnGhost, SpawnGhostData, GhostSettings = {}, {}, {}
 local SpawnOffsetOn, SpawnOriginData, OffsetPos, OffsetAng = {}, {}, {}, {}
----@type PoseTrees
+--- @type PoseTrees
 local DefaultPoseTrees = {}
 
 local check = SMH.SettingsManager.CheckSetting
 local getSetting = SMH.SettingsManager.GetSetting
 
----@param player Player
----@param entity SMHEntity
----@param color Color
----@param frame integer
----@param ghostable SMHEntity[]
----@param xray boolean
----@return SMHEntity
+--- @param player Player
+--- @param entity SMHEntity
+--- @param color Color
+--- @param frame integer
+--- @param ghostable SMHEntity[]
+--- @param xray boolean
+--- @return SMHEntity
 local function CreateGhost(player, entity, color, frame, ghostable, xray)
     for _, ghost in ipairs(GhostData[player].Ghosts) do
         if ghost.Entity == entity and ghost.Frame == frame then return ghost end -- we already have a ghost on this entity for this frame, just return it.
@@ -43,7 +43,7 @@ local function CreateGhost(player, entity, color, frame, ghostable, xray)
         end
     end
 
-    ---@cast g SMHEntity
+    --- @cast g SMHEntity
 
     g:SetModel(model)
     g:SetRenderMode(RENDERMODE_TRANSCOLOR)
@@ -71,7 +71,7 @@ local function CreateGhost(player, entity, color, frame, ghostable, xray)
         timer.Simple(0, function()
             for boneid, weight in pairs(entity.RagdollWeightData) do
                 if isstring(boneid) then
-                    ---@diagnostic disable-next-line
+                    --- @diagnostic disable-next-line
                     boneid = BoneToPhysBone(entity, entity:LookupBone(boneid))
                     local po = g:GetPhysicsObjectNum(boneid)
                     if po then
@@ -121,6 +121,9 @@ local function ClearNoPhysGhosts(ghosts)
     end
 end
 
+--- [SERVER]
+--- 
+--- @class SMH.GhostsManager
 local MGR = {}
 
 MGR.IsRendering = false
@@ -145,11 +148,11 @@ local PREV_GHOST_COLOR = Color(200, 0, 0)
 local NEXT_GHOST_COLOR = Color(0, 200, 0)
 local GHOST_COLOR = Color(255, 255, 255)
 
----@param player Player
----@param frame integer
----@param settings Settings
----@param timeline Properties
----@param settimeline integer
+--- @param player Player
+--- @param frame integer
+--- @param settings Settings
+--- @param timeline Properties
+--- @param settimeline integer
 function MGR.UpdateState(player, frame, settings, timeline, settimeline)
     LastFrame = frame
     LastTimeline = settimeline
@@ -213,9 +216,9 @@ function MGR.UpdateState(player, frame, settings, timeline, settimeline)
             if not prevKeyframe and not nextKeyframe then
                 continue
             end
-            ---@cast prevKeyframe FrameData
-            ---@cast nextKeyframe FrameData
-            ---@cast entity SMHEntity
+            --- @cast prevKeyframe FrameData
+            --- @cast nextKeyframe FrameData
+            --- @cast entity SMHEntity
 
             if lerpMultiplier == 0 then
                 if ghostPrevious and prevKeyframe.Frame < frame then
@@ -272,8 +275,8 @@ function MGR.UpdateState(player, frame, settings, timeline, settimeline)
                     if not prevKeyframe then
                         continue
                     end
-                    ---@cast prevKeyframe FrameData
-                    ---@cast nextKeyframe FrameData
+                    --- @cast prevKeyframe FrameData
+                    --- @cast nextKeyframe FrameData
 
                     if lerpMultiplier <= 0 or check(settings, "TweenDisable", g.Entity) then
                         SetGhostFrame(entity, g, prevKeyframe.Modifiers, name)
@@ -290,15 +293,15 @@ function MGR.UpdateState(player, frame, settings, timeline, settimeline)
     end
 end
 
----@param player Player
----@param timeline Properties
----@param settings Settings
+--- @param player Player
+--- @param timeline Properties
+--- @param settings Settings
 function MGR.UpdateSettings(player, timeline, settings)
     MGR.UpdateState(player, LastFrame, settings, timeline, LastTimeline)
 end
 
----@param modelName string
----@param tree PoseTree
+--- @param modelName string
+--- @param tree PoseTree
 function MGR.SetTree(modelName, tree)
     DefaultPoseTrees[modelName] = tree
 end
@@ -307,11 +310,11 @@ function MGR.GetTree(modelName)
     return DefaultPoseTrees[modelName]
 end
 
----@param class string
----@param modelpath string
----@param data any
----@param settings Settings
----@param player Player
+--- @param class string
+--- @param modelpath string
+--- @param data any
+--- @param settings Settings
+--- @param player Player
 function MGR.SetSpawnPreview(class, modelpath, data, settings, player)
     if IsValid(SpawnGhost[player]) then
         SpawnGhost[player]:Remove()
@@ -332,10 +335,10 @@ function MGR.SetSpawnPreview(class, modelpath, data, settings, player)
     GhostSettings[player] = settings
 
     if class == "prop_ragdoll" then
-        ---@diagnostic disable-next-line: assign-type-mismatch
+        --- @diagnostic disable-next-line: assign-type-mismatch
         SpawnGhost[player] = ents.Create("prop_ragdoll")
     else
-        ---@diagnostic disable-next-line: assign-type-mismatch
+        --- @diagnostic disable-next-line: assign-type-mismatch
         SpawnGhost[player] = ents.Create("prop_dynamic")
     end
     local alpha = settings.GhostTransparency * 255
@@ -362,27 +365,30 @@ function MGR.SetSpawnPreview(class, modelpath, data, settings, player)
     end
 end
 
----@param player Player
----@param offseton any
+--- @param player Player
+--- @param offseton any
 function MGR.RefreshSpawnPreview(player, offseton)
     SpawnOffsetOn[player] = offseton
     if not IsValid(SpawnGhost[player]) then return end
 
+    local playerGhostData = SpawnGhostData[player]
     for name, mod in pairs(SMH.Modifiers) do
         if name == "color" then continue end
         if name == "physbones" or name == "position" then
             local offsetpos = OffsetPos[player] or Vector(0, 0, 0)
             local offsetang = OffsetAng[player] or Angle(0, 0, 0)
 
-            local offsetdata = mod:Offset(SpawnGhostData[player][name].Modifiers, SpawnOriginData[player][name].Modifiers, offsetpos, offsetang, nil)
-            mod:Load(SpawnGhost[player], offsetdata, GhostSettings[player])
-        elseif SpawnGhostData[player][name] then
-            mod:Load(SpawnGhost[player], SpawnGhostData[player][name].Modifiers, GhostSettings[player])
+            if playerGhostData[name] then
+                local offsetdata = mod:Offset(playerGhostData[name].Modifiers, SpawnOriginData[player][name].Modifiers, offsetpos, offsetang, nil)
+                mod:Load(SpawnGhost[player], offsetdata, GhostSettings[player])
+            end
+        elseif playerGhostData[name] then
+            mod:Load(SpawnGhost[player], playerGhostData[name].Modifiers, GhostSettings[player])
         end
     end
 end
 
----@param player Player
+--- @param player Player
 function MGR.SpawnClear(player)
     if IsValid(SpawnGhost[player]) then
         SpawnGhost[player]:Remove()
@@ -390,45 +396,45 @@ function MGR.SpawnClear(player)
     end
 end
 
----@param data any
----@param player Player
+--- @param data any
+--- @param player Player
 function MGR.SetSpawnOrigin(data, player)
     SpawnOriginData[player] = data
 end
 
----@param player Player
+--- @param player Player
 function MGR.ClearSpawnOrigin(player)
     SpawnOriginData[player] = nil
 end
 
----@param pos Vector
----@param player Player
+--- @param pos Vector
+--- @param player Player
 function MGR.SetPosOffset(pos, player)
     OffsetPos[player] = pos
     MGR.RefreshSpawnPreview(player, SpawnOffsetOn[player])
 end
 
----@param ang Angle
----@param player Player
+--- @param ang Angle
+--- @param player Player
 function MGR.SetAngleOffset(ang, player)
     OffsetAng[player] = ang
     MGR.RefreshSpawnPreview(player, SpawnOffsetOn[player])
 end
 
----@param player Player
+--- @param player Player
 function MGR.UpdateKeyframe(player)
     if not GhostData[player] then return end
 
     GhostData[player].Updated = true
 end
 
----@param keyframes FrameData[]
----@param frame integer
----@param modifier string
----@param tweening boolean
----@param index integer?
----@return Vector?
----@return Angle?
+--- @param keyframes FrameData[]
+--- @param frame integer
+--- @param modifier string
+--- @param tweening boolean
+--- @param index integer?
+--- @return Vector?
+--- @return Angle?
 local function lerpTransform(keyframes, frame, modifier, tweening, index)
     local pos, ang
     local prevFrame, nextFrame, lerp = SMH.GetClosestKeyframes(keyframes, frame, true, modifier, 1)
@@ -447,8 +453,8 @@ local function lerpTransform(keyframes, frame, modifier, tweening, index)
     return pos, ang
 end
 
----@param player Player
----@return table?
+--- @param player Player
+--- @return table?
 function MGR.RequestNode(player)
     if not GhostData[player] then return end
 
@@ -509,9 +515,10 @@ function MGR.RequestNode(player)
     return {pos, ang}
 end
 
----@param player Player
----@param settings Settings
----@return table?
+--- Create nodes for a motion path
+--- @param player Player
+--- @param settings Settings
+--- @return table?
 function MGR.RequestNodes(player, settings)
     if not GhostData[player] then return end
 
@@ -604,7 +611,7 @@ function MGR.RequestNodes(player, settings)
                 
                 local boneData = keyframe.Modifiers.bones and keyframe.Modifiers.bones[branch[i]]
                 if boneData then
-                    dataPos, dataAng = boneData.Pos, boneData.Ang
+                    dataPos, dataAng = boneData.Pos, boneData.Ang ---@diagnostic disable-line: undefined-field
                 else
                     local newPos, newAng = lerpTransform(keyframes, keyframe.Frame, "bones", tweening, bone)
                     if newPos and newAng then
