@@ -6,6 +6,7 @@ if not SMH then
     SMH = {}
 end
 
+---@type table<string, integer>|table<integer, string>
 SMH.MessageTypes = {
     "SetFrame",
     "SetFrameResponse",

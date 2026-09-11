@@ -72,6 +72,7 @@ function PANEL:Paint(width, height) end
 
 function PANEL:PaintOverride()
     if lockedHeight == 0 then return end
+    if not self:IsVisible() then return end
     
     local canEditAudioTrack = SMH.State.EditAudioTrack
 
@@ -98,15 +99,24 @@ function PANEL:PaintOverride()
 
     if self._waveform and #self._waveform > 0 then
         local waveColor = canEditAudioTrack and COLOR_TRANSPARENT or COLOR_TRANSPARENT_DISABLED
+        local startFraction = self._audioClip.StartTime / self._audioClip.BaseDuration
+        local endFraction = (self._audioClip.Duration + self._audioClip.StartTime) / self._audioClip.BaseDuration
+        local visibleFraction = endFraction - startFraction
         for i = 1, #self._waveform-1 do
             local wave1 = self._waveform[i]
             local wave2 = self._waveform[i+1]
+
+            if wave1.Fraction < startFraction or wave1.Fraction > endFraction then
+                continue
+            end
+
             local avg = math.max((wave1.Left + wave1.Right) * 0.5, 0.1)
-            local barWidth = (wave2.Fraction - wave1.Fraction) * self:GetWide()
+            local barWidth = (wave2.Fraction - wave1.Fraction) * width / visibleFraction
             surface.SetDrawColor(waveColor:Unpack())
             local y = (1 - avg) * height
-            local x = self:GetWide() * wave1.Fraction
-            surface.DrawRect(self.PosX + x, self.PosY + y / 2 + 1, barWidth, height - y)
+            local x = width * wave1.Fraction / visibleFraction
+            local xOffset = width * startFraction / visibleFraction
+            surface.DrawRect(self.PosX + x - xOffset, self.PosY + y / 2 + 1, barWidth, height - y)
         end
     end
 
@@ -211,8 +221,8 @@ function PANEL:GetStartFrame()
 	return self._startFrame
 end
 
-function PANEL:GetDuration()
-	return self._duration
+function PANEL:SetDuration(newDuration)
+	self._duration = newDuration
 end
 
 function PANEL:OnMouseReleased(mousecode)
@@ -228,7 +238,7 @@ function PANEL:OnMouseReleased(mousecode)
 
     if mousecode == MOUSE_LEFT then
 		self:GetParent():SortClipOrder()
-		print(table.ToString(self:GetParent().AudioClipPointers, "AudioClipPointers", true))
+		-- print(table.ToString(self:GetParent().AudioClipPointers, "AudioClipPointers", true))
         if input.IsKeyDown(KEY_LSHIFT) then
             SMH.UI.ShiftSelect(self)
         elseif input.IsKeyDown(KEY_LCONTROL) then

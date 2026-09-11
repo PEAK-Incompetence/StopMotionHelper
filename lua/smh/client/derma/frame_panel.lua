@@ -1,4 +1,6 @@
 --- @class SMHFramePanel: DPanel
+--- @field AudioClipPointers SMHAudioClipPointer[]
+--- @field FramePointers SMHFramePointer[]
 local PANEL = {}
 
 Derma_Install_Convar_Functions(PANEL)
@@ -193,20 +195,41 @@ function PANEL:SortClipOrder()
 	self:RefreshFrames()
 end
 
+--- @param frame integer
+--- @return SMHAudioClipPointer?
 function PANEL:GetAudioClipPointerAtFrame(frame)
 	--get all clips that exist at this frame
 	local clips = {}
-	for k,v in pairs(self.AudioClipPointers) do
+    local count = 0
+	for k,v in ipairs(self.AudioClipPointers) do
 		local startFrame = v:GetFrame()
-		local endFrame = v:GetDuration()*SMH.State.PlaybackRate
-		if startFrame <= frame and endFrame >= frame then
+		local endFrame = startFrame + v:GetDuration() * SMH.State.PlaybackRate
+		if v:IsVisible() and startFrame <= frame and endFrame >= frame then
 			table.insert(clips,v)
+            count = count + 1
 		end
 	end
 	--return last clip
-	if not table.IsEmpty(clips) then
+	if count > 0 then
 		return clips[#clips]
 	end
+end
+
+--- @param frame integer
+--- @return SMHAudioClipPointer[]
+function PANEL:GetAudioClipPointersAtFrame(frame)
+	--get all clips that exist at this frame
+	local clips = {}
+    local count = 0
+	for k,v in ipairs(self.AudioClipPointers) do
+		local startFrame = v:GetFrame()
+		local endFrame = startFrame + v:GetDuration() * SMH.State.PlaybackRate
+		if v:IsVisible() and startFrame <= frame and endFrame >= frame then
+			table.insert(clips,v)
+            count = count + 1
+		end
+	end
+    return clips
 end
 
 --- @param audioClip AudioClip
@@ -230,13 +253,15 @@ function PANEL:DeleteAllAudioClipPointers()
 	end
 	table.Empty(self.AudioClipPointers)
 end
+
+function PANEL:UnhideAllAudio()
+    for _, audioClip in ipairs(self.AudioClipPointers) do
+        audioClip:SetVisible(true)
+    end
+end
 -- ============================================================
 
-function PANEL:OnMousePressed(mousecode)
-    if mousecode ~= MOUSE_LEFT then
-        return
-    end
-
+function PANEL:GetFrameFromCursorPos()
     local startX, endX = unpack(self.FrameArea)
     local posX, posY = self:CursorPos()
 
@@ -245,7 +270,17 @@ function PANEL:OnMousePressed(mousecode)
     local framePosition = math.Round(self.ScrollOffset + (targetX / width) * (self.Zoom - 1))
     framePosition = framePosition < 0 and 0 or (framePosition >= self.TotalFrames and self.TotalFrames - 1 or framePosition)
 
-    self:OnFramePressed(framePosition)
+    return framePosition
+end
+
+function PANEL:OnMousePressed(mousecode)
+    if mousecode ~= MOUSE_LEFT and mousecode ~= MOUSE_RIGHT then
+        return
+    end
+
+    local framePosition = self:GetFrameFromCursorPos()
+
+    self:OnFramePressed(mousecode, framePosition)
 end
 
 local scrollMultiplierConVar = GetConVar("smh_scrollmultiplier")
@@ -323,6 +358,8 @@ function PANEL:OnScrollBarCursorMoved(x, y)
     end
 end
 
-function PANEL:OnFramePressed(frame) end
+--- @param mouseCode MOUSE
+--- @param frame integer
+function PANEL:OnFramePressed(mouseCode, frame) end
 
 vgui.Register("SMHFramePanel", PANEL, "DPanel")

@@ -431,6 +431,7 @@ function MGR.GetPreferences(name)
     if not file.Exists(path, "DATA") then return nil end
 
     local json = file.Read(path)
+    ---@type TimelineSetting
     local template = util.JSONToTable(json)
     if not template then
         error("SMH settings file load failure")

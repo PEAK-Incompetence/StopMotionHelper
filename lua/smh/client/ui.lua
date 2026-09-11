@@ -233,6 +233,89 @@ end
 
 -- AUDIO ===========================================
 
+local function genericMenu(frame)
+    local menu = DermaMenu()
+    if SMH.AudioClipManager.GetClipboard()[1] then
+        menu:AddOption("Paste audio clip", function()
+            SMH.AudioClipManager.Paste(frame)
+        end)
+    end
+
+    menu:Open()
+end
+
+---@param pointer SMHAudioClipPointer
+---@param frame integer
+local function AudioTrimStart(pointer, frame)
+    local clip = SMH.AudioClipManager.TrimStart(pointer:GetID(), frame)
+    if clip then
+        pointer:SetFrame(frame)
+        SMH.Controller.UpdateServerAudio()
+    end
+end
+
+---@param pointer SMHAudioClipPointer
+---@param frame integer
+local function AudioTrimEnd(pointer, frame)
+    local clip = SMH.AudioClipManager.TrimEnd(pointer:GetID(), frame)
+    if clip then
+        pointer:SetFrame(pointer:GetFrame())
+        SMH.Controller.UpdateServerAudio()
+    end
+end
+
+---@param pointer SMHAudioClipPointer
+local function AudioCopy(pointer)
+    -- TODO: Implement multiple audioclip copying
+    SMH.AudioClipManager.Copy({pointer:GetID()}, false)
+end
+
+--- @param pointer SMHAudioClipPointer
+--- @param audioClip AudioClip
+local function audioClipMenu(pointer, audioClip)
+    local menu = DermaMenu()
+
+    local frame = WorldClicker.MainMenu.FramePanel:GetFrameFromCursorPos()
+    menu:AddOption("Copy", function()
+        AudioCopy(pointer)
+    end)
+    if SMH.AudioClipManager.GetClipboard()[1] then
+        menu:AddOption("Paste audio clip", function()
+            SMH.AudioClipManager.Paste(frame)
+        end)
+    end
+    menu:AddOption("Delete", function()
+        SMH.Controller.DeleteAudio(pointer:GetID(), pointer)
+    end)
+    menu:AddOption("Trim Left", function() 
+        AudioTrimStart(pointer, frame)
+    end)
+    menu:AddOption("Trim Right", function()
+        AudioTrimEnd(pointer, frame)
+    end)
+    menu:AddOption("Split", function() 
+        SMH.AudioClipManager.Create(
+            audioClip.Path, 
+            pointer:GetFrame(), 
+            audioClip.StartTime, 
+            audioClip.Duration, 
+            function(clip, newPointer)
+                SMH.AudioClipManager.TrimStart(newPointer:GetID(), frame)
+                SMH.AudioClipManager.TrimEnd(pointer:GetID(), frame)
+
+                newPointer:SetFrame(frame)
+                pointer:SetFrame(pointer:GetFrame())
+
+                SMH.Controller.UpdateServerAudio()
+        end)
+    end)
+    menu:AddOption("Hide", function() 
+        pointer:SetVisible(false)
+    end)
+
+    menu:Open()
+end
+
 --- @param audioClip AudioClip
 local function NewAudioClipPointer(audioClip)
 
@@ -245,17 +328,7 @@ local function NewAudioClipPointer(audioClip)
 
     pointer.OnCustomMousePressed = function(self, mousecode)
         if mousecode == MOUSE_RIGHT then
-            local menu = DermaMenu()
-
-            menu:AddOption("Delete", function()
-                SMH.Controller.DeleteAudio(pointer:GetID(), pointer)
-            end)
-            menu:AddOption("Trim Left", function() end)
-            menu:AddOption("Trim Right", function() end)
-            menu:AddOption("Split", function() end)
-            menu:AddOption("Hide", function() end)
-
-            menu:Open()
+            audioClipMenu(pointer, audioClip)
         end
     end
 
@@ -362,11 +435,43 @@ local function AddCallbacks()
 	end
 	
 	-- AUDIO TOOLS =======================================================
+    WorldClicker.AudioClipToolsMenu.OnRequestAudioClipCopy = function ()
+		local pointer = WorldClicker.MainMenu.FramePanel:GetAudioClipPointerAtFrame(SMH.State.Frame)
+        if pointer then
+            AudioCopy(pointer)
+        end
+    end
+    WorldClicker.AudioClipToolsMenu.OnRequestAudioClipPaste = function ()
+        SMH.AudioClipManager.Paste(SMH.State.Frame)
+    end
 	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipDelete = function()
 		local pointer = WorldClicker.MainMenu.FramePanel:GetAudioClipPointerAtFrame(SMH.State.Frame)
 		if pointer then
 			SMH.Controller.DeleteAudio(pointer:GetID(), pointer)
 		end
+	end
+	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipTrimStart = function()
+        local frame = SMH.State.Frame
+		local pointer = WorldClicker.MainMenu.FramePanel:GetAudioClipPointerAtFrame(frame)
+		if pointer then
+            AudioTrimStart(pointer, frame)
+		end
+	end
+	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipTrimEnd = function()
+        local frame = SMH.State.Frame
+		local pointer = WorldClicker.MainMenu.FramePanel:GetAudioClipPointerAtFrame(SMH.State.Frame)
+		if pointer then
+            AudioTrimEnd(pointer, frame)
+		end
+	end
+	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipHide = function()
+		local pointer = WorldClicker.MainMenu.FramePanel:GetAudioClipPointerAtFrame(SMH.State.Frame)
+		if pointer then
+			pointer:SetVisible(false)
+		end
+	end
+	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipUnhideAll = function()
+		WorldClicker.MainMenu.FramePanel:UnhideAllAudio()
 	end
 	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipDeleteAll = function()
 		SMH.Controller.DeleteAllAudio()
@@ -402,8 +507,12 @@ local function AddCallbacks()
         WorldClicker.Settings:SetVisible(true)
     end
 
-    WorldClicker.MainMenu.FramePanel.OnFramePressed = function(_, frame)
-        SMH.Controller.SetFrame(frame)
+    WorldClicker.MainMenu.FramePanel.OnFramePressed = function(_, mouseCode, frame)
+        if mouseCode == MOUSE_LEFT then
+            SMH.Controller.SetFrame(frame)
+        elseif mouseCode == MOUSE_RIGHT then
+            genericMenu(frame)
+        end
     end
 
     WorldClicker.MainMenu.FramePointer.OnFrameChanged = function(_, newFrame)
@@ -1134,6 +1243,7 @@ end
 --- @param value any
 function MGR.UpdateUISetting(setting, value)
     local settings = {}
+    ---@cast settings Settings
     settings[setting] = value
     WorldClicker.Settings:ApplySettings(settings)
 end
@@ -1237,8 +1347,11 @@ end
 
 --- Create a new audio clip pointer from the `audioClip`
 --- @param audioClip AudioClip
+--- @return SMHAudioClipPointer
 function MGR.CreateAudioClipPointer(audioClip)
-	table.insert(AudioClipPointers, NewAudioClipPointer(audioClip))
+    local pointer = NewAudioClipPointer(audioClip)
+	table.insert(AudioClipPointers, pointer)
+    return pointer
 end
 
 --- Delete an audio clip pointer on the timeline

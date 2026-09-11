@@ -352,7 +352,7 @@ end
 
 function PANEL:SetName(name)
     self.EntityNameEnter:SetText(name)
-    UpdateName(name)
+    -- UpdateName(name)
     self:SetEntities(EntsTable)
 end
 

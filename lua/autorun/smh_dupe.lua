@@ -11,13 +11,15 @@ local isSavingDupe
 --- There's no guarantee that the concommand table will be filled
 --- at the same tick, so we have to call this at the next tick
 hook.Add("PostSMHLoaded", "SMHDupe", function()
+    SMH.Dupe = {}
+
     local loadDelay = 0.2
     -- Let's use the old dupe functions in case the server owner doesn't
     -- want these new features
-    if not SMH.OldArmFunc then
+    if not SMH.Dupe.OldArmFunc then
         local tab = concommand.GetTable()
-        SMH.OldArmFunc = tab["dupe_arm"]
-        SMH.OldSaveFunc = tab["dupe_save"]
+        SMH.Dupe.OldArmFunc = tab["dupe_arm"]
+        SMH.Dupe.OldSaveFunc = tab["dupe_save"]
     end
 
     if CLIENT then
@@ -28,7 +30,7 @@ hook.Add("PostSMHLoaded", "SMHDupe", function()
         concommand.Remove("dupe_arm")
         concommand.Add( "dupe_arm", function( ply, cmd, arg )
             if not newDupeSave:GetBool() then
-                return SMH.OldArmFunc(ply, cmd, arg)
+                return SMH.Dupe.OldArmFunc(ply, cmd, arg)
             end
             if ( !arg[ 1 ] ) then return end
             local dupeName = tostring( arg[ 1 ] )
@@ -50,7 +52,7 @@ hook.Add("PostSMHLoaded", "SMHDupe", function()
             --
             -- And send it to the server
             --
-            local length = dupe.data:len()
+            local length = dupe.data:len() ---@diagnostic disable-line: unchecked-nil-access
             local parts = math.ceil( length / DUPE_SEND_SIZE )
 
             local start = 0
@@ -58,12 +60,12 @@ hook.Add("PostSMHLoaded", "SMHDupe", function()
                 timer.Simple(i * loadDelay, function()
                     local endbyte = math.min( start + DUPE_SEND_SIZE, length )
                     local size = endbyte - start
-                    net.Start( "ArmDupe" )
+                    net.Start( "ArmDupe" ) ---@diagnostic disable-line: gmod-net-missing-network-counterpart, gmod-unknown-net-message
                         net.WriteUInt( i, 8 )
                         net.WriteUInt( parts, 8 )
     
                         net.WriteUInt( size, 32 )
-                        net.WriteData( dupe.data:sub( start + 1, endbyte + 1 ), size )
+                        net.WriteData( dupe.data:sub( start + 1, endbyte + 1 ), size ) ---@diagnostic disable-line: unchecked-nil-access
                         if ( i == parts ) then
                             net.WriteString( dupeName:sub( 1, 128 ) )
                         end
@@ -79,7 +81,7 @@ hook.Add("PostSMHLoaded", "SMHDupe", function()
         concommand.Remove("dupe_save")
         concommand.Add( "dupe_save", function( ply, cmd, arg )
             if not newDupeSave:GetBool() then
-                return SMH.OldSaveFunc(ply, cmd, arg)
+                return SMH.Dupe.OldSaveFunc(ply, cmd, arg)
             end
             if ( !IsValid( ply ) ) then return end
 
@@ -113,7 +115,7 @@ hook.Add("PostSMHLoaded", "SMHDupe", function()
                     local endbyte = math.min( start + send_size, length )
                     local size = endbyte - start
                     -- print( "S [ " .. i .. " / " .. parts .. " ] Size: " .. size .. " Start: " .. start .. " End: " .. endbyte )
-                    net.Start( "ReceiveDupe" )
+                    net.Start( "ReceiveDupe" ) ---@diagnostic disable-line: gmod-net-missing-network-counterpart, gmod-unknown-net-message
                         net.WriteUInt( i, 8 )
                         net.WriteUInt( parts, 8 )
     
@@ -132,6 +134,7 @@ hook.Add("PostSMHLoaded", "SMHDupe", function()
             ply.m_NextDupeSave = CurTime() + loadDelay * parts + 1
         end, nil, "Save the current dupe!", { FCVAR_DONTRECORD } )
 
+        ---@diagnostic disable-next-line: undefined-field
         SMH.OldArmReceiver = SMH.OldArmReceiver or net.Receivers["armdupe"]
         -- We're replacing this because we want to remove limits from the `util.Decompress` function
         net.Receive( "ArmDupe", function( size, client )
@@ -191,6 +194,7 @@ hook.Add("PostSMHLoaded", "SMHDupe", function()
             local workshopCount = 0
             if ( Dupe.RequiredAddons ) then workshopCount = #Dupe.RequiredAddons end
 
+            ---@diagnostic disable-next-line: gmod-net-missing-network-counterpart, gmod-unknown-net-message
             net.Start( "CopiedDupe" )
                 net.WriteUInt( 0, 1 ) -- Can save
                 net.WriteVector( Dupe.Mins )

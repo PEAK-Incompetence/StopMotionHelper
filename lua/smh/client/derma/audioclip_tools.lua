@@ -5,8 +5,32 @@ local deleteConfirmColour = Color(255,0,0)
 
 --- @param panel Panel
 local function unavailableStatus(panel)
+	panel:SetEnabled(false)
 	panel:SetTooltip("This is not functional now. We plan to implement this in the near future")
 	panel:SetTooltipDelay(0)
+end
+
+--- @param button DButton
+--- @param callback function
+--- @param defaultColor Color
+--- @param defaultText string
+--- @param timerName string
+local function doRequestCallback(button, callback, defaultColor, defaultText, timerName)
+	if not button.Confirm then
+		button:SetText("Confirm?")
+		button:SetColor(deleteConfirmColour)
+		button.Confirm = true
+		timer.Create(timerName, 3, 0, function()
+			button:SetText(defaultText)
+			button:SetColor(defaultColor)
+			button.Confirm = false
+		end)
+	else
+		button:SetText(defaultText)
+		button:SetColor(defaultColor)
+		button.Confirm = false
+		callback()
+	end
 end
 
 function PANEL:Init()
@@ -25,36 +49,52 @@ function PANEL:Init()
 	
     self.TrimStart = vgui.Create("DButton", self)
     self.TrimStart:SetText("Trim Start")
-	self.TrimStart:SetEnabled(false)
+	self.DefaultColor = self.TrimStart:GetColor()
     self.TrimStart.DoClick = function()
-        print("trim start")
+		doRequestCallback(
+			self.TrimStart, 
+			self.OnRequestAudioClipTrimStart, 
+			self.DefaultColor, 
+			"TrimStart",
+			"SMHTrimStartConfirm"
+		)
     end
 	
 	self.TrimEnd = vgui.Create("DButton", self)
     self.TrimEnd:SetText("Trim End")
-	self.TrimEnd:SetEnabled(false)
     self.TrimEnd.DoClick = function()
-        print("trim end")
+		doRequestCallback(
+			self.TrimEnd, 
+			self.OnRequestAudioClipTrimEnd, 
+			self.DefaultColor, 
+			"TrimEnd",
+			"SMHTrimEndConfirm"
+		)
     end
 	
 	self.Copy = vgui.Create("DButton", self)
     self.Copy:SetText("Copy")
-	self.Copy:SetEnabled(false)
     self.Copy.DoClick = function()
-        print("copy")
+        self:OnRequestAudioClipCopy()
     end
 	
 	self.Paste = vgui.Create("DButton", self)
     self.Paste:SetText("Paste")
-	self.Paste:SetEnabled(false)
     self.Paste.DoClick = function()
-        print("paste")
+		self:OnRequestAudioClipPaste()
     end
 	
 	self.Delete = vgui.Create("DButton", self)
     self.Delete:SetText("Delete")
     self.Delete.DoClick = function()
-        self:DoDelete()
+        -- self:DoDelete()
+		doRequestCallback(
+			self.Delete, 
+			self.OnRequestAudioClipDelete, 
+			self.DefaultColor, 
+			"Delete",
+			"SMHDeleteConfirm"
+		)
     end
 	self.DeleteDefaultColour = self.Delete:GetColor()
 	self.DeleteConfirm = false
@@ -62,30 +102,28 @@ function PANEL:Init()
 	self.DeleteAll = vgui.Create("DButton", self)
     self.DeleteAll:SetText("Delete All")
     self.DeleteAll.DoClick = function()
-        self:DoDeleteAll()
+        -- self:DoDeleteAll()
+		doRequestCallback(
+			self.DeleteAll, 
+			self.OnRequestAudioClipDeleteAll, 
+			self.DefaultColor, 
+			"DeleteAll",
+			"SMHDeleteAllConfirm"
+		)
     end
 	self.DeleteAllConfirm = false
 	
 	self.Hide = vgui.Create("DButton", self)
     self.Hide:SetText("Hide")
-	self.Hide:SetEnabled(false)
     self.Hide.DoClick = function()
-        print("hide")
+		self:OnRequestAudioClipHide()
     end
 	
 	self.UnhideAll = vgui.Create("DButton", self)
     self.UnhideAll:SetText("Unhide All")
-	self.UnhideAll:SetEnabled(false)
     self.UnhideAll.DoClick = function()
-        print("unhide all")
+        self:OnRequestAudioClipUnhideAll()
     end
-
-	unavailableStatus(self.TrimStart)
-	unavailableStatus(self.TrimEnd)
-	unavailableStatus(self.Hide)
-	unavailableStatus(self.UnhideAll)
-	unavailableStatus(self.Copy)
-	unavailableStatus(self.Paste)
 end
 
 function PANEL:PerformLayout(width, height)
@@ -181,6 +219,12 @@ end
 
 function PANEL:OnRequestAudioClipDelete() end
 function PANEL:OnRequestAudioClipDeleteAll() end
+function PANEL:OnRequestAudioClipTrimStart() end
+function PANEL:OnRequestAudioClipTrimEnd() end
+function PANEL:OnRequestAudioClipUnhideAll() end
+function PANEL:OnRequestAudioClipHide() end
+function PANEL:OnRequestAudioClipCopy() end
+function PANEL:OnRequestAudioClipPaste() end
 
 
 vgui.Register("SMHAudioClipTools", PANEL, "DFrame")

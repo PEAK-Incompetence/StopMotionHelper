@@ -71,6 +71,6 @@ function PANEL:LoadSelected()
     self:OnLoadRequested(selectedSave:GetValue(1))
 end
 
-function PANEL:OnLoadRequested(path) end
+function PANEL:OnLoadRequested(path, setFrameRate) end
 
 vgui.Register("SMHLoadAudio", PANEL, "DFrame")

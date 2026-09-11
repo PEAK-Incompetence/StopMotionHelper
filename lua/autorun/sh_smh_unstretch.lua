@@ -67,7 +67,7 @@ if SERVER then
 
 	--- Use Penol's method to unstretch ragdolls, regardless of stretch state
 	--- @param ragdoll Entity
-	local function peakUnstretch(ragdoll)
+	local function peakUnstretch(ragdoll, ply)
 		if util.NetworkStringToID("RagUnstretch_Client1") == 0 then
 			return
 		end
@@ -83,8 +83,9 @@ if SERVER then
 		ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
 		ent:Spawn()
 		local PhysObjects = rag:GetPhysicsObjectCount() - 1
+		---@diagnostic disable-next-line: gmod-net-missing-network-counterpart, gmod-unknown-net-message
 		net.Start("RagUnstretch_Client1")
-		net.WriteEntity(rag)
+		net.WriteEntity(ragdoll)
 		net.WriteEntity(ent)
 		net.WriteInt(PhysObjects, 8)
 		net.Send(ply)
@@ -96,7 +97,7 @@ if SERVER then
 		--- @type Entity[]
 		local ragdolls = net.ReadTable(true)
 		for _, ragdoll in ipairs(ragdolls) do
-			local success, err = pcall(doPeakUnstretch and peakUnstretch or unstretch, ragdoll)
+			local success, err = pcall(doPeakUnstretch and peakUnstretch or unstretch, ragdoll, ply)
 			if not success then
 				ErrorNoHalt(err)
 			end
@@ -140,7 +141,9 @@ concommand.Add("smh_unstretch_rgm", function(ply, cmd, args, argStr)
 	end
 
 	local ragdoll = RAGDOLLMOVER[Entity(1)].Entity
-	unstretch({ ragdoll })
+	if IsValid(ragdoll) then
+		unstretch({ ragdoll }) ---@diagnostic disable-line: param-type-mismatch
+	end
 end)
 
 concommand.Add("smh_unstretch", function(ply, cmd, args, argStr)

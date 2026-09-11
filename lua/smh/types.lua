@@ -39,7 +39,9 @@
 --- @field AudioChannel IGModAudioChannel
 --- @field Frame integer
 --- @field Duration number
+--- @field BaseDuration number
 --- @field StartTime integer
+--- @field Waveform Wave[]
 
 --- @class AudioClipData
 --- @field AudioClips {[integer]: AudioClip}
@@ -271,6 +273,7 @@
 --- @field PhysRecorder SMHPhysRecord
 --- @field Settings SMHSettings
 --- @field SpawnMenu SMHSpawn
+--- @field AudioClipToolsMenu SMHAudioClipTools
 
 --- @class SMHNumberWang: DNumberWang Extension of DNumberWang with customizable step and increment or decrement fields
 --- @field Step number

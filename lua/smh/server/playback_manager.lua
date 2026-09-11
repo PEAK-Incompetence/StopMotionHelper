@@ -445,10 +445,10 @@ function MGR.UpdateServerAudio(len,ply)
 	if audioTable ~= nil then
 		table.Empty(playerAudio[ply].audioFrames)
 		playerAudio[ply].audioFrames = audioTable
-		print("SMH Audio: Updated serverside list of audios")
-		print(table.ToString(playerAudio, "Player Audios", true))
+		-- print("SMH Audio: Updated serverside list of audios")
+		-- print(table.ToString(playerAudio, "Player Audios", true))
 	else
-		print("SMH Audio: Error receiving audio list from client.")
+		-- print("SMH Audio: Error receiving audio list from client.")
 	end
 end
 
@@ -460,44 +460,42 @@ function MGR.AudioPlayback(player, playback)
     --check for end of playback
 	if currentFrame == playback.EndFrame then
 		SMH.Controller.StopAllAudio(player)
-		table.Empty(audioStopFrames) --clear stop frames table when playback reaches end of timeline
+		audioStopFrames = {} --clear stop frames table when playback reaches end of timeline
 		return
 	end
 	--check for end of clip
 	if audioStopFrames[currentFrame] then
 		--stop audio
-		for k,v in pairs(audioStopFrames[currentFrame]) do
+		for k,v in ipairs(audioStopFrames[currentFrame]) do
 			SMH.Controller.StopAudio(v.ID, player)
 		end
 		table.remove(audioStopFrames,currentFrame) --remove stop frames once playback has reached them
 	end
 	
 	--check for start of clip
-	if playerAudio[player] then
-		if playerAudio[player].audioFrames[currentFrame] ~= nil then
-			for i,clip in pairs(playerAudio[player].audioFrames[currentFrame]) do
-				local audioFrame = clip
-				
-				--calculate end point
-				local endFrame = math.ceil(currentFrame + playback.PlaybackRate * audioFrame.Duration)
-				local audioStop = {
-					ID = audioFrame.ID,
-					Player = player
-				}
-				
-				--add stop frame
-				if not audioStopFrames[endFrame] then
-					audioStopFrames[endFrame] = {
-						audioStop
-					}
-				else
-					table.insert(audioStopFrames[endFrame], audioStop)
-				end
-				
-				--start audio
-				SMH.Controller.PlayAudio(audioFrame.ID, player)
-			end
-		end
+	if playerAudio[player] and playerAudio[player].audioFrames[currentFrame] then
+        for i,clip in ipairs(playerAudio[player].audioFrames[currentFrame]) do
+            local audioFrame = clip
+            
+            --calculate end point
+            local endFrame = math.ceil(currentFrame + playback.PlaybackRate * audioFrame.Duration)
+            local audioStop = {
+                ID = audioFrame.ID,
+                Player = player
+            }
+            
+            --add stop frame
+            if not audioStopFrames[endFrame] then
+                audioStopFrames[endFrame] = {
+                    audioStop
+                }
+            else
+                table.insert(audioStopFrames[endFrame], audioStop)
+            end
+            
+            --start audio
+            SMH.Controller.PlayAudio(audioFrame.ID, player)
+        end
 	end
 end
 -- ======================================

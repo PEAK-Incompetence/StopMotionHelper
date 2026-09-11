@@ -16,7 +16,7 @@ if SERVER then
         util.AddNetworkString("SMHForceRenderBoundsBoneScale")
 
     ENTITY.smh_SetModelScale = ENTITY.smh_SetModelScale or ENTITY.SetModelScale
-    function ENTITY:SetModelScale(scale, deltaTIme, ...)
+    function ENTITY:SetModelScale(scale, deltaTime, ...)
         if forceRenderBounds then
             net.Start("SMHForceRenderBoundsModelScale")
             net.WriteEntity(self)

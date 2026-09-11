@@ -196,6 +196,7 @@ do
 
         local baseSize = sphereSize:GetFloat()
         local vectorString = offset:GetString():Split(" ")
+        ---@diagnostic disable-next-line: param-type-mismatch, redundant-parameter
         local vectorOffset = Vector(vectorString[1], vectorString[2], vectorString[3])
         for i = 1, #Nodes do 
             local currentFrame = SMH.State.Frame == Nodes[i].Frame
@@ -234,6 +235,7 @@ do
             if Nodes[i].Frame ~= SMH.State.Frame then continue end 
             
             local vectorString = offset:GetString():Split(" ")
+            ---@diagnostic disable-next-line: param-type-mismatch, redundant-parameter
             local vectorOffset = Vector(vectorString[1], vectorString[2], vectorString[3])
             local framePosition = LocalToWorld(vectorOffset, angle_zero, Nodes[i].Pos, Nodes[i].Ang)
             if Nodes[i-1] then

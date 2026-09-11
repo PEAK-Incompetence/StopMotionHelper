@@ -430,7 +430,8 @@ function PANEL:OnGoToFolderRequested(path, toClient) end
 function PANEL:OnOverwriteSave(path) end
 function PANEL:OnAppendRequested(path) end
 function PANEL:OnAppend(path, savenames, gamenames) end
-function PANEL:OnPackRequested() end
+--- @param path string
+function PANEL:OnPackRequested(path) end
 function PANEL:OnDeleteRequested(path, isFolder, deleteFromClient) end
 
 vgui.Register("SMHSave", PANEL, "DFrame")
