@@ -52,6 +52,7 @@ local function ReceiveProperties()
 end
 
 local function RequestNodes()
+    if not GetConVar("smh_motionpath"):GetBool() then return end 
     net.Start(SMH.MessageTypes.RequestNodes)
     net.WriteTable(SMH.Settings.GetAll())
     net.SendToServer()

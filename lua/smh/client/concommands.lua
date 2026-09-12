@@ -1,6 +1,7 @@
 local smh_startatone = CreateClientConVar("smh_startatone", "0", true, false, "Controls whether the timeline starts at 0 or 1.", 0, 1)
 local smh_render_cmd = CreateClientConVar("smh_render_cmd", "poster 1", true, false, "For smh_render, this string will be ran in the console for each frame.")
 CreateClientConVar("smh_currentpreset", "default", true, false)
+CreateClientConVar("smh_motionpath", "1", true, false, "Set the visibility of motion paths", 0, 1)
 CreateClientConVar("smh_motionpathbone", "", true, true, "Set the bone that the motion path will track")
 CreateClientConVar("smh_motionpathrange", "0", true, false, "Set how many nodes to show around the current frame. 1 means show 2 nodes on the left and right of the current frame.", 0)
 CreateClientConVar("smh_motionpathsize", "1", true, false, "Set the size of the nodes in the motion path", 0)

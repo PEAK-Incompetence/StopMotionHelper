@@ -165,11 +165,7 @@ do
     local offset = GetConVar("smh_motionpathoffset")
     local currentFrameIndex = 1 
     
-    -- TODO: 8/21/2026: Observe changes to this HUD, as this was PostDrawHUD before, 
-    -- but a commit causes motion paths to draw over SMH timeline
-    -- https://commits.facepunch.com/615356#:~:text=*%20DrawOverlay%20and%20PostRenderVGUI%20are%20now%20called%20just%20before%20main%20menu%20rendering%20(PostRender%20still%20is%20called%20after%2C%20TBD)
-    hook.Remove("HUDDrawScoreBoard", "SMHRenderMotionPath") 
-    hook.Add("HUDDrawScoreBoard", "SMHRenderMotionPath", function()
+    local function renderMotionPaths()
         local hud = GetHUDPanel()
         if not hud:IsVisible() then return end
 
@@ -252,7 +248,23 @@ do
             end
             return
         end
-    end)
+    end
+
+    -- TODO: 8/21/2026: Observe changes to this HUD, as this was PostDrawHUD before, 
+    -- but a commit causes motion paths to draw over SMH timeline
+    -- https://commits.facepunch.com/615356#:~:text=*%20DrawOverlay%20and%20PostRenderVGUI%20are%20now%20called%20just%20before%20main%20menu%20rendering%20(PostRender%20still%20is%20called%20after%2C%20TBD)    
+    --- @param state boolean
+    local function addMotionPaths(state)
+        hook.Remove("HUDDrawScoreBoard", "SMHRenderMotionPath") 
+        if state then
+            hook.Add("HUDDrawScoreBoard", "SMHRenderMotionPath", renderMotionPaths)
+        end
+    end
+    local function handleHook(cvar, old, new)
+        addMotionPaths(tobool(new))
+    end
+    cvars.AddChangeCallback("smh_motionpath", handleHook, "handleHook")
+    addMotionPaths(GetConVar("smh_motionpath"):GetBool())
 end
 
 SMH.Renderer = MGR
