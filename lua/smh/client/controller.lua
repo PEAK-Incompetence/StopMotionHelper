@@ -455,7 +455,7 @@ local function PlayAudioInBetween()
     local secondsPerFrame = 1 / playbackRate
     -- AUDIO =========================
 	//check for any clips that are partway through and play them from that point
-	for i,clip in ipairs(SMH.AudioClipData.AudioClips) do
+	for id,clip in pairs(SMH.AudioClipData.AudioClips) do
         local startFrame = clip.Frame
         local duration = clip.Duration
 		//calculate end frame
@@ -463,9 +463,10 @@ local function PlayAudioInBetween()
 		if currentFrame > startFrame and currentFrame < endFrame then
 			//calculate start point
 			local startTime = ((currentFrame - startFrame - 0.5) * secondsPerFrame) + clip.StartTime
-			SMH.AudioClip.Play(clip.ID, startTime)
-            timer.Simple(duration - startTime, function()
-                SMH.AudioClip.Stop(clip.ID)
+			SMH.AudioClip.Play(id, startTime)
+            timer.Create("SMHAudioInbetweener" .. id, duration - startTime, 1, function()
+                SMH.AudioClip.Stop(id)
+                timer.Remove("SMHAudioInbetweener")
             end)
 		end
 	end
@@ -494,6 +495,9 @@ function CTRL.StopPlayback()
 	
 	-- AUDIO
 	SMH.AudioClip.StopAll()
+	for id,clip in pairs(SMH.AudioClipData.AudioClips) do
+        timer.Remove("SMHAudioInbetweener" .. id)
+	end
 end
 
 --- Get all animation saves owned by the server
