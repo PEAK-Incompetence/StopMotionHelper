@@ -6,8 +6,11 @@ local setModelScale = opt.EntitySetModelScale
 local lerpLinear = SMH.LerpLinear
 
 function MOD:Save(entity)
+    local modelScale = entity:GetModelScale()    
+    if not entity:GetModelScale() then return nil end
+
     return {
-        ModelScale = entity:GetModelScale();
+        ModelScale = modelScale;
     };
 end
 
