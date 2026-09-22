@@ -252,7 +252,7 @@ end
 --- @param timeline integer
 --- @return FrameData[]
 function MGR.Copy(player, keyframeIds, frame, timeline)
-    local copiedKeyframes, movingkeyframes = {}, {}
+    local copiedKeyframes, movingkeyframes, copyTargets = {}, {}, {}
 
     for id, keyframeId in ipairs(keyframeIds) do
         if not SMH.KeyframeData.Players[player] or not SMH.KeyframeData.Players[player].Keyframes[keyframeId] then
@@ -280,22 +280,20 @@ function MGR.Copy(player, keyframeIds, frame, timeline)
         copiedKeyframe.Modifiers = Mods
 
         movingkeyframes[copiedKeyframe] = frame[id]
+        copyTargets[keyframe.Entity] = copyTargets[keyframe.Entity] or {}
+        copyTargets[keyframe.Entity][frame[id]] = true
+    end
+
+    for entity, targetFrames in pairs(copyTargets) do
+        local existingKeyframes = table.Copy(SMH.KeyframeData.Players[player].Entities[entity] or {})
+        for _, existingKeyframe in ipairs(existingKeyframes) do
+            if targetFrames[existingKeyframe.Frame] and not movingkeyframes[existingKeyframe] then
+                SMH.KeyframeData:Delete(player, existingKeyframe.ID)
+            end
+        end
     end
 
     for keyframe, frame in pairs(movingkeyframes) do
-        local replacekey = GetExistingKeyframe(player, keyframe.Entity, frame)
-
-        if replacekey ~= nil and not movingkeyframes[replacekey] then
-            for name, data in pairs(replacekey.Modifiers) do
-                if not keyframe.Modifiers[name] then
-                    keyframe.Modifiers[name] = data
-                    keyframe.EaseIn[name] = replacekey.EaseIn[name]
-                    keyframe.EaseOut[name] = replacekey.EaseOut[name]
-                end
-            end
-            SMH.KeyframeData:Delete(player, replacekey.ID)
-        end
-
         keyframe.Frame = frame
         table.insert(copiedKeyframes, keyframe)
     end
