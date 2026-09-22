@@ -6,8 +6,11 @@ local setModelScale = opt.EntitySetModelScale
 local lerpLinear = SMH.LerpLinear
 
 function MOD:Save(entity)
+    local modelScale = entity:GetModelScale()    
+    if not modelScale then return nil end
+
     return {
-        ModelScale = entity:GetModelScale();
+        ModelScale = modelScale;
     };
 end
 
@@ -20,12 +23,18 @@ function MOD:LoadGhostBetween(entity, ghost, data1, data2, percentage)
 end
 
 function MOD:Load(entity, data)
-    setModelScale(entity, data.ModelScale);
+    if data.ModelScale then
+        setModelScale(entity, data.ModelScale);
+    end
 end
 
 function MOD:LoadBetween(entity, data1, data2, percentage)
 
-    local lerpedModelScale = lerpLinear(data1.ModelScale, data2.ModelScale, percentage);
-    setModelScale(entity, lerpedModelScale);
+    local lerpedModelScale = data1.ModelScale and data2.ModelScale and lerpLinear(data1.ModelScale, data2.ModelScale, percentage);
+    lerpedModelScale = lerpedModelScale or data1.ModelScale
+    lerpedModelScale = lerpedModelScale or data2.ModelScale
+    if lerpedModelScale then
+        setModelScale(entity, lerpedModelScale);
+    end
 
 end
