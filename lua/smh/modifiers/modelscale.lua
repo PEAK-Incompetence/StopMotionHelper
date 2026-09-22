@@ -7,7 +7,7 @@ local lerpLinear = SMH.LerpLinear
 
 function MOD:Save(entity)
     local modelScale = entity:GetModelScale()    
-    if not entity:GetModelScale() then return nil end
+    if not modelScale then return nil end
 
     return {
         ModelScale = modelScale;
