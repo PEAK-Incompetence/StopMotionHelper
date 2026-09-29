@@ -66,17 +66,22 @@ function PANEL:Init()
     self.SmoothButton:SetText("Smooth")
     self.SmoothButton.DoClick = function()
         self:OnRequestSmooth()
+        self:SetSmoothEnabled(false)
     end
 
     self.StretchButton = vgui.Create("DButton", self)
     self.StretchButton:SetText("Stretch")
     self.StretchButton.DoClick = function()
+        if self.Stretching == 1 then return end
+        
         self:OnRequestStretch()
+        self:SetStretchEnabled(false)
     end
 
     self.Stretching = 1
     self.StretchSlider = CreateSlider("Stretch Amount", 0, 10, self.Smoothing, function(_, value)
         value = tonumber(value)
+
         if not value then return end
         if value < 1 then
             self.StretchButton:SetText("Compress")
@@ -175,5 +180,13 @@ end
 function PANEL:OnRequestSelectFrames(increment) end
 function PANEL:OnRequestSmooth() end
 function PANEL:OnRequestStretch() end
+
+function PANEL:SetSmoothEnabled(bool)
+    self.SmoothButton:SetEnabled(bool)
+end
+
+function PANEL:SetStretchEnabled(bool)
+    self.StretchButton:SetEnabled(bool)
+end
 
 vgui.Register("SMHKeyframeSettings", PANEL, "DFrame")
