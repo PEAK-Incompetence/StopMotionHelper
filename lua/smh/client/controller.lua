@@ -294,6 +294,7 @@ function CTRL.Stretch(frames, amount)
     timer.Create("SMH_Stretching_Timer", 0, -1, function()
         local done = co()
         if done then
+            hook.Run("SMHStretchingFinished")
             timer.Remove("SMH_Stretching_Timer")
             RequestNodes()
         end
@@ -347,7 +348,7 @@ function CTRL.Smooth(frames, maxPasses)
     timer.Create("SMH_Smoothing_Timer", 0, -1, function()
         local done = co()
         if done then
-            chat.AddText("SMH Smoothing stopped.")
+            hook.Run("SMHSmoothingFinished")
             timer.Remove("SMH_Smoothing_Timer")
         end
     end)

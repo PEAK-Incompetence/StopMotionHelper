@@ -1,3 +1,5 @@
+local smh_suppress_chat = CreateClientConVar("smh_ui_suppress_messages", "0", true, false, "Display messages if an SMH operation has finished (smoothing, stretching, etc.)", 0, 1)
+
 --- @type SMHWorldClicker
 local WorldClicker = nil
 --- @type SMHTooltip
@@ -376,7 +378,17 @@ local function NewAudioClipPointer(audioClip)
 end
 -- =================================================
 
+local function addHoverCallbacks(parent)
+    for _, child in ipairs(parent:GetChildren()) do
+        if ispanel(child) and child ~= parent then
+            function child:TestHover(x, y)
+                parent:SetKeyboardInputEnabled(parent:IsChildHovered(child))
+            end
+        end
+    end
+end
 local function AddCallbacks()
+    addHoverCallbacks(WorldClicker)
 
     local lastEntity = NULL
     local entityCount = 1
@@ -796,6 +808,20 @@ local function setupUI()
     WorldClicker.MainMenu:SetInitialState(SMH.State)
 end
 
+hook.Add("SMHStretchingFinished", "SMHEnableStretching", function ()
+    WorldClicker.KeyframeSettings:SetStretchEnabled(true)
+    if not smh_suppress_chat:GetBool() then
+        chat.AddText("SMH Stretching stopped.")
+    end
+end)
+
+hook.Add("SMHSmoothingFinished", "SMHEnableSmoothing", function ()
+    WorldClicker.KeyframeSettings:SetSmoothEnabled(true)
+    if not smh_suppress_chat:GetBool() then
+        chat.AddText("SMH Smoothing stopped.")
+    end
+end)
+
 hook.Add("EntityRemoved", "SMHWorldClickerEntityRemoved", function(entity)
 
     for centity, _ in pairs(ClickerEntity) do
@@ -820,7 +846,13 @@ local MGR = {}
 
 --- @return boolean
 function MGR.IsOpen()
-    return WorldClicker:IsVisible()
+    return WorldClicker and WorldClicker:IsVisible()
+end
+
+function MGR.RefreshUI()
+    ---@diagnostic disable-next-line
+    WorldClicker = nil
+    setupUI()
 end
 
 --- Open the timeline and all other SMH UI
@@ -830,11 +862,23 @@ function MGR.Open()
     end
 
     WorldClicker:SetVisible(true)
+    WorldClicker:MakePopup()
+end
+
+-- Detour to allow other functions that free the mouse cursor to also interact with the SMH menu  
+gui.smh_EnableScreenClickerInternal = gui.smh_EnableScreenClickerInternal or gui.EnableScreenClicker
+function gui.EnableScreenClicker(bool, ...)
+    if WorldClicker then
+        WorldClicker:SetMouseInputEnabled(bool)
+    end
+	return gui.smh_EnableScreenClickerInternal(bool, ...)
 end
 
 --- Close the timeline
 function MGR.Close()
     WorldClicker:SetVisible(false)
+    WorldClicker:SetMouseInputEnabled(false)
+    WorldClicker:SetKeyboardInputEnabled(false)
 end
 
 --- Play audio clips when dragging the frame pointer

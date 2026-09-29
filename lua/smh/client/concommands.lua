@@ -57,12 +57,19 @@ local function previousFrame(n)
     SMH.Controller.SetFrame(pos)
 end
 
+local smh_menu_toggle = CreateClientConVar("smh_menu_toggle", "0", true, false, "Tapping the button bound to +smh_menu will toggle the SMH timeline, without having to hold the button", 0, 1)
+local smhMenuLastOpen = 0
 
 concommand.Add("+smh_menu", function()
+	if smh_menu_toggle:GetBool() and SMH.UI:IsOpen() then return end
+	smhMenuLastOpen = SysTime()
+
     SMH.Controller.OpenMenu()
 end, nil, "Open the SMH Timeline")
 
 concommand.Add("-smh_menu", function()
+    if smh_menu_toggle:GetBool() and (SysTime() - smhMenuLastOpen < 0.180) then return end
+
     SMH.Controller.CloseMenu()
 end, nil, "Close the SMH Timeline")
 
@@ -76,6 +83,10 @@ concommand.Add("smh_delete", function()
 	local ids = SMH.UI.GetKeyframesOnFrame(frame)
 	if not ids then return end
     SMH.Controller.DeleteKeyframe(ids)
+end)
+
+concommand.Add("smh_refreshui", function ()
+    SMH.UI.RefreshUI()
 end)
 
 concommand.Add("smh_resetsession", function (ply, cmd, args, argStr)
@@ -154,6 +165,9 @@ concommand.Add("smh_smooth", function(_, _, args)
         table.sort(frames)
     elseif SMH.UI.IsFrameKeyframe(SMH.State.Frame) then
         frames = {SMH.State.Frame}
+    else
+        hook.Run("SMHSmoothingFinished")
+        return
     end
 
     SMH.Controller.Smooth(frames, passes)
@@ -199,7 +213,7 @@ concommand.Add("smh_stretch", function (ply, cmd, args, argStr)
     end
 
     local selected = SMH.UI.GetSelected()
-    if not next(selected) then return end
+    if not next(selected) then hook.Run("SMHStretchingFinished") return end
 
     local frames = {}
     for _, panel in pairs(selected) do
