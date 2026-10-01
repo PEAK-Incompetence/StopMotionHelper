@@ -489,6 +489,9 @@ function PANEL:InitModifiers(list, ids)
     ModifierIds = table.Flip(ids)
 end
 
+--- @return table ModifierList
+--- @return string[] ModifierNames
+--- @return table<string, integer> ModifierIds
 function PANEL:GetModifiers()
     return ModifierList, ModifierNames, ModifierIds
 end

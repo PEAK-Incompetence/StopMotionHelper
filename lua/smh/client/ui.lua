@@ -1077,9 +1077,12 @@ function MGR.UpdateKeyframe(keyframe)
         pointer:AddID(keyframe.ID, keyframe.Entity)
         KeyframeIDs[keyframe.ID] = pointerId
     end
-    local modId = next(PropertiesMenu:GetCurrentModifiers())
-    while not keyframe.EaseIn[modId] and modId do
-        modId = next(PropertiesMenu:GetCurrentModifiers(), modId)
+    local _, _, modIds = PropertiesMenu:GetModifiers()
+    local k, name = next(PropertiesMenu:GetCurrentModifiers())
+    local modId = modIds[name]
+    while not keyframe.EaseIn[modId] and k do
+        k, name = next(PropertiesMenu:GetCurrentModifiers(), k)
+        modId = modIds[name]
     end
 
     KeyframeEasingData[pointerId] = {
