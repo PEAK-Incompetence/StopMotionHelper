@@ -25,40 +25,37 @@ if SERVER then
 		temp:Spawn()
 		local offsets = {}
 		local proportionOffsets = {}
-		-- TODO: Look for other names that proportion trick might go under
-		if ragdoll:LookupSequence("proportions") then
-			local temp2 = ents.Create("prop_dynamic")
-			temp2:SetModel(ragdoll:GetModel())
-			temp2:Spawn()
+		local temp2 = ents.Create("prop_dynamic")
+		temp2:SetModel(ragdoll:GetModel())
+		temp2:Spawn()
 
-			for i = 0, temp:GetPhysicsObjectCount() - 1 do
-				local phys = temp:GetPhysicsObjectNum(i)
-				phys:EnableMotion(false)
-				phys:EnableCollisions(false)
-				phys:EnableGravity(false)
-				phys:Sleep()
+		for i = 0, temp:GetPhysicsObjectCount() - 1 do
+			local phys = temp:GetPhysicsObjectNum(i)
+			phys:EnableMotion(false)
+			phys:EnableCollisions(false)
+			phys:EnableGravity(false)
+			phys:Sleep()
 
-				local b = temp:TranslatePhysBoneToBone(i)
-				local m1 = temp:GetBoneMatrix(b)
-				local m2 = temp2:GetBoneMatrix(b)
-				
-				local pos1, ang1 = phys:GetPos(), phys:GetAngles()
-				local pos2, ang2 = temp2:GetBonePosition(b)
+			local b = temp:TranslatePhysBoneToBone(i)
+			local m1 = temp:GetBoneMatrix(b)
+			local m2 = temp2:GetBoneMatrix(b)
+			
+			local pos1, ang1 = phys:GetPos(), phys:GetAngles()
+			local pos2, ang2 = temp2:GetBonePosition(b)
 
-				local bPos = m1 and m1:GetTranslation()
-				pos2 = m2 and m2:GetTranslation() or pos2
+			local bPos = m1 and m1:GetTranslation()
+			pos2 = m2 and m2:GetTranslation() or pos2
 
-				local bAng = m1 and m1:GetAngles()
-				ang2 = m2 and m2:GetAngles() or ang2
+			local bAng = m1 and m1:GetAngles()
+			ang2 = m2 and m2:GetAngles() or ang2
 
-				local offsetPos, offsetAng = WorldToLocal(pos2, ang2, bPos, bAng)
-				local pos, ang = WorldToLocal(pos1, ang1, pos2, ang2)
-				pos, ang = LocalToWorld(pos, ang, offsetPos, offsetAng)
-				
-				proportionOffsets[i] = {pos, ang}
-			end
-			temp2:Remove()
+			local offsetPos, offsetAng = WorldToLocal(pos2, ang2, bPos, bAng)
+			local pos, ang = WorldToLocal(pos1, ang1, pos2, ang2)
+			pos, ang = LocalToWorld(pos, ang, offsetPos, offsetAng)
+			
+			proportionOffsets[i] = {pos, ang}
 		end
+		temp2:Remove()
 
 		for i = 0, temp:GetPhysicsObjectCount() - 1 do
 			local phys = temp:GetPhysicsObjectNum(i)
