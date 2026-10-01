@@ -25,6 +25,7 @@ local SelectedPointers = {}
 local OffsetPointers = {}
 local LocalIDs = 0
 
+---@type SMHAudioClipPointer[]
 local AudioClipPointers = {}
 
 local LastSelectedKeyframe = nil
@@ -353,6 +354,10 @@ local function audioClipMenu(pointer, audioClip)
     end)
     menu:AddOption("Hide", function() 
         pointer:SetVisible(false)
+    end)
+    menu:AddOption("Regenerate waveform", function()
+        audioClip.Waveform = SMH.AudioClipManager.RegenerateWaveform(audioClip.Path)
+        pointer:Setup(audioClip)
     end)
 
     menu:Open()
@@ -1472,6 +1477,19 @@ end
 --- Deletes all audio clip pointers on the timeline
 function MGR.DeleteAllAudioClipPointers()
 	WorldClicker.MainMenu.FramePanel:DeleteAllAudioClipPointers()
+end
+
+function MGR.RefreshAllAudioClipPointers()
+    -- Only regenerate when the game is unpaused
+    timer.Simple(0.01, function()
+        for _, pointer in ipairs(AudioClipPointers) do
+            local audioClip = pointer._audioClip
+            if audioClip then
+                audioClip.Waveform = SMH.AudioClipManager.RegenerateWaveform(audioClip.Path)
+                pointer:Setup(audioClip)
+            end
+        end
+    end)
 end
 -- ===============================================
 

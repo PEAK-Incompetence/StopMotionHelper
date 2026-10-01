@@ -262,3 +262,7 @@ do
         StartRender(args[1], smh_render_cmd:GetString())
     end, suggestStartingFrame, "Generate an image sequence containing all the frames in the SMH Timeline, if smh_render_cmd makes an image. Accepts a whole number between 0 and the current frame count to offset the sequence")    
 end
+
+concommand.Add("smh_audioclip_refresh_all", function(ply, cmd, args, argStr)
+    SMH.UI.RefreshAllAudioClipPointers()
+end, nil, "Refresh all audio clip waveforms on the timeline.")
