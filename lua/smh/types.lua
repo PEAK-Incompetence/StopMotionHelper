@@ -32,6 +32,7 @@
 --- @field PlaybackRate integer
 --- @field PlaybackLength integer
 --- @field TimeStamp number
+--- @field AllowUnstretch boolean
 
 --- @class AudioClip
 --- @field ID integer

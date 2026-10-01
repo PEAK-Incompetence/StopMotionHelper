@@ -311,6 +311,7 @@ end
 --- @param frames integer[]
 --- @param maxPasses integer
 function CTRL.Smooth(frames, maxPasses)
+    SMH.State.AllowUnstretch = false
     local co = coroutine.wrap(function()
         for p = 1, maxPasses do
             local smoothingFrames = {}
@@ -350,6 +351,7 @@ function CTRL.Smooth(frames, maxPasses)
         if done then
             hook.Run("SMHSmoothingFinished")
             timer.Remove("SMH_Smoothing_Timer")
+            SMH.State.AllowUnstretch = true
         end
     end)
 
@@ -467,7 +469,7 @@ local function PlayAudioInBetween()
 			local startTime = ((currentFrame - startFrame - 0.5) * secondsPerFrame) + clip.StartTime
 			SMH.AudioClip.Play(id, startTime)
             timer.Create("SMHAudioInbetweener" .. id, duration - startTime, 1, function()
-                SMH.AudioClip.Stop(id)
+                SMH.AudioClip.QueueStop(id)
                 timer.Remove("SMHAudioInbetweener")
             end)
 		end
@@ -479,6 +481,7 @@ end
 --- @param startFrame integer
 function CTRL.StartPlayback(startFrame)
     if SMH.PhysRecord.IsActive() then return end
+    SMH.State.AllowUnstretch = false
 
     net.Start(SMH.MessageTypes.StartPlayback)
     net.WriteUInt(startFrame, INT_BITCOUNT)
@@ -492,6 +495,8 @@ end
 
 --- Signal the playback manager to stop for the client
 function CTRL.StopPlayback()
+    SMH.State.AllowUnstretch = true
+
     net.Start(SMH.MessageTypes.StopPlayback)
     net.SendToServer()
 	
