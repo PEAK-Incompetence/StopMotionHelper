@@ -474,8 +474,10 @@ function MGR.AudioPlayback(player, playback)
 	
 	--check for start of clip
 	if playerAudio[player] and playerAudio[player].audioFrames[currentFrame] then
-        for i,clip in ipairs(playerAudio[player].audioFrames[currentFrame]) do
-            local audioFrame = clip
+        local clips = playerAudio[player].audioFrames[currentFrame]
+        for i = 0, #clips + 1 do
+            local audioFrame = clips[i]
+            if not audioFrame then continue end
             
             --calculate end point
             local endFrame = math.ceil(currentFrame + playback.PlaybackRate * audioFrame.Duration)

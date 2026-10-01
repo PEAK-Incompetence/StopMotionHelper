@@ -467,7 +467,7 @@ local function PlayAudioInBetween()
 			local startTime = ((currentFrame - startFrame - 0.5) * secondsPerFrame) + clip.StartTime
 			SMH.AudioClip.Play(id, startTime)
             timer.Create("SMHAudioInbetweener" .. id, duration - startTime, 1, function()
-                SMH.AudioClip.Stop(id)
+                SMH.AudioClip.QueueStop(id)
                 timer.Remove("SMHAudioInbetweener")
             end)
 		end
