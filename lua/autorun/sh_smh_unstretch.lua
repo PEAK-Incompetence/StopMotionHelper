@@ -24,6 +24,41 @@ if SERVER then
 		temp:SetAngles(angle_zero)
 		temp:Spawn()
 		local offsets = {}
+		local proportionOffsets = {}
+		-- TODO: Look for other names that proportion trick might go under
+		if ragdoll:LookupSequence("proportions") then
+			local temp2 = ents.Create("prop_dynamic")
+			temp2:SetModel(ragdoll:GetModel())
+			temp2:Spawn()
+
+			for i = 0, temp:GetPhysicsObjectCount() - 1 do
+				local phys = temp:GetPhysicsObjectNum(i)
+				phys:EnableMotion(false)
+				phys:EnableCollisions(false)
+				phys:EnableGravity(false)
+				phys:Sleep()
+
+				local b = temp:TranslatePhysBoneToBone(i)
+				local m1 = temp:GetBoneMatrix(b)
+				local m2 = temp2:GetBoneMatrix(b)
+				
+				local pos1, ang1 = phys:GetPos(), phys:GetAngles()
+				local pos2, ang2 = temp2:GetBonePosition(b)
+
+				local bPos = m1 and m1:GetTranslation()
+				pos2 = m2 and m2:GetTranslation() or pos2
+
+				local bAng = m1 and m1:GetAngles()
+				ang2 = m2 and m2:GetAngles() or ang2
+
+				local offsetPos, offsetAng = WorldToLocal(pos2, ang2, bPos, bAng)
+				local pos, ang = WorldToLocal(pos1, ang1, pos2, ang2)
+				pos, ang = LocalToWorld(pos, ang, offsetPos, offsetAng)
+				
+				proportionOffsets[i] = {pos, ang}
+			end
+			temp2:Remove()
+		end
 
 		for i = 0, temp:GetPhysicsObjectCount() - 1 do
 			local phys = temp:GetPhysicsObjectNum(i)
@@ -32,7 +67,14 @@ if SERVER then
 			phys:EnableGravity(false)
 			phys:Sleep()
 
-			local bPos, bAng = temp:GetBonePosition(temp:TranslatePhysBoneToBone(i))
+			local b = temp:TranslatePhysBoneToBone(i)
+			local m = temp:GetBoneMatrix(b)
+
+			local pos, ang = temp:GetBonePosition(b)
+			local bPos, bAng = m and m:GetTranslation() or pos, m and m:GetAngles() or ang
+			if proportionOffsets[i] then
+				bPos, bAng = LocalToWorld(proportionOffsets[i][1], proportionOffsets[i][2], bPos, bAng)
+			end
 			local pos, ang = WorldToLocal(phys:GetPos(), phys:GetAngles(), bPos, bAng)
 			table.insert(offsets, { pos, ang })
 		end
@@ -54,13 +96,16 @@ if SERVER then
 			for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
 				local offset = offsets[i + 1]
 	
-				local bPos, bAng = ragdoll:GetBonePosition(ragdoll:TranslatePhysBoneToBone(i))
-				local pos, ang = LocalToWorld(offset[1], offset[2], bPos, bAng)
-				local phys = ragdoll:GetPhysicsObjectNum(i)
-				phys:EnableMotion(false)
-				phys:Wake()
-				phys:SetPos(pos)
-				phys:SetAngles(ang)
+				local b = ragdoll:TranslatePhysBoneToBone(i)
+				if ragdoll:GetBoneParent(b) >= 0 then
+					local bPos, bAng = ragdoll:GetBonePosition(b)
+					local pos, ang = LocalToWorld(offset[1], offset[2], bPos, bAng)
+					local phys = ragdoll:GetPhysicsObjectNum(i)
+					phys:EnableMotion(false)
+					phys:Wake()
+					phys:SetPos(pos)
+					phys:SetAngles(ang)
+				end
 			end
 		end)
 	end
@@ -77,12 +122,12 @@ if SERVER then
 		end
 
 		local ent = ents.Create("prop_ragdoll")
-		ent:SetModel(rag:GetModel())
-		ent:SetPos(rag:GetPos())
-		ent:SetAngles(rag:GetAngles())
+		ent:SetModel(ragdoll:GetModel())
+		ent:SetPos(ragdoll:GetPos())
+		ent:SetAngles(ragdoll:GetAngles())
 		ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
 		ent:Spawn()
-		local PhysObjects = rag:GetPhysicsObjectCount() - 1
+		local PhysObjects = ragdoll:GetPhysicsObjectCount() - 1
 		---@diagnostic disable-next-line: gmod-net-missing-network-counterpart, gmod-unknown-net-message
 		net.Start("RagUnstretch_Client1")
 		net.WriteEntity(ragdoll)
@@ -119,6 +164,10 @@ local doPeakUnstretch = CreateClientConVar(
 
 --- @param ragdolls Entity[]
 local function unstretch(ragdolls)
+	if not SMH.State.AllowUnstretch then
+		return
+	end
+
 	net.Start("smh_unstretch")
 	net.WriteBool(doPeakUnstretch:GetBool())
 	net.WriteTable(ragdolls, true)
