@@ -16,10 +16,6 @@ if SERVER then
     end)
 
     local forceRenderBoundsSleepTimeCVar = CreateConVar("smh_force_render_bounds_sleep", "0.1", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Update interval for setting render bounds on the client. This is notoriously laggy if this is set to 0.", 0, 1)
-    local forceRenderBoundsSleepTime = forceRenderBoundsCVar:GetFloat()
-    cvars.AddChangeCallback(forceRenderBoundsCVar:GetName(), function (convar, oldValue, newValue)
-        forceRenderBoundsSleepTime = tonumber(newValue)
-    end)
     
     util.AddNetworkString("SMHForceRenderBoundsModelScale")
     util.AddNetworkString("SMHForceRenderBoundsBoneScale")
@@ -32,7 +28,7 @@ if SERVER then
             lastModelScaleTimes[self] = lastScaleTime
         end
         local now = CurTime()
-        if forceRenderBounds and (now - lastScaleTime) > forceRenderBoundsSleepTime then
+        if forceRenderBounds and (now - lastScaleTime) > forceRenderBoundsSleepTimeCVar:GetFloat() then
             lastModelScaleTimes[self] = now
             net.Start("SMHForceRenderBoundsModelScale", true)
             net.WriteEntity(self)
@@ -49,7 +45,7 @@ if SERVER then
             lastScaleTimes[self] = lastScaleTime
         end
         local now = CurTime()
-        if forceRenderBounds and (batch == nil or batch) and (now - lastScaleTime) > forceRenderBoundsSleepTime then
+        if forceRenderBounds and (batch == nil or batch) and (now - lastScaleTime) > forceRenderBoundsSleepTimeCVar:GetFloat() then
             lastScaleTimes[self] = now
             net.Start("SMHForceRenderBoundsBoneScale", true)
             net.WriteEntity(self)
@@ -167,7 +163,7 @@ net.Receive("SMHForceRenderBoundsBoneScale", function (len, ply)
     local entIndex = net.ReadUInt(MAX_EDICT_BITS)
     local entity = Entity(entIndex)
 
-    local function manipulateEntity()
+    local function manipulateEntity(entity)
         if IsValid(entity) then
             for index = 0, entity:GetBoneCount() - 1 do
                 setEntityRenderBounds(entity, index, entity:GetManipulateBoneScale(index))
@@ -176,13 +172,13 @@ net.Receive("SMHForceRenderBoundsBoneScale", function (len, ply)
     end
 
     if IsValid(entity) then
-        manipulateEntity()
+        manipulateEntity(entity)
     else
         -- In multiplayer (or other cases), the ghost entity isn't immediately available, so we have to wait an extra tick
         -- and then try again. We only need to do this for ghost entities fortunately, but this is really hacky
         timer.Simple(0.1, function()
             entity = Entity(entIndex)
-            manipulateEntity()
+            manipulateEntity(entity)
         end)
     end
 end)
