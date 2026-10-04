@@ -209,7 +209,8 @@ end
 --- @param scale Vector
 --- @return nil
 function MGR.EntityManipulateBoneScale(entity, id, scale)
-    return entManipulateBoneScale(entity, id, scale)
+    -- Pass a batching conditional, so that we don't request too many render bound updates
+    return entManipulateBoneScale(entity, id, scale, id == entity:GetBoneCount() - 1)
 end
 
 

@@ -49,7 +49,7 @@ local physBoneParents = {}
 
 --- @param entity Entity Entity to translate bone
 --- @param bone integer Physics object id
---- @return integer physBone Parent physics object id
+--- @return integer physBone Parent physics object id or -1 if it can't find it
 function GetPhysBoneParent(entity, bone)
 	local model = getModel(entity)
 	if physBoneParents[model] and physBoneParents[model][bone] then

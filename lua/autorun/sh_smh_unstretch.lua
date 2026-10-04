@@ -7,6 +7,7 @@ if not game.SinglePlayer() then
 end
 
 if SERVER then
+	--- For unstretching physics bones back to their bone positions
 	--- @type {[string]: PhysObjBoneOffset[]}
 	local physObjToBoneOffsets = {}
 
@@ -23,12 +24,14 @@ if SERVER then
 		temp:SetPos(vector_origin)
 		temp:SetAngles(angle_zero)
 		temp:Spawn()
+
 		local offsets = {}
 		local proportionOffsets = {}
 		local temp2 = ents.Create("prop_dynamic")
 		temp2:SetModel(ragdoll:GetModel())
 		temp2:Spawn()
 
+		-- Reference to proportion offset pass
 		for i = 0, temp:GetPhysicsObjectCount() - 1 do
 			local phys = temp:GetPhysicsObjectNum(i)
 			phys:EnableMotion(false)
