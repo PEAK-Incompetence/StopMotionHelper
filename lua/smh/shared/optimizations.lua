@@ -75,6 +75,8 @@ local entSetMaterial = ENTITY.SetMaterial
 local entSetSubMaterial = ENTITY.SetSubMaterial
 local entSetPoseParameter = ENTITY.SetPoseParameter
 local entSetModelScale = ENTITY.SetModelScale
+local entIsValid = ENTITY.IsValid
+local entGetPhysicsObject = ENTITY.GetPhysicsObject
 
 --- @param entity Entity
 --- @return string?
@@ -209,7 +211,8 @@ end
 --- @param scale Vector
 --- @return nil
 function MGR.EntityManipulateBoneScale(entity, id, scale)
-    return entManipulateBoneScale(entity, id, scale)
+    -- Pass a batching conditional, so that we don't request too many render bound updates
+    return entManipulateBoneScale(entity, id, scale, id == entGetBoneCount(entity) - 1)
 end
 
 
@@ -240,7 +243,7 @@ local physObjIndex = {}
 
 hook.Add("OnEntityCreated", "SMHOptimizationsEntityCreated", function (ent)
     timer.Simple(0, function()
-        if isValid(ent) and ent:IsRagdoll() then
+        if entIsValid(ent) and ent:IsRagdoll() then
             physObjIndex[ent] = {}
         end
     end)
@@ -283,6 +286,12 @@ function MGR.EntityGetPhysicsObjectCount(entity)
     return count
 end
 
+end
+
+--- @param entity Entity
+--- @return PhysObj
+function MGR.EntityGetPhysicsObject(entity)
+    return entGetPhysicsObject(entity)
 end
 
 end

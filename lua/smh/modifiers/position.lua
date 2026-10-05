@@ -4,11 +4,18 @@ MOD.Name = "Position and Rotation";
 local opt = SMH.Optimizations
 local setPos = opt.EntitySetPos
 local setAngles = opt.EntitySetAngles
+local getPhysicsObject = opt.EntityGetPhysicsObject
 
 local lerpLinearVector = SMH.LerpLinearVector
 local lerpLinearAngle = SMH.LerpLinearAngle
 
 function MOD:Save(entity)
+
+    -- Don't record redundant data if we have a physics object that can provide
+    -- more accurate transform data
+    if getPhysicsObject(entity) then
+        return nil;
+    end
 
     local data = {};
     data.Pos = entity:GetPos();
@@ -26,6 +33,9 @@ function MOD:LoadGhostBetween(entity, ghost, data1, data2, percentage)
 end
 
 function MOD:Load(entity, data)
+    if getPhysicsObject(entity) then
+        return
+    end
 
     setPos(entity, data.Pos);
     setAngles(entity, data.Ang);
@@ -33,6 +43,9 @@ function MOD:Load(entity, data)
 end
 
 function MOD:LoadBetween(entity, data1, data2, percentage)
+    if getPhysicsObject(entity) then
+        return
+    end
 
     local Pos = lerpLinearVector(data1.Pos, data2.Pos, percentage);
     local Ang = lerpLinearAngle(data1.Ang, data2.Ang, percentage);

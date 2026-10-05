@@ -49,7 +49,7 @@ local physBoneParents = {}
 
 --- @param entity Entity Entity to translate bone
 --- @param bone integer Physics object id
---- @return integer physBone Parent physics object id
+--- @return integer physBone Parent physics object id or -1 if it can't find it
 function GetPhysBoneParent(entity, bone)
 	local model = getModel(entity)
 	if physBoneParents[model] and physBoneParents[model][bone] then
@@ -81,6 +81,19 @@ function PhysBoneToBone(ent, bone)
 	return ent:TranslatePhysBoneToBone(bone)
 end
 
+local staticProps = {}
+local function isStaticProp(entity)
+	local model = entity:GetModel()
+	local result = staticProps[model]
+	if result ~= nil then
+		return result
+	end
+	result = util.GetModelInfo(model).StaticProp
+	staticProps[model] = result
+
+	return result
+end
+
 --- @type {[string]: {[integer]: integer}}
 local boneToPhysMap = {}
 
@@ -91,8 +104,12 @@ function BoneToPhysBone(ent, bone)
 	local model = getModel(ent)
 	if boneToPhysMap[model] and boneToPhysMap[model][bone] then
 		return boneToPhysMap[model][bone]
-	else
+	else		
 		boneToPhysMap[model] = boneToPhysMap[model] or {}
+		if isStaticProp(ent) or ent:GetPhysicsObjectCount() == 1 then
+			boneToPhysMap[model][bone] = 0
+			return 0
+		end
 		for i = 0, ent:GetPhysicsObjectCount() - 1 do
 			local b = ent:TranslatePhysBoneToBone(i)
 			if bone == b then

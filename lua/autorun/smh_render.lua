@@ -6,45 +6,66 @@ local Entity = Entity
 local ENTITY = FindMetaTable("Entity")
 
 if SERVER then
+    local lastScaleTimes = {}
+    local lastModelScaleTimes = {}
+
     local forceRenderBoundsCVar = CreateConVar("smh_force_render_bounds", "1", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "If set to 1, it sets the render bounds of entity when using scaling an entity with bone manipulations. This is useful for ensuring resized props do not disappear", 0, 1)
-        local forceRenderBounds = forceRenderBoundsCVar:GetBool()
-        cvars.AddChangeCallback(forceRenderBoundsCVar:GetName(), function (convar, oldValue, newValue)
-            forceRenderBounds = tobool(newValue)
-        end)
-        
-        util.AddNetworkString("SMHForceRenderBoundsModelScale")
-        util.AddNetworkString("SMHForceRenderBoundsBoneScale")
+    local forceRenderBounds = forceRenderBoundsCVar:GetBool()
+    cvars.AddChangeCallback(forceRenderBoundsCVar:GetName(), function (convar, oldValue, newValue)
+        forceRenderBounds = tobool(newValue)
+    end)
+
+    local forceRenderBoundsSleepTimeCVar = CreateConVar("smh_force_render_bounds_sleep", "0.1", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Update interval for setting render bounds on the client. This is notoriously laggy if this is set to 0.", 0, 1)
+    
+    util.AddNetworkString("SMHForceRenderBoundsModelScale")
+    util.AddNetworkString("SMHForceRenderBoundsBoneScale")
 
     ENTITY.smh_SetModelScale = ENTITY.smh_SetModelScale or ENTITY.SetModelScale
+    local smhSetModelScale = ENTITY.smh_SetModelScale
     function ENTITY:SetModelScale(scale, deltaTime, ...)
-        if forceRenderBounds then
-            net.Start("SMHForceRenderBoundsModelScale")
+        local lastScaleTime = lastModelScaleTimes[self]
+        if not lastScaleTime then
+            lastScaleTime = CurTime()
+            lastModelScaleTimes[self] = lastScaleTime
+        end
+        local now = CurTime()
+        if forceRenderBounds and (now - lastScaleTime) > forceRenderBoundsSleepTimeCVar:GetFloat() then
+            lastModelScaleTimes[self] = now
+            net.Start("SMHForceRenderBoundsModelScale", true)
             net.WriteEntity(self)
-            net.WriteDouble(scale)
             net.Broadcast()
         end
-        return self:smh_SetModelScale(scale, deltaTime, ...)
+        return smhSetModelScale(self, scale, deltaTime, ...)
     end
 
     ENTITY.smh_ManipulateBoneScale = ENTITY.smh_ManipulateBoneScale or ENTITY.ManipulateBoneScale
-    function ENTITY:ManipulateBoneScale(i, scale, ...)
-        if forceRenderBounds then
-            net.Start("SMHForceRenderBoundsBoneScale")
+    local smhManipulateBoneScale = ENTITY.smh_ManipulateBoneScale
+    function ENTITY:ManipulateBoneScale(i, scale, batch, ...)
+        local lastScaleTime = lastScaleTimes[self]
+        if not lastScaleTime then
+            lastScaleTime = CurTime()
+            lastScaleTimes[self] = lastScaleTime
+        end
+        local now = CurTime()
+        if forceRenderBounds and (batch == nil or batch) and (now - lastScaleTime) > forceRenderBoundsSleepTimeCVar:GetFloat() then
+            lastScaleTimes[self] = now
+            net.Start("SMHForceRenderBoundsBoneScale", true)
             net.WriteEntity(self)
-            net.WriteUInt(i, 8)
-            net.WriteVector(scale)
             net.Broadcast()
         end
-        return self:smh_ManipulateBoneScale(i, scale, ...)
+        return smhManipulateBoneScale(self, i, scale, ...)
     end
     return 
 end
 
 ENTITY.smh_EnableMatrix = ENTITY.smh_EnableMatrix or ENTITY.EnableMatrix
+local smhEnableMatrix = ENTITY.smh_EnableMatrix
 function ENTITY:EnableMatrix(matrixType, matrix, ...)
     self.smh_RenderBoundsCacheMatrixScale = matrix:GetScale()
-    return self:smh_EnableMatrix(matrixType, matrix, ...)
+    return smhEnableMatrix(self, matrixType, matrix, ...)
 end
+
+local entSetRenderBounds = ENTITY.SetRenderBounds
 
 --- @param ent SMHEntity
 --- @param boneID number
@@ -57,7 +78,7 @@ local function setScaledRenderBounds(ent, boneID, scale)
         local min = oldMin * scale 
         local max = oldMax * scale
         
-        ent:SetRenderBounds(min, max)
+        entSetRenderBounds(ent, min, max)
     end
 end
 
@@ -145,36 +166,40 @@ end
 
 net.Receive("SMHForceRenderBoundsBoneScale", function (len, ply)
     local entIndex = net.ReadUInt(MAX_EDICT_BITS)
-    local index = net.ReadUInt(8)
-    local scale = net.ReadVector()
     local entity = Entity(entIndex)
+
+    local function manipulateEntity(entity)
+        if IsValid(entity) then
+            for index = 0, entity:GetBoneCount() - 1 do
+                setEntityRenderBounds(entity, index, entity:GetManipulateBoneScale(index))
+            end
+        end
+    end
+
     if IsValid(entity) then
-        setEntityRenderBounds(entity, index, scale)
+        manipulateEntity(entity)
     else
         -- In multiplayer (or other cases), the ghost entity isn't immediately available, so we have to wait an extra tick
         -- and then try again. We only need to do this for ghost entities fortunately, but this is really hacky
         timer.Simple(0.1, function()
             entity = Entity(entIndex)
-            if IsValid(entity) then
-                setEntityRenderBounds(entity, index, scale)
-            end
+            manipulateEntity(entity)
         end)
     end
 end)
 
 net.Receive("SMHForceRenderBoundsModelScale", function (len, ply)
     local entIndex = net.ReadUInt(MAX_EDICT_BITS)
-    local scale = net.ReadDouble()
     local entity = Entity(entIndex)
     if IsValid(entity) then
         initializeRenderBounds(entity)
-        entity.smh_RenderBoundsCacheModelScale = scale
+        entity.smh_RenderBoundsCacheModelScale = entity:GetModelScale()
     else
         timer.Simple(0.1, function ()
             entity = Entity(entIndex)
             if IsValid(entity) then
                 initializeRenderBounds(entity)
-                entity.smh_RenderBoundsCacheModelScale = scale           
+                entity.smh_RenderBoundsCacheModelScale = entity:GetModelScale()  
             end
         end)
     end
