@@ -565,12 +565,12 @@ function MGR.RequestNodes(player, settings)
 
     table.Empty(nodes)
 
-    local bone = entity:LookupBone(boneName)
+    local bone = entity:LookupBone(boneName) or 0
     local physBone = bone and BoneToPhysBone(entity, bone)
     local physBoneParent = bone and GetPhysBoneParentFromBone(entity, bone)
     local isPhysBone = bone and physBone >= 0
 
-    for _, keyframe in pairs(keyframes) do
+    for _, keyframe in ipairs(keyframes) do
         local pos, ang
         if isPhysBone then
             for name, m in pairs(SMH.Modifiers) do
