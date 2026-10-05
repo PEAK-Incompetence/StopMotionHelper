@@ -1,5 +1,19 @@
 --- @class SMHMenu: DFrame
 local PANEL = {}
+AccessorFunc(PANEL, "m_bHangOpen", "HangOpen")
+
+function PANEL:StartKeyFocus(panel)
+    self.m_pKeyFocus = panel
+    self:SetKeyboardInputEnabled(true)
+    self:SetHangOpen(true)
+end
+
+function PANEL:EndKeyFocus(panel)
+    if self.m_pKeyFocus ~= panel then
+        return
+    end
+    self:SetKeyboardInputEnabled(false)
+end
 
 function PANEL:Init()
 
@@ -9,6 +23,7 @@ function PANEL:Init()
     self:SetDraggable(false)
     self:ShowCloseButton(false)
     self:SetDeleteOnClose(false)
+    self:SetHangOpen(false)
     self:ShowCloseButton(false)
 
     self._sendKeyframeChanges = true

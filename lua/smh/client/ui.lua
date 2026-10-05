@@ -813,6 +813,32 @@ local function setupUI()
     WorldClicker.MainMenu:SetInitialState(SMH.State)
 end
 
+hook.Add("OnTextEntryGetFocus", "SMHMenuKeyboardFocusOn", function(panel)
+    if not IsValid(WorldClicker) or not IsValid(WorldClicker.MainMenu) then
+        return
+    end
+    if 
+        panel:HasParent(WorldClicker.MainMenu) 
+        or panel:HasParent(WorldClicker.Settings) 
+        or panel:HasParent(WorldClicker.MotionPaths)
+    then
+        WorldClicker.MainMenu:StartKeyFocus(panel)
+    end
+end)
+
+hook.Add("OnTextEntryLoseFocus", "SMHMenuKeyboardFocusOff", function(panel)
+    if not IsValid(WorldClicker) or not IsValid(WorldClicker.MainMenu) then
+        return
+    end
+    if 
+        panel:HasParent(WorldClicker.MainMenu) 
+        or panel:HasParent(WorldClicker.Settings) 
+        or panel:HasParent(WorldClicker.MotionPaths)
+    then
+        WorldClicker.MainMenu:EndKeyFocus(panel)
+    end
+end)
+
 hook.Add("SMHStretchingFinished", "SMHEnableStretching", function ()
     WorldClicker.KeyframeSettings:SetStretchEnabled(true)
     if not smh_suppress_chat:GetBool() then
@@ -866,6 +892,7 @@ function MGR.Open()
         setupUI()
     end
 
+    WorldClicker.MainMenu:SetHangOpen(false)
     WorldClicker:SetVisible(true)
     WorldClicker:MakePopup()
 end
@@ -881,6 +908,11 @@ end
 
 --- Close the timeline
 function MGR.Close()
+    if IsValid(WorldClicker.MainMenu) and WorldClicker.MainMenu:GetHangOpen() then
+        WorldClicker.MainMenu:SetHangOpen(false)
+        return
+    end
+
     WorldClicker:SetVisible(false)
     WorldClicker:SetMouseInputEnabled(false)
     WorldClicker:SetKeyboardInputEnabled(false)
