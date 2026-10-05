@@ -232,6 +232,8 @@ local function PlaybackSmooth(player, playback, settings)
                 end
             end
         end
+
+        hook.Run("SMH_PostFrameEntity", entity)
     end
     frameHistory[player] = currentFrame
 end
@@ -290,6 +292,8 @@ function MGR.SelectFrame(player, newFrame, settings)
                 mod:LoadBetween(entity, prevKeyframe.Modifiers[name], nextKeyframe.Modifiers[name], lerpMultiplier, entitySettings);
             end
         end
+
+        hook.Run("SMH_PostFrameEntity", entity)
     end
     frameHistory[player] = newFrame
 end
@@ -349,6 +353,8 @@ function MGR.SetFrame(player, newFrame, settings)
                 mod:LoadBetween(entity, prevKeyframe.Modifiers[name], nextKeyframe.Modifiers[name], lerpMultiplier, entitySettings);
             end
         end
+
+        hook.Run("SMH_PostFrameEntity", entity)
     end
     frameHistory[player] = newFrame
 end
@@ -399,6 +405,8 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
                 mod:LoadBetween(entity, prevKeyframe.Modifiers[name], nextKeyframe.Modifiers[name], lerpMultiplier, entitySettings);
             end
         end
+
+        hook.Run("SMH_PostFrameEntity", entity)
     end
     frameHistory[player] = newFrame
 end
