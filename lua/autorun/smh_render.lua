@@ -21,6 +21,7 @@ if SERVER then
     util.AddNetworkString("SMHForceRenderBoundsBoneScale")
 
     ENTITY.smh_SetModelScale = ENTITY.smh_SetModelScale or ENTITY.SetModelScale
+    local smhSetModelScale = ENTITY.smh_SetModelScale
     function ENTITY:SetModelScale(scale, deltaTime, ...)
         local lastScaleTime = lastModelScaleTimes[self]
         if not lastScaleTime then
@@ -34,10 +35,11 @@ if SERVER then
             net.WriteEntity(self)
             net.Broadcast()
         end
-        return self:smh_SetModelScale(scale, deltaTime, ...)
+        return smhSetModelScale(self, scale, deltaTime, ...)
     end
 
     ENTITY.smh_ManipulateBoneScale = ENTITY.smh_ManipulateBoneScale or ENTITY.ManipulateBoneScale
+    local smhManipulateBoneScale = ENTITY.smh_ManipulateBoneScale
     function ENTITY:ManipulateBoneScale(i, scale, batch, ...)
         local lastScaleTime = lastScaleTimes[self]
         if not lastScaleTime then
@@ -51,16 +53,19 @@ if SERVER then
             net.WriteEntity(self)
             net.Broadcast()
         end
-        return self:smh_ManipulateBoneScale(i, scale, ...)
+        return smhManipulateBoneScale(self, i, scale, ...)
     end
     return 
 end
 
 ENTITY.smh_EnableMatrix = ENTITY.smh_EnableMatrix or ENTITY.EnableMatrix
+local smhEnableMatrix = ENTITY.smh_EnableMatrix
 function ENTITY:EnableMatrix(matrixType, matrix, ...)
     self.smh_RenderBoundsCacheMatrixScale = matrix:GetScale()
-    return self:smh_EnableMatrix(matrixType, matrix, ...)
+    return smhEnableMatrix(self, matrixType, matrix, ...)
 end
+
+local entSetRenderBounds = ENTITY.SetRenderBounds
 
 --- @param ent SMHEntity
 --- @param boneID number
@@ -73,7 +78,7 @@ local function setScaledRenderBounds(ent, boneID, scale)
         local min = oldMin * scale 
         local max = oldMax * scale
         
-        ent:SetRenderBounds(min, max)
+        entSetRenderBounds(ent, min, max)
     end
 end
 
