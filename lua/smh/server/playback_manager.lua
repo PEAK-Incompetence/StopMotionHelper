@@ -182,6 +182,7 @@ local function PlaybackSmooth(player, playback, settings)
     local entities = SMH.KeyframeData.Players[player].Entities
     local enableWorldKeyframes = tobool(player:GetInfo("smh_enableworldkeyframes"))
     local delta = currentFrame - (frameHistory[player] or currentFrame)
+    local entityList = {}
 
     for entity, keyframes in pairs(entities) do
         if entity == player then
@@ -233,8 +234,9 @@ local function PlaybackSmooth(player, playback, settings)
             end
         end
 
-        hook.Run("SMH_PostFrameEntity", entity)
+        entityList[#entityList + 1] = entity
     end
+    hook.Run("SMH_PostFrameEntity", entityList)
     frameHistory[player] = currentFrame
 end
 
@@ -251,6 +253,7 @@ function MGR.SelectFrame(player, newFrame, settings)
 
     local entities = playerData.Entities
     local enableWorldKeyframes = tobool(player:GetInfo("smh_enableworldkeyframes"))
+    local entityList = {}
 
     for entity, keyframes in pairs(entities) do
         if entity == player then
@@ -293,8 +296,9 @@ function MGR.SelectFrame(player, newFrame, settings)
             end
         end
 
-        hook.Run("SMH_PostFrameEntity", entity)
+        entityList[#entityList + 1] = entity
     end
+    hook.Run("SMH_PostFrameEntity", entityList)
     frameHistory[player] = newFrame
 end
 
@@ -312,6 +316,7 @@ function MGR.SetFrame(player, newFrame, settings)
     local entities = playerData.Entities
     local enableWorldKeyframes = tobool(player:GetInfo("smh_enableworldkeyframes"))
     local delta = newFrame - (frameHistory[player] or newFrame)
+    local entityList = {}
 
     for entity, keyframes in pairs(entities) do
         if entity == player then
@@ -354,8 +359,9 @@ function MGR.SetFrame(player, newFrame, settings)
             end
         end
 
-        hook.Run("SMH_PostFrameEntity", entity)
+        entityList[#entityList + 1] = entity
     end
+    hook.Run("SMH_PostFrameEntity", entityList)
     frameHistory[player] = newFrame
 end
 
@@ -371,6 +377,7 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
 
     local entities = playerData.Entities
     local delta = newFrame - (frameHistory[player] or newFrame)
+    local entityList = {}
 
     for entity, keyframes in pairs(entities) do
         if ignored[entity] then continue end
@@ -406,8 +413,9 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
             end
         end
 
-        hook.Run("SMH_PostFrameEntity", entity)
+        entityList[#entityList + 1] = entity
     end
+    hook.Run("SMH_PostFrameEntity", entityList)
     frameHistory[player] = newFrame
 end
 
