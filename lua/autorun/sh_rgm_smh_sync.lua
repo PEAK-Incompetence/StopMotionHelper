@@ -47,8 +47,8 @@ if CLIENT then
 		enabled2 = tobool(Either(tonumber(newValue) ~= nil, tonumber(newValue) > 0, false))
 	end, "updateBoolean")
 
-	hook.Remove("SMH_PostSetFrame", "syncRGMSMHBone")
-	hook.Add("SMH_PostSetFrame", "syncRGMSMHBone", function(frame)
+	hook.Remove("Think", "syncRGMSMHBone")
+	hook.Add("Think", "syncRGMSMHBone", function(frame)
 		if not enabled then
 			return
 		end
