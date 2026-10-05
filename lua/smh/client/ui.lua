@@ -228,7 +228,7 @@ local function NewKeyframePointer(keyframeId)
             end
         end
 
-        for id, pointer in pairs(SelectedPointers) do
+        for id, pointer in SortedPairs(SelectedPointers) do
             ReleaseAction(pointer, id, pointer:GetFrame())
         end
 

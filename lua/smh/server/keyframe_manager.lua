@@ -433,16 +433,28 @@ function MGR.Copy(player, keyframeIds, frame, timeline)
 
         movingkeyframes[copiedKeyframe] = frame[id]
         copyTargets[keyframe.Entity] = copyTargets[keyframe.Entity] or {}
-        copyTargets[keyframe.Entity][frame[id]] = true
+        copyTargets[keyframe.Entity][frame[id]] = copyTargets[keyframe.Entity][frame[id]] or copiedKeyframe
     end
 
+    local idsToDelete = {}
     for entity, targetFrames in pairs(copyTargets) do
         local existingKeyframes = table.Copy(SMH.KeyframeData.Players[player].Entities[entity] or {})
         for _, existingKeyframe in ipairs(existingKeyframes) do
-            if targetFrames[existingKeyframe.Frame] and not movingkeyframes[existingKeyframe] then
-                SMH.KeyframeData:Delete(player, existingKeyframe.ID)
+            local copiedKeyframe = targetFrames[existingKeyframe.Frame]
+            if copiedKeyframe and not movingkeyframes[existingKeyframe] then
+                for name, data in pairs(existingKeyframe.Modifiers) do
+                    if copiedKeyframe.Modifiers[name] ~= nil then continue end
+                    copiedKeyframe.Modifiers[name] = data
+                    copiedKeyframe.EaseIn[name] = existingKeyframe.EaseIn[name]
+                    copiedKeyframe.EaseOut[name] = existingKeyframe.EaseOut[name]
+                end
+                idsToDelete[existingKeyframe.ID] = true
             end
         end
+    end
+
+    for id, _ in pairs(idsToDelete) do
+        SMH.KeyframeData:Delete(player, id)
     end
 
     for keyframe, frame in pairs(movingkeyframes) do
