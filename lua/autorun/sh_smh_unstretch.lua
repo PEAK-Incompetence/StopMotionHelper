@@ -3,6 +3,7 @@
 --- @alias PhysObjBoneOffset {[1]: Vector, [2]: Angle}
 
 if not game.SinglePlayer() then
+	print("[SMH] Unstretch utilities are unavailable in multiplayer")
 	return
 end
 
@@ -93,6 +94,14 @@ if SERVER then
 				return
 			end
 
+			if ragdoll.ClassOverride == "prop_resizedragdoll_physparent" then
+				local _, ent = next(ragdoll.PhysObjEnts)
+				if IsValid(ent) then
+					-- Activate Ragdoll Resizer's unstretching: it unstretches over ticks
+					ent.StopMovingOnceFrozen = 8
+				end
+				return
+			end
 			for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
 				local offset = offsets[i + 1]
 	
@@ -210,10 +219,15 @@ concommand.Add("smh_unstretch", function(ply, cmd, args, argStr)
 	unstretch(ragdolls)
 end)
 
---- Dirty thing that ensures that my global is available on the next frame
+local ragdollClass = {
+	prop_ragdoll = true,
+	prop_resizedragdoll_physparent = true
+}
+
+--- Dirty thing that ensures that my global (SMHEntitySyncFactory) is available on the next frame
 timer.Simple(0, function()
 	SMHEntitySyncFactory("smh_unstretch_sync", "unstretch_smh_sync", function(ent)
-		if ent:IsRagdoll() then
+		if ragdollClass[ent:GetClass()] then
 			unstretch({ ent })
 		end
 	end, false)
