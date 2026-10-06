@@ -134,6 +134,9 @@ if SERVER then
 		ent:SetModel(ragdoll:GetModel())
 		ent:SetPos(ragdoll:GetPos())
 		ent:SetAngles(ragdoll:GetAngles())
+		ent:SetMaterial("null")
+		ent:SetColor(color_transparent)
+		ent:SetRenderMode(RENDERMODE_TRANSCOLOR)
 		ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
 		ent:Spawn()
 		local PhysObjects = ragdoll:GetPhysicsObjectCount() - 1
