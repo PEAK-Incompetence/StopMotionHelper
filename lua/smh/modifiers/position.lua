@@ -1,5 +1,6 @@
 
 MOD.Name = "Position and Rotation";
+MOD.Ghost = true
 
 local opt = SMH.Optimizations
 local setPos = opt.EntitySetPos
