@@ -71,7 +71,16 @@ local function CreateTypedConVar(type, name, defaultValue, helptext, userInfo, i
     local cv = {
         Type = type,
         Global = userInfo,
-        ConVar = CreateClientConVar(name, defaultValue, true, Either(userInfo ~= nil, userInfo, false), helptext, nil, nil),
+        ConVar = SMH.ConVars.Create(
+            name, 
+            defaultValue, 
+            Either(userInfo ~= nil, userInfo, false), 
+            helptext, 
+            TYPE_BOOL,
+            nil,
+            nil,
+            "Settings"
+        ),
     }
     setmetatable(cv, TYPED_CV)
 

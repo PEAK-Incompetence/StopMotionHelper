@@ -164,14 +164,12 @@ if SERVER then
 	return
 end
 
-local doPeakUnstretch = CreateClientConVar(
+local doPeakUnstretch = SMH.ConVars.Create(
 	"smh_unstretch_dopeak",
 	"0",
-	true,
 	false,
 	"If set to 1 and Ragdoll Unstretch Tool is installed, use Penol's Unstretch method",
-	0,
-	1
+	TYPE_BOOL
 )
 
 --- @param ragdolls Entity[]
@@ -233,5 +231,5 @@ timer.Simple(0, function()
 		if ragdollClass[ent:GetClass()] then
 			unstretch({ ent })
 		end
-	end, false)
+	end, false, "On frame change, unstretch the selected SMH entity. YMMV for your model. If you experience bugs, report them with a (Workshop) link model you are trying to unstretch")
 end)

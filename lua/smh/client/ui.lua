@@ -1,4 +1,4 @@
-local smh_suppress_chat = CreateClientConVar("smh_ui_suppress_messages", "0", true, false, "Display messages if an SMH operation has finished (smoothing, stretching, etc.)", 0, 1)
+local smh_suppress_chat = SMH.ConVars.Create("smh_ui_suppress_messages", "0", false, "Display messages if an SMH operation has finished (smoothing, stretching, etc.)", TYPE_BOOL, nil, nil, "UI")
 
 --- @type SMHWorldClicker
 local WorldClicker = nil

@@ -1,5 +1,6 @@
 include("shared.lua")
 
+include("client/convar.lua")
 include("client/state.lua")
 
 include("client/derma/frame_panel.lua")

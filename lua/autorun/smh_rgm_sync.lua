@@ -8,30 +8,26 @@
 
 if CLIENT then
 	local lastBone
-	local enableSync = CreateClientConVar(
+	local enableSync = SMH.ConVars.Create(
 		"sync_rgm_to_smh",
 		"1",
 		true,
-		false,
 		[[
 		When enabled, multiple events will occur: 
 		- Selecting a bone in Ragdoll Mover update the `smh_motionpathbone` ConVar. This convar is only available in vlazed's fork of Stop Motion Helper.
 		- Upon frame change from SMH, the gizmo will orient and position itself correctly; previously, it would only have the orientation or position of the initial frame 
 		- Upon frame change from SMH, entity constraints will be set. Lock offsets can be modified by transforming (positioning or rotating) the entity in Ragdoll Mover. Can be disabled with `sync_rgm_to_smh_locks 0`.
 		]],
-		0,
-		1
+		TYPE_BOOL
 	)
-	local enableLock = CreateClientConVar(
+	local enableLock = SMH.ConVars.Create(
 		"sync_rgm_to_smh_locks",
 		"0",
 		true,
-		false,
 		[[
 		When enabled, entity constraints will be set. This requires `sync_rgm_to_smh 1`. 
 		]],
-		0,
-		1
+		TYPE_BOOL
 	)
 	local smhBone = GetConVar("smh_motionpathbone")
 
