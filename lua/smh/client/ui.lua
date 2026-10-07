@@ -383,11 +383,37 @@ local function NewAudioClipPointer(audioClip)
 end
 -- =================================================
 
+local FilteredCommands = {
+    ["+smh_menu"] = "-smh_menu"
+}
+
+--- A hacky method to getting keybinds to work when focused on the menu
+--- We can add keybind console commands to `FilteredCommands`.  
+--- 
+--- @param panel Panel
+local function addKeyCodeReleasedCallback(panel)
+    function panel:OnKeyCodeReleased(keyCode)
+        local binding = input.LookupKeyBinding(keyCode)
+        if not binding then return end
+
+        binding = input.TranslateAlias(binding) or binding
+        local command = FilteredCommands[binding]
+        if command then
+            RunConsoleCommand(command)
+            return
+        end
+    end
+end
+
+---@param parent Panel
 local function addHoverCallbacks(parent)
+    addKeyCodeReleasedCallback(parent)
     for _, child in ipairs(parent:GetChildren()) do
+        ---@cast child Panel
         if ispanel(child) and child ~= parent then
+            addKeyCodeReleasedCallback(child)
             function child:TestHover(x, y)
-                parent:SetKeyboardInputEnabled(parent:IsChildHovered(child))
+                parent:SetKeyboardInputEnabled(parent:IsChildHovered())
             end
         end
     end
