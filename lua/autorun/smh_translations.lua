@@ -88,7 +88,8 @@ local function isStaticProp(entity)
 	if result ~= nil then
 		return result
 	end
-	result = util.GetModelInfo(model).StaticProp
+	local modelInfo = util.GetModelInfo(model)
+	result = modelInfo and modelInfo.StaticProp
 	staticProps[model] = result
 
 	return result
