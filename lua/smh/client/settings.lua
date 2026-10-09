@@ -60,13 +60,18 @@ end
 --- @param isGlobal boolean?
 --- @return TypedConVar
 local function CreateTypedConVar(type, name, defaultValue, helptext, userInfo, isGlobal)
+    local cvarType
     if type == ConVarType.Bool then
         defaultValue = tostring(defaultValue and 1 or 0)
+        cvarType = TYPE_BOOL
     elseif type == ConVarType.Int then
         defaultValue = tostring(defaultValue)
+        cvarType = TYPE_NUMBER
     elseif type == ConVarType.Float then
         defaultValue = tostring(defaultValue)
+        cvarType = TYPE_NUMBER
     end
+
 
     local cv = {
         Type = type,
@@ -76,9 +81,9 @@ local function CreateTypedConVar(type, name, defaultValue, helptext, userInfo, i
             defaultValue, 
             Either(userInfo ~= nil, userInfo, false), 
             helptext, 
-            TYPE_BOOL,
-            nil,
-            nil,
+            cvarType,
+            cvarType == TYPE_NUMBER and 0,
+            cvarType == TYPE_NUMBER and 1,
             "Settings"
         ),
     }
