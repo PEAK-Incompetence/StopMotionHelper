@@ -116,6 +116,7 @@ end
 function MOD:LoadGhostBetween(entity, ghost, data1, data2, percentage)
 
     local count = ghost:GetPhysicsObjectCount();
+    local isPropDynamic = ghost:GetClass() == "prop_dynamic"
 
     for i = 0, count - 1 do
 
