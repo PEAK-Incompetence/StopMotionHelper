@@ -132,12 +132,25 @@ function MGR.Spawn(model, settings, player, serializedKeyframes)
     if IsValid(player) and not player:CheckLimit("smhentity") then return end
 
     if class == "prop_ragdoll" and not data["physbones"] then
-        player:ChatPrint("Stop Motion Helper: Can't spawn the ragdoll as the save doesn't have Physical Bones modifier!")
-        return
+        for name, mod in pairs(SMH.Modifiers) do
+            if mod.Ghost then
+                if data[name] then 
+                    ragdollHasData = true
+                    break
+                end
+            end
+        end
+        if not ragdollHasData then
+            player:ChatPrint("Stop Motion Helper: Can't spawn the ragdoll as the save doesn't have Physical Bones modifier!")
+            return
+        end
     end
-    if not data["physbones"] and not data["position"] then
-        player:ChatPrint("Stop Motion Helper: Can't spawn the entity as the save doesn't have Physical Bones or Position and Rotation modifiers!")
-        return
+    local hasData = ragdollHasData
+    if not hasData then 
+        if not data["physbones"] and not data["position"] then
+            player:ChatPrint("Stop Motion Helper: Can't spawn the entity as the save doesn't have Physical Bones or Position and Rotation modifiers!")
+            return
+        end
     end
 
     local entity = ents.Create(class)
@@ -160,7 +173,7 @@ function MGR.Spawn(model, settings, player, serializedKeyframes)
 
     for name, mod in pairs(SMH.Modifiers) do
         if not data[name] then continue end
-        if data[name] and MGR.OriginData[player][name] and (name == "physbones" or name == "position") then
+        if data[name] and MGR.OriginData[player][name] and mod.Ghost then
             local offsetpos = MGR.OffsetPos[player] or Vector(0, 0, 0)
             local offsetang = MGR.OffsetAng[player] or Angle(0, 0, 0)
 
@@ -180,18 +193,13 @@ end
 --- @param entity Entity
 --- @param offsetpos Vector
 function MGR.OffsetKeyframes(player, entity, offsetpos)
-    for id, keyframe in pairs(SMH.KeyframeData.Players[player].Entities[entity]) do
-        local hasphysics = keyframe.Modifiers["physbones"] and true or false
-        local hasposition = keyframe.Modifiers["position"] and true or false
-
-        if not hasphysics and not hasposition then continue end
-
-        if hasphysics then
-            SetOffset(player, "physbones", keyframe, offsetpos)
-        end
-
-        if hasposition then
-            SetOffset(player, "position", keyframe, offsetpos)
+    for name, mod in pairs(SMH.Modifiers) do
+        if not mod.Ghost then continue end
+        for id, keyframe in pairs(SMH.KeyframeData.Players[player].Entities[entity]) do
+            local hasPhysicsOrPosition = keyframe.Modifiers[name]
+            if not hasPhysicsOrPosition then continue end
+    
+            SetOffset(player, name, keyframe, offsetpos)
         end
     end
 end
@@ -202,18 +210,13 @@ end
 function MGR.DupeOffsetKeyframes(player, entity, serializedKeyframes)
     local originData = GetDupeData(serializedKeyframes)
 
-    for id, keyframe in pairs(SMH.KeyframeData.Players[player].Entities[entity]) do
-        local hasphysics = keyframe.Modifiers["physbones"] and true or false
-        local hasposition = keyframe.Modifiers["position"] and true or false
-
-        if not hasphysics and not hasposition then continue end
-
-        if hasphysics then
-            SetDupeOffset(entity, "physbones", keyframe, originData)
-        end
-
-        if hasposition then
-            SetDupeOffset(entity, "position", keyframe, originData)
+    for name, mod in pairs(SMH.Modifiers) do
+        if not mod.Ghost then continue end
+        for id, keyframe in pairs(SMH.KeyframeData.Players[player].Entities[entity]) do
+            local hasPhysicsOrPosition = keyframe.Modifiers[name]
+            if not hasPhysicsOrPosition then continue end
+    
+            SetDupeOffset(entity, name, keyframe, originData)
         end
     end
 end

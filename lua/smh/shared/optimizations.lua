@@ -77,6 +77,11 @@ local entSetPoseParameter = ENTITY.SetPoseParameter
 local entSetModelScale = ENTITY.SetModelScale
 local entIsValid = ENTITY.IsValid
 local entGetPhysicsObject = ENTITY.GetPhysicsObject
+local entGetBrushPlaneCount = ENTITY.GetBrushPlaneCount
+
+function MGR.EntityGetBrushPlaneCount(entity)
+    return entGetBrushPlaneCount(entity)
+end
 
 --- @param entity Entity
 --- @return string?

@@ -39,8 +39,8 @@ end
 --- @param modName string
 --- @param settings Settings
 --- @return boolean
-local function checkPhysBake(entity, modName, settings)
-    return modName == "physbones" and check(settings, "EnablePhysBake", entity)
+local function checkPhysBake(player, entity, modName, settings)
+    return modName == "physbones" and tobool(player:GetInfo("smh_enablephysbake"))
 end
 
 --- This is used to make the walking algorithm go the right direction
@@ -197,7 +197,7 @@ local function PlaybackSmooth(player, playback, settings)
         local tweenDisabled = check(settings, "TweenDisable", entity)
 
         for name, mod in pairs(mods) do
-            if checkPhysBake(entity, name, settings) then continue end
+            if checkPhysBake(player, entity, name, settings) then continue end
 
             local cached, prevKeyframe, nextKeyframe, invDelta = lookupPlaybackCache(player, entity, name)
             if 
@@ -268,7 +268,7 @@ function MGR.SelectFrame(player, newFrame, settings)
         local tweenDisabled = check(settings, "TweenDisable", entity)
 
         for name, mod in pairs(mods) do
-            if checkPhysBake(entity, name, settings) then continue end
+            if checkPhysBake(player, entity, name, settings) then continue end
 
             local cached, prevKeyframe, nextKeyframe, invDelta = lookupPlaybackCache(player, entity, name)
             if 
@@ -331,7 +331,7 @@ function MGR.SetFrame(player, newFrame, settings)
         local tweenDisabled = check(settings, "TweenDisable", entity)
 
         for name, mod in pairs(mods) do
-            if checkPhysBake(entity, name, settings) then continue end
+            if checkPhysBake(player, entity, name, settings) then continue end
 
             local cached, prevKeyframe, nextKeyframe, invDelta = lookupPlaybackCache(player, entity, name)
             if 

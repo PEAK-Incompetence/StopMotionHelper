@@ -24,6 +24,12 @@ function MOD:Save(entity)
 
     local data = {};
 
+    local origin = entity:GetPhysicsObjectNum(0)
+    data.origin = {
+        Pos = origin:GetPos(),
+        Ang = origin:GetAngles()
+    }
+
     local endBones = {}
     for _, boneName in ipairs(self.BodyEnds) do
         local index = entity:LookupBone(boneName)
@@ -147,7 +153,7 @@ end
 function MOD:Offset(data, origindata, worldvector, worldangle, hitpos)
 
     if not hitpos then
-        hitpos = origindata[0].Pos;
+        hitpos = origindata.origin.Pos;
     end
 
     local newdata = {};
@@ -155,7 +161,7 @@ function MOD:Offset(data, origindata, worldvector, worldangle, hitpos)
     for id, kdata in pairs(data) do
 
         local d = {};
-        local Pos, Ang = WorldToLocal(kdata.Pos, kdata.Ang, origindata[0].Pos, Angle(0, 0, 0));
+        local Pos, Ang = WorldToLocal(kdata.Pos, kdata.Ang, origindata.origin.Pos, Angle(0, 0, 0));
         d.Pos, d.Ang = LocalToWorld(Pos, Ang, worldvector, worldangle);
         d.Pos = d.Pos + hitpos;
 
@@ -183,7 +189,7 @@ function MOD:OffsetDupe(entity, data, origindata)
     for id, kdata in pairs(data) do
 
         local d = {};
-        d.Pos, d.Ang = WorldToLocal(kdata.Pos, kdata.Ang, origindata[0].Pos, origindata[0].Ang);
+        d.Pos, d.Ang = WorldToLocal(kdata.Pos, kdata.Ang, origindata.origin.Pos, origindata.origin.Ang);
         d.Pos, d.Ang = LocalToWorld(d.Pos, d.Ang, entPos, entAng);
 
         if kdata.LocalPos and kdata.LocalAng then -- those shouldn't change

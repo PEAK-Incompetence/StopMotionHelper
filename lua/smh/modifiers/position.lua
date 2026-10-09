@@ -1,10 +1,12 @@
 
 MOD.Name = "Position and Rotation";
+MOD.Ghost = true
 
 local opt = SMH.Optimizations
 local setPos = opt.EntitySetPos
 local setAngles = opt.EntitySetAngles
 local getPhysicsObject = opt.EntityGetPhysicsObject
+local getBrushPlaneCount = opt.EntityGetBrushPlaneCount
 
 local lerpLinearVector = SMH.LerpLinearVector
 local lerpLinearAngle = SMH.LerpLinearAngle
@@ -13,7 +15,7 @@ function MOD:Save(entity)
 
     -- Don't record redundant data if we have a physics object that can provide
     -- more accurate transform data
-    if getPhysicsObject(entity) then
+    if getPhysicsObject(entity) and getBrushPlaneCount(entity) == 0 then
         return nil;
     end
 
@@ -33,7 +35,7 @@ function MOD:LoadGhostBetween(entity, ghost, data1, data2, percentage)
 end
 
 function MOD:Load(entity, data)
-    if getPhysicsObject(entity) then
+    if getPhysicsObject(entity) and getBrushPlaneCount(entity) == 0 then
         return
     end
 
@@ -43,7 +45,7 @@ function MOD:Load(entity, data)
 end
 
 function MOD:LoadBetween(entity, data1, data2, percentage)
-    if getPhysicsObject(entity) then
+    if getPhysicsObject(entity) and getBrushPlaneCount(entity) == 0 then
         return
     end
 
@@ -55,6 +57,7 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
 
 end
 
+local zeroAngle = Angle(0, 0, 0)
 function MOD:Offset(data, origindata, worldvector, worldangle, hitpos)
 
     if not hitpos then
@@ -62,7 +65,7 @@ function MOD:Offset(data, origindata, worldvector, worldangle, hitpos)
     end
 
     local datanew = {};
-    local Pos, Ang = WorldToLocal(data.Pos, data.Ang, origindata.Pos, Angle(0, 0, 0));
+    local Pos, Ang = WorldToLocal(data.Pos, data.Ang, origindata.Pos, zeroAngle);
     datanew.Pos, datanew.Ang = LocalToWorld(Pos, Ang, worldvector, worldangle);
     datanew.Pos = datanew.Pos + hitpos;
     return datanew;

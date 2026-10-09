@@ -2,7 +2,7 @@
 --- @field GetParent fun(self: SMHAudioClipPointer): SMHFramePanel
 local PANEL = {}
 
-local lockedHeightConVar = CreateClientConVar("smh_audioclip_scale", "50", true, false, "Set the relative height of the audio clip in the timeline. 100 means the clip takes up the full height of the timeline, and 0 disables its rendering completely.", 0, 100)
+local lockedHeightConVar = SMH.ConVars.Create("smh_audioclip_scale", "50", false, "Set the relative height of the audio clip in the timeline. 100 means the clip takes up the full height of the timeline, and 0 disables its rendering completely.", TYPE_NUMBER, 0, 100, "UI")
 local lockedHeight = lockedHeightConVar:GetFloat() / 100
 cvars.AddChangeCallback("smh_audioclip_scale", function (convar, oldValue, newValue)
     lockedHeight = Either(tonumber(newValue) ~= nil, tonumber(newValue), oldValue)  / 100

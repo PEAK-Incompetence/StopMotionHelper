@@ -1,12 +1,18 @@
-local shouldRemap = CreateClientConVar("sync_smh_to_facepose_remap", "0", true, false, "If set to 1, this applies a remapping correction for the default faceposer, or for any faceposer tool that remaps its flexes. Set this to 0 for the Improved Faceposer or Enhanced Faceposer", 0, 1)
+local shouldRemap = SMH.ConVars.Create("sync_smh_to_facepose_remap", "0", false, "If set to 1, this applies a remapping correction for the default faceposer, or for any faceposer tool that remaps its flexes. Set this to 0 for the Improved Faceposer or Enhanced Faceposer", TYPE_BOOL)
 
 --- Generate a think hook that updates an entity when the SMH state changes
 --- @param convar string
 --- @param hookName string
 --- @param callback fun(ent: SMHEntity)
 --- @param enabledByDefault boolean?
-function SMHEntitySyncFactory(convar, hookName, callback, enabledByDefault)
-	local enableSync = CreateClientConVar(convar, Either(enabledByDefault ~= nil, tobool(enabledByDefault) and "1" or "0", "1"), true, false, nil, 0, 1)
+function SMHEntitySyncFactory(convar, hookName, callback, enabledByDefault, helpText)
+	local enableSync = SMH.ConVars.Create(
+		convar, 
+		Either(enabledByDefault ~= nil, tobool(enabledByDefault) and "1" or "0", "1"), 
+		false, 
+		helpText, 
+		TYPE_BOOL
+	)
 	local enabled = enableSync:GetBool()
 	cvars.RemoveChangeCallback(convar, "updateBoolean")
 	cvars.AddChangeCallback(convar, function(_, _, newValue)
@@ -43,7 +49,7 @@ entitySyncFactory("sync_smh_to_facepose", "syncFacePoseSMH", function(ent)
 		end
 		RunConsoleCommand("faceposer_flex" .. i, weight)
 	end
-end)
+end, true, "Syncs currently selected faceposer entity to the frame value")
 
 -- On frame change, set the eye on the finger poser UI
 entitySyncFactory("sync_smh_to_eyepose", "syncEyePoseSMH", function(ent)
@@ -72,7 +78,7 @@ entitySyncFactory("sync_smh_to_eyepose", "syncEyePoseSMH", function(ent)
 
 	RunConsoleCommand("eyeposer_x", x)
 	RunConsoleCommand("eyeposer_y", y)
-end)
+end, true, "Syncs currently selected eyeposer entity to the frame value")
 
 local VarsOnHand = 15
 
@@ -114,4 +120,4 @@ entitySyncFactory("sync_smh_to_fingerpose", "syncFingerPoseSMH", function(ent)
 			end
 		end
 	end
-end)
+end, true, "Syncs currently selected fingerposer entity to the frame value")
