@@ -8,6 +8,9 @@ local setAngles = opt.PhysObjSetAngles
 local enableMotion = opt.PhysObjEnableMotion
 local wake = opt.PhysObjWake
 
+local entSetPos = opt.EntitySetPos
+local entSetAngles = opt.EntitySetAngles
+
 local getPhysicsObjectNum = opt.EntityGetPhysicsObjectNum
 
 local lerpLinearVector = SMH.LerpLinearVector
@@ -85,6 +88,7 @@ end
 function MOD:LoadGhost(entity, ghost, data)
 
     local count = ghost:GetPhysicsObjectCount();
+    local isPropDynamic = ghost:GetClass() == "prop_dynamic"
 
     for i = 0, count - 1 do
 
@@ -94,8 +98,13 @@ function MOD:LoadGhost(entity, ghost, data)
         wake(pb);
 
         local d = data[i];
-        setPos(pb, d.Pos, true);
-        setAngles(pb, d.Ang);
+        if isPropDynamic then
+            entSetPos(ghost, d.Pos)
+            entSetAngles(ghost, d.Ang)
+        else
+            setPos(pb, d.Pos, true);
+            setAngles(pb, d.Ang);
+        end
 
         enableMotion(pb, false);
         wake(pb);
@@ -119,8 +128,13 @@ function MOD:LoadGhostBetween(entity, ghost, data1, data2, percentage)
         local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
 
         enableMotion(pb, false);
-        setPos(pb, Pos, true);
-        setAngles(pb, Ang);
+        if isPropDynamic then
+            entSetPos(ghost, Pos)
+            entSetAngles(ghost, Ang)
+        else
+            setPos(pb, Pos, true);
+            setAngles(pb, Ang);
+        end
 
         wake(pb);
 
