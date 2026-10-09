@@ -1,6 +1,7 @@
 -- Modified version of the following script for SMH:
 -- https://gist.github.com/vlazed/117fdf704c91c48a0bda31b56a8788f6
 --- @alias PhysObjBoneOffset {[1]: Vector, [2]: Angle}
+--- @alias PhysObjParentOffset {[1]: Vector, [2]: Angle, [3]: integer}
 
 if not game.SinglePlayer() then
 	print("[SMH] Unstretch utilities are unavailable in multiplayer")
@@ -11,13 +12,15 @@ if SERVER then
 	--- For unstretching physics bones back to their bone positions
 	--- @type {[string]: PhysObjBoneOffset[]}
 	local physObjToBoneOffsets = {}
+	--- @type {[string]: PhysObjParentOffset[]}
+	local physObjToParentOffsets = {}
 
 	--- @param ragdoll Entity
 	--- @return PhysObjBoneOffset[] | false
 	local function getOffsets(ragdoll)
 		local model = ragdoll:GetModel()
 		if physObjToBoneOffsets[model] then
-			return physObjToBoneOffsets[model]
+			return physObjToBoneOffsets[model], physObjToParentOffsets[model]
 		end
 
 		local temp = ents.Create(ragdoll:GetClass())
@@ -27,7 +30,10 @@ if SERVER then
 		temp:Spawn()
 
 		local offsets = {}
+		--- @type PhysObjParentOffset[]
+		local parentOffsets = {}
 		local proportionOffsets = {}
+		local referencePhysPoses = {}
 		local temp2 = ents.Create("prop_dynamic")
 		temp2:SetModel(ragdoll:GetModel())
 		temp2:Spawn()
@@ -56,8 +62,10 @@ if SERVER then
 			local offsetPos, offsetAng = WorldToLocal(pos2, ang2, bPos, bAng)
 			local pos, ang = WorldToLocal(pos1, ang1, pos2, ang2)
 			pos, ang = LocalToWorld(pos, ang, offsetPos, offsetAng)
-			
+
 			proportionOffsets[i] = {pos, ang}
+			local referencePos, referenceAng = LocalToWorld(pos, ang, pos2, ang2)
+			referencePhysPoses[i] = {pos2, ang2}
 		end
 		temp2:Remove()
 
@@ -79,17 +87,97 @@ if SERVER then
 			local pos, ang = WorldToLocal(phys:GetPos(), phys:GetAngles(), bPos, bAng)
 			table.insert(offsets, { pos, ang })
 		end
+
+		for i = 0, temp:GetPhysicsObjectCount() - 1 do
+			local referencePose = referencePhysPoses[i]
+			local parent = GetPhysBoneParent(temp, i)
+			local parentPose = parent >= 0 and referencePhysPoses[parent]
+			local basePos, baseAng
+			if parentPose then
+				basePos, baseAng = parentPose[1], parentPose[2]
+			else
+				basePos, baseAng = temp:GetPos(), temp:GetAngles()
+			end
+			local pos, ang = WorldToLocal(referencePose[1], referencePose[2], basePos, baseAng)
+			parentOffsets[i + 1] = {[1] = pos, [2] = ang, [3] = parent}
+		end
+
 		temp:Remove()
 
 		physObjToBoneOffsets[model] = offsets
-		return offsets
+		physObjToParentOffsets[model] = parentOffsets
+		return offsets, parentOffsets
 	end
 
-	--- Assuming ragdoll has stretch disabled (flag 32768), set ragdoll back to it's original pose
+	--- Restore physics bones relative to their parent physics bones.
+	--- @param ragdoll Entity
+	local function parentRelativeUnstretch(ragdoll, offsets)
+		if not IsValid(ragdoll) then
+			return
+		end
+
+		local applied = {}
+		local function applyPhysicsBone(i)
+			if applied[i] then
+				return
+			end
+			applied[i] = true
+
+			local offset = offsets[i + 1]
+			if not offset then
+				return
+			end
+
+			local parent = offset[3]
+			if parent < 0 then
+				return
+			end
+
+			local basePos, baseAng = ragdoll:GetPos(), ragdoll:GetAngles()
+			applyPhysicsBone(parent)
+			local parentPhys = ragdoll:GetPhysicsObjectNum(parent)
+			if IsValid(parentPhys) then
+				basePos, baseAng = parentPhys:GetPos(), parentPhys:GetAngles()
+			end
+
+			local phys = ragdoll:GetPhysicsObjectNum(i)
+			if IsValid(phys) then
+				local pos, ang = LocalToWorld(offset[1], offset[2], basePos, baseAng)
+				phys:EnableMotion(false)
+				phys:Wake()
+				phys:SetPos(pos)
+			end
+		end
+
+		for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
+			local p = GetPhysBoneParent(ragdoll, i)
+			if p >= 0 then
+				applyPhysicsBone(i)
+			end
+		end
+	end
+
+	local function relativeUnstretch(ragdoll, offsets)
+		for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
+			local offset = offsets[i + 1]
+
+			local b = ragdoll:TranslatePhysBoneToBone(i)
+			if GetPhysBoneParent(ragdoll, i) >= 0 then
+				local bPos, bAng = ragdoll:GetBonePosition(b)
+				local pos, ang = LocalToWorld(offset[1], offset[2], bPos, bAng)
+				local phys = ragdoll:GetPhysicsObjectNum(i)
+				phys:EnableMotion(false)
+				phys:Wake()
+				phys:SetPos(pos)
+				phys:SetAngles(ang)
+			end
+		end
+	end
+
 	--- @param ragdoll Entity
 	local function unstretch(ragdoll)
 		timer.Simple(0.1, function()
-			local offsets = getOffsets(ragdoll)
+			local offsets, parentOffsets = getOffsets(ragdoll)
 			if not offsets then
 				return
 			end
@@ -102,20 +190,8 @@ if SERVER then
 				end
 				return
 			end
-			for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
-				local offset = offsets[i + 1]
-	
-				local b = ragdoll:TranslatePhysBoneToBone(i)
-				if ragdoll:GetBoneParent(b) >= 0 then
-					local bPos, bAng = ragdoll:GetBonePosition(b)
-					local pos, ang = LocalToWorld(offset[1], offset[2], bPos, bAng)
-					local phys = ragdoll:GetPhysicsObjectNum(i)
-					phys:EnableMotion(false)
-					phys:Wake()
-					phys:SetPos(pos)
-					phys:SetAngles(ang)
-				end
-			end
+			parentRelativeUnstretch(ragdoll, parentOffsets)
+			relativeUnstretch(ragdoll, offsets)
 		end)
 	end
 
