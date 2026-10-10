@@ -449,6 +449,10 @@ function MGR.StopPlayback(player)
 	table.Empty(audioStopFrames) -- AUDIO: clear stop frames table when playback is stopped by user
 end
 
+function MGR.GetActivePlayback(player)
+    return ActivePlaybacks[player]
+end
+
 -- AUDIO ================================
 function MGR.UpdateServerAudio(len,ply)
 	if not playerAudio[ply] then
