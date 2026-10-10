@@ -16,6 +16,8 @@ local getPhysicsObjectNum = opt.EntityGetPhysicsObjectNum
 local lerpLinearVector = SMH.LerpLinearVector
 local lerpLinearAngle = SMH.LerpLinearAngle
 
+local GetPhysBoneParent = SMH.GetPhysBoneParent
+
 function MOD:Save(entity)
 
     local count = entity:GetPhysicsObjectCount();

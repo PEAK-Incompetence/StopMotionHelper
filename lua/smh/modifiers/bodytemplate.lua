@@ -11,6 +11,8 @@ local enableMotion = opt.PhysObjEnableMotion
 local wake = opt.PhysObjWake
 local getPhysicsObjectCount = opt.EntityGetPhysicsObjectCount
 local getPhysicsObjectNum = opt.EntityGetPhysicsObjectNum
+local BoneToPhysBone = SMH.BoneToPhysBone
+local GetPhysBoneParent = SMH.GetPhysBoneParent
 
 local lerpLinearVector = SMH.LerpLinearVector
 local lerpLinearAngle = SMH.LerpLinearAngle

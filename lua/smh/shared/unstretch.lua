@@ -90,7 +90,7 @@ if SERVER then
 
 		for i = 0, temp:GetPhysicsObjectCount() - 1 do
 			local referencePose = referencePhysPoses[i]
-			local parent = GetPhysBoneParent(temp, i)
+			local parent = SMH.GetPhysBoneParent(temp, i)
 			local parentPose = parent >= 0 and referencePhysPoses[parent]
 			local basePos, baseAng
 			if parentPose then
@@ -150,7 +150,7 @@ if SERVER then
 		end
 
 		for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
-			local p = GetPhysBoneParent(ragdoll, i)
+			local p = SMH.GetPhysBoneParent(ragdoll, i)
 			if p >= 0 then
 				applyPhysicsBone(i)
 			end
@@ -162,7 +162,7 @@ if SERVER then
 			local offset = offsets[i + 1]
 
 			local b = ragdoll:TranslatePhysBoneToBone(i)
-			if GetPhysBoneParent(ragdoll, i) >= 0 then
+			if SMH.GetPhysBoneParent(ragdoll, i) >= 0 then
 				local bPos, bAng = ragdoll:GetBonePosition(b)
 				local pos, ang = LocalToWorld(offset[1], offset[2], bPos, bAng)
 				local phys = ragdoll:GetPhysicsObjectNum(i)

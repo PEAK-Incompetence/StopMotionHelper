@@ -10,6 +10,8 @@ local DefaultPoseTrees = {}
 
 local check = SMH.SettingsManager.CheckSetting
 local getSetting = SMH.SettingsManager.GetSetting
+local BoneToPhysBone = SMH.BoneToPhysBone
+local GetPhysBoneParentFromBone = SMH.GetPhysBoneParentFromBone
 
 --- @param player Player
 --- @param entity SMHEntity
@@ -72,7 +74,7 @@ local function CreateGhost(player, entity, color, frame, ghostable, xray)
             for boneid, weight in pairs(entity.RagdollWeightData) do
                 if isstring(boneid) then
                     --- @diagnostic disable-next-line
-                    boneid = BoneToPhysBone(entity, entity:LookupBone(boneid))
+                    boneid = SMH.BoneToPhysBone(entity, entity:LookupBone(boneid))
                     local po = g:GetPhysicsObjectNum(boneid)
                     if po then
                         po:SetMass(weight)
@@ -489,8 +491,8 @@ function MGR.RequestNode(player)
     end
 
     local bone = entity:LookupBone(boneName)
-    local physBone = bone and BoneToPhysBone(entity, bone)
-    local physBoneParent = bone and GetPhysBoneParentFromBone(entity, bone)
+    local physBone = bone and SMH.BoneToPhysBone(entity, bone)
+    local physBoneParent = bone and SMH.GetPhysBoneParentFromBone(entity, bone)
     local isPhysBone = bone and physBone >= 0
     
     local pos, ang = vector_origin, angle_zero
@@ -583,8 +585,8 @@ function MGR.RequestNodes(player, settings)
     table.Empty(nodes)
 
     local bone = entity:LookupBone(boneName) or 0
-    local physBone = bone and BoneToPhysBone(entity, bone)
-    local physBoneParent = bone and GetPhysBoneParentFromBone(entity, bone)
+    local physBone = bone and SMH.BoneToPhysBone(entity, bone)
+    local physBoneParent = bone and SMH.GetPhysBoneParentFromBone(entity, bone)
     local isPhysBone = bone and physBone >= 0
 
     for _, keyframe in ipairs(keyframes) do

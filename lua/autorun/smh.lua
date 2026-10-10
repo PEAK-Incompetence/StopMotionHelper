@@ -7,10 +7,6 @@ if SERVER then
     include("smh/server.lua")
 else
     include("smh/client.lua")
-    include("client/smh_tool_sync.lua")
-    include("smh_rgm_sync.lua")
-    include("smh_unstretch.lua")
-    include("smh_settings.lua")
 end
 
 timer.Simple(0, function ()

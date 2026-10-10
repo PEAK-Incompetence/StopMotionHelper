@@ -18,16 +18,22 @@ if CLIENT then
 		- Upon frame change from SMH, the gizmo will orient and position itself correctly; previously, it would only have the orientation or position of the initial frame 
 		- Upon frame change from SMH, entity constraints will be set. Lock offsets can be modified by transforming (positioning or rotating) the entity in Ragdoll Mover. Can be disabled with `sync_rgm_to_smh_locks 0`.
 		]],
-		TYPE_BOOL
+		TYPE_BOOL,
+		nil,
+		nil,
+		"Sync"
 	)
 	local enableLock = SMH.ConVars.Create(
 		"sync_rgm_to_smh_locks",
 		"0",
 		true,
 		[[
-		When enabled, entity constraints will be set. This requires `sync_rgm_to_smh 1`. 
+		When enabled, it will set entity constraints via Ragdoll Mover. This requires `sync_rgm_to_smh 1`. 
 		]],
-		TYPE_BOOL
+		TYPE_BOOL,
+		nil,
+		nil,
+		"Sync"
 	)
 	local smhBone = GetConVar("smh_motionpathbone")
 
