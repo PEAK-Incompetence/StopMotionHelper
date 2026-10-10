@@ -10,6 +10,8 @@ local DefaultPoseTrees = {}
 
 local check = SMH.SettingsManager.CheckSetting
 local getSetting = SMH.SettingsManager.GetSetting
+local BoneToPhysBone = SMH.BoneToPhysBone
+local GetPhysBoneParentFromBone = SMH.GetPhysBoneParentFromBone
 
 --- @param player Player
 --- @param entity SMHEntity
@@ -583,8 +585,8 @@ function MGR.RequestNodes(player, settings)
     table.Empty(nodes)
 
     local bone = entity:LookupBone(boneName) or 0
-    local physBone = bone and BoneToPhysBone(entity, bone)
-    local physBoneParent = bone and GetPhysBoneParentFromBone(entity, bone)
+    local physBone = bone and SMH.BoneToPhysBone(entity, bone)
+    local physBoneParent = bone and SMH.GetPhysBoneParentFromBone(entity, bone)
     local isPhysBone = bone and physBone >= 0
 
     for _, keyframe in ipairs(keyframes) do

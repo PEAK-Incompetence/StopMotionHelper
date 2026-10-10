@@ -4,9 +4,15 @@
 
 if SERVER then
     AddCSLuaFile("smh.lua")
+    AddCSLuaFile("smh_translations.lua")
+
+    include("smh_translations.lua")
     include("smh/server.lua")
 else
+    include("smh_translations.lua")
+
     include("smh/client.lua")
+
     include("client/smh_tool_sync.lua")
     include("smh_rgm_sync.lua")
     include("smh_unstretch.lua")

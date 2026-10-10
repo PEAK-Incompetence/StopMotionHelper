@@ -9,13 +9,64 @@ end)
 
 local MAX_BONE_COUNT = 255
 
+local staticProps = {}
+local function isStaticProp(entity)
+	local model = entity:GetModel()
+	local result = staticProps[model]
+	if result ~= nil then
+		return result
+	end
+	local modelInfo = util.GetModelInfo(model)
+	result = modelInfo and modelInfo.StaticProp
+	staticProps[model] = result
+
+	return result
+end
+
+--- @type {[string]: {[integer]: integer}}
+local boneToPhysMap = {}
+
+--- @param ent Entity Entity to translate bone
+--- @param bone integer Bone id
+--- @return integer physBone Physics object id
+function SMH.BoneToPhysBone(ent, bone)
+	local model = getModel(ent)
+	if boneToPhysMap[model] and boneToPhysMap[model][bone] then
+		return boneToPhysMap[model][bone]
+	else		
+		boneToPhysMap[model] = boneToPhysMap[model] or {}
+		if isStaticProp(ent) or ent:GetPhysicsObjectCount() == 1 then
+			boneToPhysMap[model][bone] = 0
+			return 0
+		end
+		for i = 0, ent:GetPhysicsObjectCount() - 1 do
+			local b = ent:TranslatePhysBoneToBone(i)
+			if bone == b then
+				boneToPhysMap[model][b] = i
+				return i
+			end
+		end
+		boneToPhysMap[model][bone] = -1
+		return -1
+	end
+end
+local BoneToPhysBone = SMH.BoneToPhysBone
+
+--- @param ent Entity Entity to translate bone
+--- @param bone integer Physics object id
+--- @return integer b Bone id
+function SMH.PhysBoneToBone(ent, bone)
+	return ent:TranslatePhysBoneToBone(bone)
+end
+local PhysBoneToBone = SMH.PhysBoneToBone
+
 --- @type {[string]: {[integer]: integer}}
 local bonePhysBoneParents = {}
 
 --- @param entity Entity Entity to translate bone
 --- @param bone integer Bone id
 --- @return integer physBone Physics object id
-function GetPhysBoneParentFromBone(entity, bone)
+function SMH.GetPhysBoneParentFromBone(entity, bone)
 	local model = getModel(entity)
 	if bonePhysBoneParents[model] and bonePhysBoneParents[model][bone] then
 		return bonePhysBoneParents[model][bone]
@@ -43,6 +94,7 @@ function GetPhysBoneParentFromBone(entity, bone)
 	bonePhysBoneParents[model][bone] = -1
 	return -1
 end
+local GetPhysBoneParentFromBone = SMH.GetPhysBoneParentFromBone
 
 --- @type {[string]: {[integer]: integer}}
 local physBoneParents = {}
@@ -50,7 +102,7 @@ local physBoneParents = {}
 --- @param entity Entity Entity to translate bone
 --- @param bone integer Physics object id
 --- @return integer physBone Parent physics object id or -1 if it can't find it
-function GetPhysBoneParent(entity, bone)
+function SMH.GetPhysBoneParent(entity, bone)
 	local model = getModel(entity)
 	if physBoneParents[model] and physBoneParents[model][bone] then
 		return physBoneParents[model][bone]
@@ -73,52 +125,4 @@ function GetPhysBoneParent(entity, bone)
 	physBoneParents[model][bone] = -1
 	return -1
 end
-
---- @param ent Entity Entity to translate bone
---- @param bone integer Physics object id
---- @return integer b Bone id
-function PhysBoneToBone(ent, bone)
-	return ent:TranslatePhysBoneToBone(bone)
-end
-
-local staticProps = {}
-local function isStaticProp(entity)
-	local model = entity:GetModel()
-	local result = staticProps[model]
-	if result ~= nil then
-		return result
-	end
-	local modelInfo = util.GetModelInfo(model)
-	result = modelInfo and modelInfo.StaticProp
-	staticProps[model] = result
-
-	return result
-end
-
---- @type {[string]: {[integer]: integer}}
-local boneToPhysMap = {}
-
---- @param ent Entity Entity to translate bone
---- @param bone integer Bone id
---- @return integer physBone Physics object id
-function BoneToPhysBone(ent, bone)
-	local model = getModel(ent)
-	if boneToPhysMap[model] and boneToPhysMap[model][bone] then
-		return boneToPhysMap[model][bone]
-	else		
-		boneToPhysMap[model] = boneToPhysMap[model] or {}
-		if isStaticProp(ent) or ent:GetPhysicsObjectCount() == 1 then
-			boneToPhysMap[model][bone] = 0
-			return 0
-		end
-		for i = 0, ent:GetPhysicsObjectCount() - 1 do
-			local b = ent:TranslatePhysBoneToBone(i)
-			if bone == b then
-				boneToPhysMap[model][b] = i
-				return i
-			end
-		end
-		boneToPhysMap[model][bone] = -1
-		return -1
-	end
-end
+local GetPhysBoneParent = SMH.GetPhysBoneParent
