@@ -13,6 +13,8 @@ include("server/properties_manager.lua")
 include("server/spawn_manager.lua")
 include("server/worldkeyframes_manager.lua")
 include("server/package_manager.lua")
+include("shared/rgm_sync.lua")
+include("shared/unstretch.lua")
 
 AddCSLuaFile("shared.lua")
 AddCSLuaFile("client.lua")

@@ -115,6 +115,12 @@ end
 cleanup.Register("smhentity")
 CreateConVar("sbox_maxsmhentity", 20, FCVAR_NOTIFY)
 
+include("shared/translations.lua")
+
+include("shared/gmod_saves.lua")
+include("shared/gmod_dupes.lua")
+include("shared/render.lua")
+
 include("shared/easing.lua")
 include("shared/saves.lua")
 include("shared/tablesplit.lua")
