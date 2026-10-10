@@ -3,8 +3,8 @@
 --- 
 
 if SERVER then
-    AddCSLuaFile("smh.lua")
     AddCSLuaFile("smh_translations.lua")
+    AddCSLuaFile("smh.lua")
 
     include("smh_translations.lua")
     include("smh/server.lua")
