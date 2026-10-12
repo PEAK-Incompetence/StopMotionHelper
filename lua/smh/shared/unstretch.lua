@@ -3,11 +3,6 @@
 --- @alias PhysObjBoneOffset {[1]: Vector, [2]: Angle}
 --- @alias PhysObjParentOffset {[1]: Vector, [2]: Angle, [3]: integer}
 
-if not game.SinglePlayer() then
-	print("[SMH] Unstretch utilities are unavailable in multiplayer")
-	return
-end
-
 if SERVER then
 	--- For unstretching physics bones back to their bone positions
 	--- @type {[string]: PhysObjBoneOffset[]}
