@@ -1,5 +1,15 @@
 local MAX_MODIFIER_BITS = 8
 
+local multiplayerPhysics = CreateConVar("smh_multiplayer_physics", "0", {FCVAR_REPLICATED}, [[
+This is set to 1 automatically in multiplayer and 0 in singleplayer. 
+It allows keyframing recording position / rotation keyframes even if the entity has a physics object (ragdolls or physics props).
+This convar is supposed to prevent physics prop delay in multiplayer. However, the fix is hit or miss. If you still experience delay,
+you can disable this convar to see if that works.
+
+Physics prop delay does not exist in singleplayer mode! 
+]], 0, 1)
+multiplayerPhysics:SetBool(not game.SinglePlayer())
+
 --- @class ModifierClass
 local MODBASE = {}
 --- @package
