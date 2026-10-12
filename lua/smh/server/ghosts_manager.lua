@@ -130,6 +130,29 @@ local MGR = {}
 
 MGR.IsRendering = false
 
+--- Temporary thing to get spawning to work properly for old animations
+--- @param mod ModifierClass
+--- @param data Modifier
+--- @param name string
+function MGR.DoBodyModifierOriginData(mod, data, name)
+    local origindata = data[name].Modifiers
+    if mod.BodyEnds then
+        if not origindata.origin then
+            if data["physbones"] and data["physbones"].Modifiers then
+                origindata.origin = {
+                    Pos = data["physbones"].Modifiers[0].Pos,
+                    Ang = data["physbones"].Modifiers[0].Ang,
+                }
+            else
+                origindata.origin = {
+                    Pos = vector_origin,
+                    Ang = angle_zero,
+                }
+            end
+        end
+    end
+end
+
 function MGR.SelectEntity(player, entities)
     if not GhostData[player] then
         GhostData[player] = {
@@ -375,6 +398,7 @@ function MGR.SetSpawnPreview(class, modelpath, data, settings, player)
             local offsetang = OffsetAng[player] or Angle(0, 0, 0)
 
             if data[name] then
+                MGR.DoBodyModifierOriginData(mod, SpawnOriginData[player], name)
                 local offsetdata = mod:Offset(data[name].Modifiers, SpawnOriginData[player][name].Modifiers, offsetpos, offsetang, nil)
                 mod:Load(SpawnGhost[player], offsetdata, GhostSettings[player])
             end
@@ -398,6 +422,7 @@ function MGR.RefreshSpawnPreview(player, offseton)
             local offsetang = OffsetAng[player] or Angle(0, 0, 0)
 
             if playerGhostData[name] then
+                MGR.DoBodyModifierOriginData(mod, SpawnOriginData[player], name)
                 local offsetdata = mod:Offset(playerGhostData[name].Modifiers, SpawnOriginData[player][name].Modifiers, offsetpos, offsetang, nil)
                 mod:Load(SpawnGhost[player], offsetdata, GhostSettings[player])
             end
@@ -699,10 +724,12 @@ hook.Add("Think", "SMHGhostSpawnOffsetPreview", function()
         if SpawnOffsetOn[player] and IsValid(SpawnGhost[player]) then
             for name, mod in pairs(SMH.Modifiers) do
                 if name == "color" then continue end
+                if name == "bodytemplate" then continue end
                 if SpawnGhostData[player][name] and data[name] and mod.Ghost then
                     local offsetpos = OffsetPos[player] or Vector(0, 0, 0)
                     local offsetang = OffsetAng[player] or Angle(0, 0, 0)
 
+                    MGR.DoBodyModifierOriginData(mod, data, name)
                     local offsetdata = mod:Offset(SpawnGhostData[player][name].Modifiers, data[name].Modifiers, offsetpos, offsetang, player:GetEyeTraceNoCursor().HitPos)
                     mod:Load(SpawnGhost[player], offsetdata, GhostSettings[player])
                 end
