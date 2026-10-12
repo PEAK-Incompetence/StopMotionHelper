@@ -1,5 +1,8 @@
 local MAX_MODIFIER_BITS = 8
 
+local multiplayerPhysics = CreateConVar("smh_multiplayer_physics", "0", {FCVAR_REPLICATED}, "If set to 1, this allows keyframing position / rotation keyframes, which prevents the physics prop delay seen in multiplayer", 0, 1)
+multiplayerPhysics:SetBool(not game.SinglePlayer())
+
 --- @class ModifierClass
 local MODBASE = {}
 --- @package
