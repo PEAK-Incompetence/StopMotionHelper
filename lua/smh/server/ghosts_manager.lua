@@ -719,6 +719,7 @@ end
 
 SMH.GhostsManager = MGR
 
+hook.Remove("Think", "SMHGhostSpawnOffsetPreview")
 hook.Add("Think", "SMHGhostSpawnOffsetPreview", function()
     for player, data in pairs(SpawnOriginData) do
         if SpawnOffsetOn[player] and IsValid(SpawnGhost[player]) then
@@ -731,7 +732,7 @@ hook.Add("Think", "SMHGhostSpawnOffsetPreview", function()
 
                     MGR.DoBodyModifierOriginData(mod, data, name)
                     local offsetdata = mod:Offset(SpawnGhostData[player][name].Modifiers, data[name].Modifiers, offsetpos, offsetang, player:GetEyeTraceNoCursor().HitPos)
-                    mod:Load(SpawnGhost[player], offsetdata, GhostSettings[player])
+                    mod:LoadGhost(SpawnGhost[player], SpawnGhost[player], offsetdata, GhostSettings[player])
                 end
             end
         end
