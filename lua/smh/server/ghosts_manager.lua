@@ -400,10 +400,10 @@ function MGR.SetSpawnPreview(class, modelpath, data, settings, player)
             if data[name] then
                 MGR.DoBodyModifierOriginData(mod, SpawnOriginData[player], name)
                 local offsetdata = mod:Offset(data[name].Modifiers, SpawnOriginData[player][name].Modifiers, offsetpos, offsetang, nil)
-                mod:Load(SpawnGhost[player], offsetdata, GhostSettings[player])
+                mod:LoadGhost(SpawnGhost[player], SpawnGhost[player], offsetdata, GhostSettings[player])
             end
         elseif data[name] then
-            mod:Load(SpawnGhost[player], data[name].Modifiers, settings)
+            mod:LoadGhost(SpawnGhost[player], SpawnGhost[player], data[name].Modifiers, settings)
         end
     end
 end
@@ -424,10 +424,10 @@ function MGR.RefreshSpawnPreview(player, offseton)
             if playerGhostData[name] then
                 MGR.DoBodyModifierOriginData(mod, SpawnOriginData[player], name)
                 local offsetdata = mod:Offset(playerGhostData[name].Modifiers, SpawnOriginData[player][name].Modifiers, offsetpos, offsetang, nil)
-                mod:Load(SpawnGhost[player], offsetdata, GhostSettings[player])
+                mod:LoadGhost(SpawnGhost[player], SpawnGhost[player], offsetdata, GhostSettings[player])
             end
         elseif playerGhostData[name] then
-            mod:Load(SpawnGhost[player], playerGhostData[name].Modifiers, GhostSettings[player])
+            mod:LoadGhost(SpawnGhost[player], SpawnGhost[player], playerGhostData[name].Modifiers, GhostSettings[player])
         end
     end
 end
