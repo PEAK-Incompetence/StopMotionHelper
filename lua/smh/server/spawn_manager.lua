@@ -66,6 +66,7 @@ local function SetOffset(player, modname, keyframe, pos)
     local offsetpos = MGR.OffsetPos[player] or Vector(0, 0, 0)
     local offsetang = MGR.OffsetAng[player] or Angle(0, 0, 0)
 
+    SMH.GhostsManager.DoBodyModifierOriginData(mod, MGR.OriginData[player], modname)
     keyframe.Modifiers[modname] = mod:Offset(keyframe.Modifiers[modname], MGR.OriginData[player][modname].Modifiers, offsetpos, offsetang, pos)
 end
 
@@ -76,6 +77,7 @@ end
 local function SetDupeOffset(entity, modname, keyframe, firstkey)
     local mod = SMH.Modifiers[modname]
 
+    SMH.GhostsManager.DoBodyModifierOriginData(mod, firstkey, modname)
     keyframe.Modifiers[modname] = mod:OffsetDupe(entity, keyframe.Modifiers[modname], firstkey[modname].Modifiers)
 end
 
@@ -177,6 +179,7 @@ function MGR.Spawn(model, settings, player, serializedKeyframes)
             local offsetpos = MGR.OffsetPos[player] or Vector(0, 0, 0)
             local offsetang = MGR.OffsetAng[player] or Angle(0, 0, 0)
 
+            SMH.GhostsManager.DoBodyModifierOriginData(mod, MGR.OriginData[player], name)
             local offsetdata = mod:Offset(data[name].Modifiers, MGR.OriginData[player][name].Modifiers, offsetpos, offsetang, tracepos)
             mod:Load(entity, offsetdata, settings)
         else
