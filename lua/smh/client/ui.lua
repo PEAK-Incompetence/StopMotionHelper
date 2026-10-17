@@ -1,28 +1,31 @@
----@type SMHWorldClicker
+local smh_suppress_chat = SMH.ConVars.Create("smh_ui_suppress_messages", "0", false, "Display messages if an SMH operation has finished (smoothing, stretching, etc.)", TYPE_BOOL, nil, nil, "UI")
+
+--- @type SMHWorldClicker
 local WorldClicker = nil
----@type SMHTooltip
+--- @type SMHTooltip
 local Tooltip = nil
----@type SMHSave
+--- @type SMHSave
 local SaveMenu = nil
----@type SMHLoad
+--- @type SMHLoad
 local LoadMenu = nil
----@type SMHProperties
+--- @type SMHProperties
 local PropertiesMenu = nil
 
----@type {[integer]: integer}
+--- @type {[integer]: integer}
 local FrameToKeyframe = {}
----@type FramePointerDictionary
+--- @type FramePointerDictionary
 local KeyframePointers = {}
----@type {[integer]: EasingData}
+--- @type {[integer]: EasingData}
 local KeyframeEasingData = {}
----@type {[integer]: integer}
+--- @type {[integer]: integer}
 local KeyframeIDs = {}
----@type FramePointerDictionary
+--- @type FramePointerDictionary
 local SelectedPointers = {}
----@type SMHFramePointer[]
+--- @type SMHFramePointer[]
 local OffsetPointers = {}
 local LocalIDs = 0
 
+---@type SMHAudioClipPointer[]
 local AudioClipPointers = {}
 
 local LastSelectedKeyframe = nil
@@ -30,8 +33,10 @@ local KeyColor = Color(0, 200, 0)
 
 local ClickerEntity = {}
 
----@param pointer SMHFramePointer
+--- @param pointer SMHFramePointer
 local function DeleteEmptyKeyframe(pointer)
+    if next(pointer:GetIDs()) then return end
+
     for id, kpointer in pairs(KeyframePointers) do
         if pointer == kpointer then
             if KeyframePointers[id] == LastSelectedKeyframe then LastSelectedKeyframe = nil end
@@ -51,7 +56,7 @@ local function DeleteEmptyKeyframe(pointer)
     end
 end
 
----@param keyframeId integer
+--- @param keyframeId integer
 local function CreateCopyPointer(keyframeId)
     OffsetPointers = {}
     local KeysToDelete, KeysToCopy, FramesToSend = {}, {}, {}
@@ -77,6 +82,7 @@ local function CreateCopyPointer(keyframeId)
         pointer:SetSelected(true)
         pointer.NewID = LocalIDs + counter
         pointer.keyframeId = id
+        pointer.SourceIDs = table.Copy(kpointer:GetIDs())
 
         counter = counter + 1
     end
@@ -102,25 +108,41 @@ local function CreateCopyPointer(keyframeId)
     pointer:OnMousePressed(MOUSE_LEFT)
     pointer:SetOffsets(minimum, maximum)
     pointer.NewID = LocalIDs + counter
+    pointer.SourceIDs = table.Copy(KeyframePointers[keyframeId]:GetIDs())
 
     local function ProcessCopyKey(pointer, NewID, frame, keyframeId)
         WorldClicker.MainMenu.FramePanel:DeleteFramePointer(pointer)
         if frame < 0 then return end
 
-        for id, _ in pairs(KeyframePointers[keyframeId]:GetIDs()) do
+        local sourceEntities = {}
+        for id, entity in pairs(pointer.SourceIDs) do
             table.insert(KeysToCopy, id)
             table.insert(FramesToSend, frame)
+            sourceEntities[entity] = true
         end
 
+        local destinationPointers = {}
         for id, pointer in pairs(KeyframePointers) do
-            if id == NewID then continue end
+            table.insert(destinationPointers, { ID = id, Pointer = pointer })
+        end
+
+        for _, destination in ipairs(destinationPointers) do
+            if destination.ID == NewID then continue end
+            local pointer = destination.Pointer
             if pointer:GetFrame() == frame then
 
-                for ent, id in pairs(pointer:GetEnts()) do
-                    if not KeyframePointers[keyframeId]:GetEnts()[ent] then
-                        table.insert(KeysToCopy, id)
+                local destinationKeyframes = {}
+                for destinationKeyframeId, entity in pairs(pointer:GetIDs()) do
+                    destinationKeyframes[destinationKeyframeId] = entity
+                end
+
+                for destinationKeyframeId, entity in pairs(destinationKeyframes) do
+                    if not sourceEntities[entity] then
+                        table.insert(KeysToCopy, destinationKeyframeId)
                         table.insert(FramesToSend, frame)
                     end
+                    pointer:RemoveID(destinationKeyframeId)
+                    KeyframeIDs[destinationKeyframeId] = nil
                 end
 
                 table.insert(KeysToDelete, pointer)
@@ -143,8 +165,8 @@ local function CreateCopyPointer(keyframeId)
     end
 end
 
----@param keyframeId integer
----@return SMHFramePointer
+--- @param keyframeId integer
+--- @return SMHFramePointer
 local function NewKeyframePointer(keyframeId)
 
     local pointer = WorldClicker.MainMenu.FramePanel:CreateFramePointer(
@@ -157,6 +179,13 @@ local function NewKeyframePointer(keyframeId)
         local KeysToDelete, KeysToUpdate, UpdateStuff = {}, {}, {}
 
         local function ReleaseAction(pointer, keyframeId, frame)
+            for oldFrame, pointerId in pairs(FrameToKeyframe) do
+                if pointerId == keyframeId then
+                    FrameToKeyframe[oldFrame] = nil
+                    break
+                end
+            end
+
             if frame < 0 then
                 for id, _ in pairs(pointer:GetIDs()) do
                     table.insert(KeysToDelete, id)
@@ -169,23 +198,37 @@ local function NewKeyframePointer(keyframeId)
                 table.insert(UpdateStuff, { Frame = frame })
             end
 
+            FrameToKeyframe[frame] = keyframeId
+
             for id, kpointer in pairs(KeyframePointers) do
                 if id == keyframeId then continue end
 
                 if kpointer:GetFrame() == frame then
-                    for ent, id in pairs(kpointer:GetEnts()) do
-                        if not pointer:GetEnts()[ent] then
-                            pointer:AddID(id, ent) -- gonna leave this logic in for the future stuff
-                            KeyframeIDs[id] = KeyframeIDs[keyframeId]
-                            kpointer:RemoveID(id)
+                    local sourceEntities = {}
+                    for _, entity in pairs(pointer:GetIDs()) do
+                        sourceEntities[entity] = true
+                    end
+
+                    local destinationKeyframes = {}
+                    for destinationKeyframeId, entity in pairs(kpointer:GetIDs()) do
+                        destinationKeyframes[destinationKeyframeId] = entity
+                    end
+
+                    for destinationKeyframeId, entity in pairs(destinationKeyframes) do
+                        if not sourceEntities[entity] then
+                            pointer:AddID(destinationKeyframeId, entity) -- gonna leave this logic in for the future stuff
+                            KeyframeIDs[destinationKeyframeId] = keyframeId
+                        else
+                            KeyframeIDs[destinationKeyframeId] = nil
                         end
+                        kpointer:RemoveID(destinationKeyframeId)
                     end
                     DeleteEmptyKeyframe(kpointer)
                 end
             end
         end
 
-        for id, pointer in pairs(SelectedPointers) do
+        for id, pointer in SortedPairs(SelectedPointers) do
             ReleaseAction(pointer, id, pointer:GetFrame())
         end
 
@@ -232,6 +275,95 @@ local function NewKeyframePointer(keyframeId)
 end
 
 -- AUDIO ===========================================
+
+local function genericMenu(frame)
+    local menu = DermaMenu()
+    if SMH.AudioClipManager.GetClipboard()[1] then
+        menu:AddOption("Paste audio clip", function()
+            SMH.AudioClipManager.Paste(frame)
+        end)
+    end
+
+    menu:Open()
+end
+
+---@param pointer SMHAudioClipPointer
+---@param frame integer
+local function AudioTrimStart(pointer, frame)
+    local clip = SMH.AudioClipManager.TrimStart(pointer:GetID(), frame)
+    if clip then
+        pointer:SetFrame(frame)
+        SMH.Controller.UpdateServerAudio()
+    end
+end
+
+---@param pointer SMHAudioClipPointer
+---@param frame integer
+local function AudioTrimEnd(pointer, frame)
+    local clip = SMH.AudioClipManager.TrimEnd(pointer:GetID(), frame)
+    if clip then
+        pointer:SetFrame(pointer:GetFrame())
+        SMH.Controller.UpdateServerAudio()
+    end
+end
+
+---@param pointer SMHAudioClipPointer
+local function AudioCopy(pointer)
+    -- TODO: Implement multiple audioclip copying
+    SMH.AudioClipManager.Copy({pointer:GetID()}, false)
+end
+
+--- @param pointer SMHAudioClipPointer
+--- @param audioClip AudioClip
+local function audioClipMenu(pointer, audioClip)
+    local menu = DermaMenu()
+
+    local frame = WorldClicker.MainMenu.FramePanel:GetFrameFromCursorPos()
+    menu:AddOption("Copy", function()
+        AudioCopy(pointer)
+    end)
+    if SMH.AudioClipManager.GetClipboard()[1] then
+        menu:AddOption("Paste audio clip", function()
+            SMH.AudioClipManager.Paste(frame)
+        end)
+    end
+    menu:AddOption("Delete", function()
+        SMH.Controller.DeleteAudio(pointer:GetID(), pointer)
+    end)
+    menu:AddOption("Trim Left", function() 
+        AudioTrimStart(pointer, frame)
+    end)
+    menu:AddOption("Trim Right", function()
+        AudioTrimEnd(pointer, frame)
+    end)
+    menu:AddOption("Split", function() 
+        SMH.AudioClipManager.Create(
+            audioClip.Path, 
+            pointer:GetFrame(), 
+            audioClip.StartTime, 
+            audioClip.Duration, 
+            function(clip, newPointer)
+                SMH.AudioClipManager.TrimStart(newPointer:GetID(), frame)
+                SMH.AudioClipManager.TrimEnd(pointer:GetID(), frame)
+
+                newPointer:SetFrame(frame)
+                pointer:SetFrame(pointer:GetFrame())
+
+                SMH.Controller.UpdateServerAudio()
+        end)
+    end)
+    menu:AddOption("Hide", function() 
+        pointer:SetVisible(false)
+    end)
+    menu:AddOption("Regenerate waveform", function()
+        audioClip.Waveform = SMH.AudioClipManager.RegenerateWaveform(audioClip.Path)
+        pointer:Setup(audioClip)
+    end)
+
+    menu:Open()
+end
+
+--- @param audioClip AudioClip
 local function NewAudioClipPointer(audioClip)
 
     local pointer = WorldClicker.MainMenu.FramePanel:CreateAudioClipPointer(audioClip)
@@ -240,12 +372,54 @@ local function NewAudioClipPointer(audioClip)
 		audioClip.Frame = frame
 		SMH.Controller.UpdateServerAudio()
 	end
-	
+
+    pointer.OnCustomMousePressed = function(self, mousecode)
+        if mousecode == MOUSE_RIGHT then
+            audioClipMenu(pointer, audioClip)
+        end
+    end
+
 	return pointer
 end
 -- =================================================
 
+local FilteredCommands = {
+    ["+smh_menu"] = "-smh_menu"
+}
+
+--- A hacky method to getting keybinds to work when focused on the menu
+--- We can add keybind console commands to `FilteredCommands`.  
+--- 
+--- @param panel Panel
+local function addKeyCodeReleasedCallback(panel)
+    function panel:OnKeyCodeReleased(keyCode)
+        local binding = input.LookupKeyBinding(keyCode)
+        if not binding then return end
+
+        binding = input.TranslateAlias(binding) or binding
+        local command = FilteredCommands[binding]
+        if command then
+            RunConsoleCommand(command)
+            return
+        end
+    end
+end
+
+---@param parent Panel
+local function addHoverCallbacks(parent)
+    addKeyCodeReleasedCallback(parent)
+    for _, child in ipairs(parent:GetChildren()) do
+        ---@cast child Panel
+        if ispanel(child) and child ~= parent then
+            addKeyCodeReleasedCallback(child)
+            function child:TestHover(x, y)
+                parent:SetKeyboardInputEnabled(parent:IsChildHovered())
+            end
+        end
+    end
+end
 local function AddCallbacks()
+    addHoverCallbacks(WorldClicker)
 
     local lastEntity = NULL
     local entityCount = 1
@@ -344,11 +518,43 @@ local function AddCallbacks()
 	end
 	
 	-- AUDIO TOOLS =======================================================
+    WorldClicker.AudioClipToolsMenu.OnRequestAudioClipCopy = function ()
+		local pointer = WorldClicker.MainMenu.FramePanel:GetAudioClipPointerAtFrame(SMH.State.Frame)
+        if pointer then
+            AudioCopy(pointer)
+        end
+    end
+    WorldClicker.AudioClipToolsMenu.OnRequestAudioClipPaste = function ()
+        SMH.AudioClipManager.Paste(SMH.State.Frame)
+    end
 	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipDelete = function()
 		local pointer = WorldClicker.MainMenu.FramePanel:GetAudioClipPointerAtFrame(SMH.State.Frame)
 		if pointer then
 			SMH.Controller.DeleteAudio(pointer:GetID(), pointer)
 		end
+	end
+	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipTrimStart = function()
+        local frame = SMH.State.Frame
+		local pointer = WorldClicker.MainMenu.FramePanel:GetAudioClipPointerAtFrame(frame)
+		if pointer then
+            AudioTrimStart(pointer, frame)
+		end
+	end
+	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipTrimEnd = function()
+        local frame = SMH.State.Frame
+		local pointer = WorldClicker.MainMenu.FramePanel:GetAudioClipPointerAtFrame(SMH.State.Frame)
+		if pointer then
+            AudioTrimEnd(pointer, frame)
+		end
+	end
+	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipHide = function()
+		local pointer = WorldClicker.MainMenu.FramePanel:GetAudioClipPointerAtFrame(SMH.State.Frame)
+		if pointer then
+			pointer:SetVisible(false)
+		end
+	end
+	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipUnhideAll = function()
+		WorldClicker.MainMenu.FramePanel:UnhideAllAudio()
 	end
 	WorldClicker.AudioClipToolsMenu.OnRequestAudioClipDeleteAll = function()
 		SMH.Controller.DeleteAllAudio()
@@ -384,8 +590,12 @@ local function AddCallbacks()
         WorldClicker.Settings:SetVisible(true)
     end
 
-    WorldClicker.MainMenu.FramePanel.OnFramePressed = function(_, frame)
-        SMH.Controller.SetFrame(frame)
+    WorldClicker.MainMenu.FramePanel.OnFramePressed = function(_, mouseCode, frame)
+        if mouseCode == MOUSE_LEFT then
+            SMH.Controller.SetFrame(frame)
+        elseif mouseCode == MOUSE_RIGHT then
+            genericMenu(frame)
+        end
     end
 
     WorldClicker.MainMenu.FramePointer.OnFrameChanged = function(_, newFrame)
@@ -629,6 +839,46 @@ local function setupUI()
     WorldClicker.MainMenu:SetInitialState(SMH.State)
 end
 
+hook.Add("OnTextEntryGetFocus", "SMHMenuKeyboardFocusOn", function(panel)
+    if not IsValid(WorldClicker) or not IsValid(WorldClicker.MainMenu) then
+        return
+    end
+    if 
+        panel:HasParent(WorldClicker.MainMenu) 
+        or panel:HasParent(WorldClicker.Settings) 
+        or panel:HasParent(WorldClicker.MotionPaths)
+    then
+        WorldClicker.MainMenu:StartKeyFocus(panel)
+    end
+end)
+
+hook.Add("OnTextEntryLoseFocus", "SMHMenuKeyboardFocusOff", function(panel)
+    if not IsValid(WorldClicker) or not IsValid(WorldClicker.MainMenu) then
+        return
+    end
+    if 
+        panel:HasParent(WorldClicker.MainMenu) 
+        or panel:HasParent(WorldClicker.Settings) 
+        or panel:HasParent(WorldClicker.MotionPaths)
+    then
+        WorldClicker.MainMenu:EndKeyFocus(panel)
+    end
+end)
+
+hook.Add("SMHStretchingFinished", "SMHEnableStretching", function ()
+    WorldClicker.KeyframeSettings:SetStretchEnabled(true)
+    if not smh_suppress_chat:GetBool() then
+        chat.AddText("SMH Stretching stopped.")
+    end
+end)
+
+hook.Add("SMHSmoothingFinished", "SMHEnableSmoothing", function ()
+    WorldClicker.KeyframeSettings:SetSmoothEnabled(true)
+    if not smh_suppress_chat:GetBool() then
+        chat.AddText("SMH Smoothing stopped.")
+    end
+end)
+
 hook.Add("EntityRemoved", "SMHWorldClickerEntityRemoved", function(entity)
 
     for centity, _ in pairs(ClickerEntity) do
@@ -645,25 +895,56 @@ hook.Add("InitPostEntity", "SMHMenuSetup", function()
     setupUI()
 end)
 
+--- [CLIENT]
+--- 
+--- A user interface module which handles user events and sends them to the `SMH.ClientController`
+--- @class SMH.UI
 local MGR = {}
 
----@return boolean
+--- @return boolean
 function MGR.IsOpen()
-    return WorldClicker:IsVisible()
+    return WorldClicker and WorldClicker:IsVisible()
 end
 
+function MGR.RefreshUI()
+    ---@diagnostic disable-next-line
+    WorldClicker = nil
+    setupUI()
+end
+
+--- Open the timeline and all other SMH UI
 function MGR.Open()
     if not WorldClicker then
         setupUI()
     end
 
+    WorldClicker.MainMenu:SetHangOpen(false)
     WorldClicker:SetVisible(true)
+    WorldClicker:MakePopup()
 end
 
+-- Detour to allow other functions that free the mouse cursor to also interact with the SMH menu  
+gui.smh_EnableScreenClickerInternal = gui.smh_EnableScreenClickerInternal or gui.EnableScreenClicker
+function gui.EnableScreenClicker(bool, ...)
+    if WorldClicker then
+        WorldClicker:SetMouseInputEnabled(bool)
+    end
+	return gui.smh_EnableScreenClickerInternal(bool, ...)
+end
+
+--- Close the timeline
 function MGR.Close()
+    if IsValid(WorldClicker.MainMenu) and WorldClicker.MainMenu:GetHangOpen() then
+        WorldClicker.MainMenu:SetHangOpen(false)
+        return
+    end
+
     WorldClicker:SetVisible(false)
+    WorldClicker:SetMouseInputEnabled(false)
+    WorldClicker:SetKeyboardInputEnabled(false)
 end
 
+--- Play audio clips when dragging the frame pointer
 function MGR.ScrubAudio(frame, lastFrame, sampleTime)
     for _, audioClip in pairs(SMH.AudioClipData.AudioClips) do
         local totalFrames = audioClip.Duration * SMH.State.PlaybackRate
@@ -685,6 +966,8 @@ function MGR.ScrubAudio(frame, lastFrame, sampleTime)
 end
 
 local lastFrame = nil
+--- Move the playhead to a frame
+--- @param frame integer
 function MGR.SetFrame(frame)
     lastFrame = lastFrame or frame
     local sampleTime = 0.1
@@ -710,18 +993,26 @@ function MGR.SetFrame(frame)
         else
             WorldClicker.MainMenu:HideEasingControls()
         end
+    else
+        WorldClicker.MainMenu:HideEasingControls()
     end
 end
 
----@param frame integer
----@return any?
+--- Check if a frame contains a keyframe
+--- @param frame integer
+--- @return any?
 function MGR.IsFrameKeyframe(frame)
 	if FrameToKeyframe[frame] then
 		return KeyframeEasingData[FrameToKeyframe[frame]]		
 	end
 end
 
+--- Populate the timeline with keyframes from the server
+--- @param keyframes FrameData[]
+--- @param isreceiving boolean?
 function MGR.SetKeyframes(keyframes, isreceiving)
+
+
     local propertymods = PropertiesMenu:GetCurrentModifiers()
     local _, modnames = PropertiesMenu:GetModifiers()
 
@@ -751,10 +1042,11 @@ function MGR.SetKeyframes(keyframes, isreceiving)
     if not PropertiesMenu:GetUsingWorld() then
         for _, keyframe in pairs(keyframes) do
             for name, _ in pairs(keyframe.Modifiers) do
-                -- print(name)
                 local modname = modnames[name]
                 if Modifiers[modname] then
-                    if not FrameToKeyframe[keyframe.Frame] then
+                    if isreceiving then
+                        MGR.UpdateKeyframe(keyframe)
+                    elseif not FrameToKeyframe[keyframe.Frame] then
                         KeyframePointers[LocalIDs] = NewKeyframePointer(LocalIDs)
                         KeyframePointers[LocalIDs]:SetFrame(keyframe.Frame)
                         KeyframePointers[LocalIDs]:AddID(keyframe.ID, keyframe.Entity)
@@ -788,7 +1080,11 @@ function MGR.SetKeyframes(keyframes, isreceiving)
 
     else
         for _, keyframe in pairs(keyframes) do
-            if not FrameToKeyframe[keyframe.Frame] then
+            if isreceiving then
+                if SMH.State.Entity[keyframe.Entity] then
+                    MGR.UpdateKeyframe(keyframe)
+                end
+            elseif not FrameToKeyframe[keyframe.Frame] then
                 KeyframePointers[LocalIDs] = NewKeyframePointer(LocalIDs)
                 KeyframePointers[LocalIDs]:SetFrame(keyframe.Frame)
                 KeyframePointers[LocalIDs]:AddID(keyframe.ID, keyframe.Entity)
@@ -808,65 +1104,84 @@ function MGR.SetKeyframes(keyframes, isreceiving)
     end
 end
 
----@param keyframe FrameData
+--- Update a keyframe's data, including its easing controls
+--- @param keyframe FrameData
 function MGR.UpdateKeyframe(keyframe)
-    if not KeyframeIDs[keyframe.ID] then
-        if not FrameToKeyframe[keyframe.Frame] then
-            KeyframePointers[LocalIDs] = NewKeyframePointer(LocalIDs)
-            KeyframePointers[LocalIDs]:AddID(keyframe.ID, keyframe.Entity)
-            KeyframeIDs[keyframe.ID] = LocalIDs
+    local pointerId = KeyframeIDs[keyframe.ID]
+    local pointer = pointerId and KeyframePointers[pointerId]
+
+    if not pointer then
+        pointerId = FrameToKeyframe[keyframe.Frame]
+        if not pointerId then
+            pointerId = LocalIDs
+            KeyframePointers[pointerId] = NewKeyframePointer(pointerId)
+            KeyframePointers[pointerId]:SetFrame(keyframe.Frame)
+            FrameToKeyframe[keyframe.Frame] = pointerId
             LocalIDs = LocalIDs + 1
-        else
-            local pointer = KeyframePointers[FrameToKeyframe[keyframe.Frame]]
-            pointer:AddID(keyframe.ID, keyframe.Entity)
-            KeyframeIDs[keyframe.ID] = FrameToKeyframe[keyframe.Frame]
         end
-        -- TODO should this logic exist? Where should it be?
-        -- if FrameToKeyframe[keyframe.Frame] and KeyframePointers[FrameToKeyframe[keyframe.Frame]] then
-        --     local pointer = KeyframePointers[FrameToKeyframe[keyframe.Frame]]
-        --     KeyframePointers[FrameToKeyframe[keyframe.Frame]] = nil
-        --     WorldClicker.MainMenu.FramePanel:DeleteFramePointer(pointer)
-        -- end
+        pointer = KeyframePointers[pointerId]
+        pointer:AddID(keyframe.ID, keyframe.Entity)
+        KeyframeIDs[keyframe.ID] = pointerId
+    elseif pointer:GetFrame() ~= keyframe.Frame or not pointer:GetIDs()[keyframe.ID] then
+        if pointer:GetIDs()[keyframe.ID] then
+            pointer:RemoveID(keyframe.ID)
+        end
+        DeleteEmptyKeyframe(pointer)
+
+        pointerId = FrameToKeyframe[keyframe.Frame]
+        if not pointerId then
+            pointerId = LocalIDs
+            KeyframePointers[pointerId] = NewKeyframePointer(pointerId)
+            KeyframePointers[pointerId]:SetFrame(keyframe.Frame)
+            FrameToKeyframe[keyframe.Frame] = pointerId
+            LocalIDs = LocalIDs + 1
+        end
+        pointer = KeyframePointers[pointerId]
+        pointer:AddID(keyframe.ID, keyframe.Entity)
+        KeyframeIDs[keyframe.ID] = pointerId
     end
+    local _, _, modIds = PropertiesMenu:GetModifiers()
     local k, name = next(PropertiesMenu:GetCurrentModifiers())
-    while not keyframe.EaseIn[name] and k do
+    local modId = modIds[name]
+    while not keyframe.EaseIn[modId] and k do
         k, name = next(PropertiesMenu:GetCurrentModifiers(), k)
+        modId = modIds[name]
     end
 
-    KeyframeEasingData[KeyframeIDs[keyframe.ID]] = {
-        EaseIn = keyframe.EaseIn[name],
-        EaseOut = keyframe.EaseOut[name],
+    KeyframeEasingData[pointerId] = {
+        EaseIn = keyframe.EaseIn[modId],
+        EaseOut = keyframe.EaseOut[modId],
     }
 
-    KeyframePointers[KeyframeIDs[keyframe.ID]]:SetFrame(keyframe.Frame)
-
-    for frame, kid in pairs(FrameToKeyframe) do
-        if kid == KeyframeIDs[keyframe.ID] then
-            FrameToKeyframe[frame] = nil
-            break
-        end
-    end
-    FrameToKeyframe[keyframe.Frame] = KeyframeIDs[keyframe.ID]
+    pointer:SetFrame(keyframe.Frame)
     if keyframe.Frame == SMH.State.Frame then
-        WorldClicker.MainMenu:ShowEasingControls(keyframe.EaseIn[name] or 0, keyframe.EaseOut[name] or 0)
+        WorldClicker.MainMenu:ShowEasingControls(keyframe.EaseIn[modId] or 0, keyframe.EaseOut[modId] or 0)
     end
 end
 
----@param keyframeId integer
+--- Delete a keyframe using its `keyframeId`
+--- @param keyframeId integer
 function MGR.DeleteKeyframe(keyframeId)
-    if not KeyframeIDs[keyframeId] then return end
+    local pointerId = KeyframeIDs[keyframeId]
+    if not pointerId then return end
 
-    KeyframePointers[KeyframeIDs[keyframeId]]:RemoveID(keyframeId)
+    local pointer = KeyframePointers[pointerId]
+    if not pointer then
+        KeyframeIDs[keyframeId] = nil
+        return
+    end
 
-    if not next(KeyframePointers[KeyframeIDs[keyframeId]]:GetIDs()) then
-        if KeyframePointers[KeyframeIDs[keyframeId]] == LastSelectedKeyframe then LastSelectedKeyframe = nil end
-        SelectedPointers[KeyframeIDs[keyframeId]] = nil
-        WorldClicker.MainMenu.FramePanel:DeleteFramePointer(KeyframePointers[KeyframeIDs[keyframeId]])
-        KeyframePointers[KeyframeIDs[keyframeId]] = nil
-        KeyframeEasingData[KeyframeIDs[keyframeId]] = nil
+    pointer:RemoveID(keyframeId)
+
+    if not next(pointer:GetIDs()) then
+        if pointer == LastSelectedKeyframe then LastSelectedKeyframe = nil end
+        SelectedPointers[pointerId] = nil
+        WorldClicker.MainMenu.FramePanel:DeleteFramePointer(pointer)
+        KeyframePointers[pointerId] = nil
+        KeyframeEasingData[pointerId] = nil
 
         for frame, kid in pairs(FrameToKeyframe) do
-            if kid == KeyframeIDs[keyframeId] then
+            if kid == pointerId then
                 if frame == SMH.State.Frame then
                     WorldClicker.MainMenu:HideEasingControls()
                 end
@@ -879,6 +1194,8 @@ function MGR.DeleteKeyframe(keyframeId)
     KeyframeIDs[keyframeId] = nil
 end
 
+--- Constrain the frame pointer to offsets
+--- @param pointer SMHFramePointer
 function MGR.SetOffsets(pointer)
     local minimum, maximum = 0, 0
     for id, kpointer in pairs(KeyframePointers) do
@@ -894,8 +1211,9 @@ function MGR.SetOffsets(pointer)
     pointer:SetOffsets(minimum, maximum)
 end
 
----@param pointer SMHFramePointer
----@param frame integer
+--- Moves keyframes along with the frame pointer
+--- @param pointer SMHFramePointer
+--- @param frame integer
 function MGR.MoveChildren(pointer, frame)
     if next(OffsetPointers) then
         for _, kpointer in ipairs(OffsetPointers) do
@@ -937,7 +1255,8 @@ function MGR.ClearAllSelected()
     SelectedPointers = {}
 end
 
----@param pointer SMHFramePointer
+--- Select keyframes within a range
+--- @param pointer SMHFramePointer
 function MGR.ShiftSelect(pointer)
     if not LastSelectedKeyframe then 
         MGR.ToggleSelect(pointer) 
@@ -961,6 +1280,7 @@ function MGR.ShiftSelect(pointer)
     LastSelectedKeyframe = pointer
 end
 
+--- Select all keyframes
 function MGR.SelectAll()
     for id, kpointer in pairs(KeyframePointers) do
         kpointer:SetSelected(not kpointer:GetSelected())
@@ -968,7 +1288,8 @@ function MGR.SelectAll()
     end
 end
 
----@param pointer SMHFramePointer
+--- Toggle the selection of a keyframe
+--- @param pointer SMHFramePointer
 function MGR.ToggleSelect(pointer)
     local selected = not pointer:GetSelected()
     local frame = pointer:GetFrame()
@@ -999,11 +1320,13 @@ function MGR.ToggleSelect(pointer)
     end
 end
 
+--- Get selected keyframes
 function MGR.GetSelected()
     return SelectedPointers
 end
 
----@param entities Entities
+--- Set the selected entity
+--- @param entities EntitySet
 function MGR.SetSelectedEntity(entities)
     local entity = next(entities)
     LoadMenu:UpdateSelectedEnt(entity)
@@ -1013,83 +1336,98 @@ function MGR.SetSelectedEntity(entities)
     ClickerEntity = entities
 end
 
----@param folders string[]
----@param saves string[]
----@param path string
+--- Set list of saves to display on the save and load menus
+--- @param folders string[]
+--- @param saves string[]
+--- @param path string
 function MGR.SetServerSaves(folders, saves, path)
     LoadMenu:SetSaves(folders, saves, path)
     SaveMenu:SetSaves(folders, saves, path)
 end
 
----@param models string[]
----@param map string?
+--- Set the model list in the load menu for a given animation file
+--- @param models string[]
+--- @param map string?
 function MGR.SetModelList(models, map)
     LoadMenu:SetEntities(models, map)
     WorldClicker.SpawnMenu:SetEntities(models)
 end
 
----@param entities Entities
+--- Set the entity list in the properties menu
+--- @param entities Entities
 function MGR.SetEntityList(entities)
     PropertiesMenu:SetEntities(entities)
 end
 
----@param name string
----@param class string
+--- Set the model name to load from in the load menu
+--- @param name string
+--- @param class string
 function MGR.SetModelName(name, class)
     LoadMenu:SetModelName(name, class)
 end
 
----@param name string
+--- Update the name of the selected entity
+--- @param name string
 function MGR.UpdateName(name)
     PropertiesMenu:SetName(name)
 end
 
----@param names string[]
+--- If a save exists, display the warning along with any entities that may be lost in the operation
+--- @param names string[]
 function MGR.SaveExistsWarning(names)
     SaveMenu:SaveExists(names)
 end
 
----@param savenames string[]
----@param gamenames string[]
+--- Show the appending window, with list of entities in save and list of entities in game  
+--- @param savenames string[] List of entity names in the save file 
+--- @param gamenames string[] List of entity names in game 
 function MGR.AppendWindow(savenames, gamenames)
     SaveMenu:AppendWindow(savenames, gamenames)
 end
 
----@param path string
+--- Add a save to the save menu
+--- @param path string
 function MGR.AddSaveFile(path)
     SaveMenu:AddSave(path)
 end
 
----@param path string
----@param isFolder boolean
+--- Remove the save from the save menu
+--- @param path string
+--- @param isFolder boolean
 function MGR.RemoveSaveFile(path, isFolder)
     SaveMenu:RemoveSave(path, isFolder)
 end
 
----@param list any
----@param ids string[]
+--- Initialize the timeline modifiers in the properties menu
+--- @param list any
+--- @param ids string[]
 function MGR.InitModifiers(list, ids)
     PropertiesMenu:InitModifiers(list, ids)
 end
 
+--- Re-update the Properties timeline settings
 function MGR.RefreshTimelineSettings()
     PropertiesMenu:UpdateTimelineSettings()
 end
 
----@param setting string
----@param value any
+--- Update a setting with a new value
+--- @param setting string
+--- @param value any
 function MGR.UpdateUISetting(setting, value)
     local settings = {}
+    ---@cast settings Settings
     settings[setting] = value
     WorldClicker.Settings:ApplySettings(settings)
 end
 
----@param settings Settings
+--- Update the settings
+--- @param settings Settings
 function MGR.UpdateUISettings(settings)
     WorldClicker.Settings:ApplySettings(settings)
 end
 
----@param timeline TimelineSetting
+--- Set to a new `timeline`
+--- @param timeline TimelineSetting
 function MGR.SetTimeline(timeline)
     WorldClicker.MainMenu:UpdateTimelines(timeline)
     PropertiesMenu:UpdateTimelineInfo(timeline)
@@ -1098,9 +1436,11 @@ function MGR.SetTimeline(timeline)
     end
 end
 
----modified for loading playback length and rate from audio sequence save
----@param newState State
----@param updatePlaybackControls boolean?
+--- Update the playback and audio UI state.
+--- 
+--- modified for loading playback length and rate from audio sequence save
+--- @param newState State
+--- @param updatePlaybackControls boolean?
 function MGR.UpdateState(newState, updatePlaybackControls)
 	local updatePlaybackControls = updatePlaybackControls or false
 	
@@ -1112,18 +1452,21 @@ function MGR.UpdateState(newState, updatePlaybackControls)
 	end
 end
 
----@param timelineinfo TimelineSetting
----@param changed string
+--- Update modifier settings and what modifiers have changed in the properties menu
+--- @param timelineinfo TimelineSetting
+--- @param changed string
 function MGR.UpdateModifier(timelineinfo, changed)
     PropertiesMenu:UpdateModifiersInfo(timelineinfo, changed)
 end
 
----@param timelineinfo TimelineSetting
+--- Update the keyframe color for the timeline
+--- @param timelineinfo TimelineSetting
 function MGR.UpdateKeyColor(timelineinfo)
     PropertiesMenu:UpdateColor(timelineinfo)
 end
 
----@param color Color
+--- Set the colors of the keyframes
+--- @param color Color
 function MGR.PaintKeyframes(color)
     KeyColor = color
 
@@ -1136,7 +1479,11 @@ function MGR.GetModifiers()
     return PropertiesMenu:GetModifiers()
 end
 
----@param set any
+--- Store world setting in Properties menu.
+--- 
+--- This hides the easing controls if we are using World Keyframes (`set` is true). 
+--- Otherwise, it hides the World Keyframe UI in the properties menu.
+--- @param set boolean?
 function MGR.SetUsingWorld(set)
     PropertiesMenu:SetUsingWorld(set)
     if set then
@@ -1146,15 +1493,17 @@ function MGR.SetUsingWorld(set)
     end
 end
 
----@param console string
----@param push string
----@param release string
+--- Set world keyframe data in the properties menu
+--- @param console string
+--- @param push string
+--- @param release string
 function MGR.SetWorldData(console, push, release)
     PropertiesMenu:ShowWorldSettings(console, push, release)
 end
 
----@param frame integer
----@return table?
+--- Get all keyframes on a `frame`
+--- @param frame integer
+--- @return table?
 function MGR.GetKeyframesOnFrame(frame)
 	if not FrameToKeyframe[frame] then return nil end
 	local ids = {}
@@ -1167,16 +1516,38 @@ function MGR.GetKeyframesOnFrame(frame)
 end
 
 -- AUDIO =========================================
+
+--- Create a new audio clip pointer from the `audioClip`
+--- @param audioClip AudioClip
+--- @return SMHAudioClipPointer
 function MGR.CreateAudioClipPointer(audioClip)
-	table.insert(AudioClipPointers, NewAudioClipPointer(audioClip))
+    local pointer = NewAudioClipPointer(audioClip)
+	table.insert(AudioClipPointers, pointer)
+    return pointer
 end
 
+--- Delete an audio clip pointer on the timeline
+--- @param pointer SMHAudioClipPointer
 function MGR.DeleteAudioClipPointer(pointer)
 	WorldClicker.MainMenu.FramePanel:DeleteAudioClipPointer(pointer)
 end
 
+--- Deletes all audio clip pointers on the timeline
 function MGR.DeleteAllAudioClipPointers()
 	WorldClicker.MainMenu.FramePanel:DeleteAllAudioClipPointers()
+end
+
+function MGR.RefreshAllAudioClipPointers()
+    -- Only regenerate when the game is unpaused
+    timer.Simple(0.01, function()
+        for _, pointer in ipairs(AudioClipPointers) do
+            local audioClip = pointer._audioClip
+            if audioClip then
+                audioClip.Waveform = SMH.AudioClipManager.RegenerateWaveform(audioClip.Path)
+                pointer:Setup(audioClip)
+            end
+        end
+    end)
 end
 -- ===============================================
 

@@ -1,6 +1,9 @@
+--- @class AudioClipData
 local META = {}
 META.__index = META
 
+--- @param station IGModAudioChannel
+--- @param path string
 function META:New(station, path)
 	if not self.AudioClips then
 		self.AudioClips = {}
@@ -12,15 +15,18 @@ function META:New(station, path)
 		AudioChannel = station,
         Frame = -1,
         Duration = 1,
-		StartTime = 0
+        BaseDuration = 1,
+		StartTime = 0,
+        Waveform = {},
     }
     self.NextKeyframeId = self.NextKeyframeId + 1
-
+    
     self.AudioClips[audioClip.ID] = audioClip
-
+    
     return audioClip
 end
 
+--- @param id number
 function META:Delete(id)
     if not self.AudioClips[id] then
         return
@@ -35,7 +41,7 @@ function META:DeleteAll()
 	end
 end
 
----@class AudioClipData
+--- @class AudioClipData
 SMH.AudioClipData = {
 	AudioClips = {},
     NextKeyframeId = 0

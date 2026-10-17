@@ -1,4 +1,4 @@
----@class SMHInsertAudio: DFrame
+--- @class SMHInsertAudio: DFrame
 local PANEL = {}
 
 function PANEL:Init()
@@ -31,11 +31,11 @@ function PANEL:Init()
 	
 	self.Form = vgui.Create("DForm", self)
 	self.Form:SetLabel("File Name:")
-	---@type DTextEntry
-	---@diagnostic disable-next-line
+	--- @type DTextEntry
+	--- @diagnostic disable-next-line
 	self.TextBox = self.Form:TextEntry("", "")
-	---@type DButton
-	---@diagnostic disable-next-line
+	--- @type DButton
+	--- @diagnostic disable-next-line
 	self.Button = self.Form:Button("Load", "")
 	self.Button.DoClick = function()
 		self:LoadSelected()
@@ -50,7 +50,7 @@ end
 
 function PANEL:PerformLayout(width, height)
 
-    ---@diagnostic disable-next-line
+    --- @diagnostic disable-next-line
     self.BaseClass.PerformLayout(self, width, height)
 	
 	self.FileList:Dock( FILL )

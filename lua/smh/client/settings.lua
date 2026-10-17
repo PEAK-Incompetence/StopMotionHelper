@@ -1,4 +1,4 @@
----@enum ConVarType
+--- @alias ConVarType integer
 local ConVarType = {
     Bool = 1,
     Int = 2,
@@ -14,10 +14,10 @@ local GhostVars = {
     smh_ghostxray = "GhostXRay",
 }
 
----@class TypedConVar
----@field Type ConVarType
----@field ConVar ConVar
----@field Global boolean
+--- @class TypedConVar
+--- @field Type ConVarType
+--- @field ConVar ConVar
+--- @field Global boolean
 local TYPED_CV = {}
 TYPED_CV.__index = TYPED_CV
 
@@ -29,6 +29,7 @@ function TYPED_CV:GetValue()
     elseif self.Type == ConVarType.Float then
         return self.ConVar:GetFloat()
     end
+    return self.ConVar:GetString()
 end
 
 function TYPED_CV:GetDefault()
@@ -51,26 +52,40 @@ function TYPED_CV:SetValue(value)
     end
 end
 
----@param type ConVarType
----@param name string
----@param defaultValue any
----@param helptext string?
----@param userInfo boolean?
----@param isGlobal boolean?
----@return TypedConVar
+--- @param type ConVarType
+--- @param name string
+--- @param defaultValue any
+--- @param helptext string?
+--- @param userInfo boolean?
+--- @param isGlobal boolean?
+--- @return TypedConVar
 local function CreateTypedConVar(type, name, defaultValue, helptext, userInfo, isGlobal)
+    local cvarType
     if type == ConVarType.Bool then
         defaultValue = tostring(defaultValue and 1 or 0)
+        cvarType = TYPE_BOOL
     elseif type == ConVarType.Int then
         defaultValue = tostring(defaultValue)
+        cvarType = TYPE_NUMBER
     elseif type == ConVarType.Float then
         defaultValue = tostring(defaultValue)
+        cvarType = TYPE_NUMBER
     end
+
 
     local cv = {
         Type = type,
-        Global = userInfo,
-        ConVar = CreateClientConVar(name, defaultValue, true, Either(userInfo ~= nil, userInfo, false), helptext, nil, nil),
+        Global = userInfo or isGlobal,
+        ConVar = SMH.ConVars.Create(
+            name, 
+            defaultValue, 
+            Either(userInfo ~= nil, userInfo, false), 
+            helptext, 
+            cvarType,
+            cvarType == TYPE_NUMBER and 0,
+            cvarType == TYPE_NUMBER and 1,
+            "Settings"
+        ),
     }
     setmetatable(cv, TYPED_CV)
 
@@ -86,10 +101,10 @@ local function CreateTypedConVar(type, name, defaultValue, helptext, userInfo, i
     return cv
 end
 
----@type {[Entity]: Settings}
+--- @type {[Entity]: Settings}
 local EntitySettings = {}
 
----@type {[string]: TypedConVar}
+--- @type {[string]: TypedConVar}
 local ConVars = {
     FreezeAll = CreateTypedConVar(ConVarType.Bool, "smh_freezeall", true),
     LocalizePhysBones = CreateTypedConVar(ConVarType.Bool, "smh_localizephysbones", false),
@@ -103,7 +118,7 @@ local ConVars = {
     TweenDisable = CreateTypedConVar(ConVarType.Bool, "smh_tweendisable", false),
     SmoothPlayback = CreateTypedConVar(ConVarType.Bool, "smh_smoothplayback", false),
     EnableWorld = CreateTypedConVar(ConVarType.Bool, "smh_enableworldkeyframes", false, nil, true),
-    EnablePhysBake = CreateTypedConVar(ConVarType.Bool, "smh_enablephysbake", false, "When enabled, it will disable loading keyframes from the Physical Bone modifier, to enable baking the body modifiers")
+    EnablePhysBake = CreateTypedConVar(ConVarType.Bool, "smh_enablephysbake", false, "When enabled, it will disable loading keyframes from the Physical Bone modifier, to enable baking the body modifiers", true)
 }
 
 local InitialSettings = {}
@@ -111,7 +126,7 @@ for name, convar in pairs(ConVars) do
     InitialSettings[name] = convar:GetDefault()
 end
 
----@type {[string]: TypedConVar}
+--- @type {[string]: TypedConVar}
 local Globals = {}
 for name, convar in pairs(ConVars) do
     if convar.Global then
@@ -119,6 +134,9 @@ for name, convar in pairs(ConVars) do
     end
 end 
 
+--- [CLIENT]
+--- 
+--- @class SMH.Settings
 local MGR = {}
 
 local function initializeSetting(entity)
@@ -140,8 +158,8 @@ function MGR.GetGlobals()
     return Globals
 end
 
----@param isSave boolean?
----@return Settings
+--- @param isSave boolean?
+--- @return Settings
 function MGR.GetAll(isSave)
     local settings = {}
 

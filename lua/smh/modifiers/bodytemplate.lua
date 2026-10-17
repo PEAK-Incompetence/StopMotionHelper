@@ -11,18 +11,26 @@ local enableMotion = opt.PhysObjEnableMotion
 local wake = opt.PhysObjWake
 local getPhysicsObjectCount = opt.EntityGetPhysicsObjectCount
 local getPhysicsObjectNum = opt.EntityGetPhysicsObjectNum
+local BoneToPhysBone = SMH.BoneToPhysBone
+local GetPhysBoneParent = SMH.GetPhysBoneParent
 
 local lerpLinearVector = SMH.LerpLinearVector
 local lerpLinearAngle = SMH.LerpLinearAngle
 
----@param entity Entity
----@return table?
+--- @param entity Entity
+--- @return table?
 function MOD:Save(entity)
 
-    local count = getPhysicsObjectCount(entity);
+    local count = entity:GetPhysicsObjectCount();
     if count <= 0 then return nil; end
 
     local data = {};
+
+    local origin = entity:GetPhysicsObjectNum(0)
+    data.origin = {
+        Pos = origin:GetPos(),
+        Ang = origin:GetAngles()
+    }
 
     local endBones = {}
     for _, boneName in ipairs(self.BodyEnds) do
@@ -73,7 +81,7 @@ function MOD:Load(entity, data, settings)
         return;
     end
 
-    local count = getPhysicsObjectCount(entity);
+    local count = entity:GetPhysicsObjectCount();
     local freezeAll = settings and settings.FreezeAll
 
     for i = 0, count - 1 do
@@ -82,7 +90,7 @@ function MOD:Load(entity, data, settings)
 
         local d = data[i];
 
-        if not d then continue end
+        if not d or not pb then continue end
 
 		setPos(pb, d.Pos, true);
 		setAngles(pb, d.Ang);
@@ -105,7 +113,7 @@ function MOD:LoadBetween(entity, data1, data2, percentage, settings)
         return;
     end
 
-    local count = getPhysicsObjectCount(entity);
+    local count = entity:GetPhysicsObjectCount();
     local freezeAll = settings and settings.FreezeAll
 
     for i = 0, count - 1 do
@@ -114,7 +122,7 @@ function MOD:LoadBetween(entity, data1, data2, percentage, settings)
         local d1 = data1[i];
         local d2 = data2[i];
 
-        if not d1 or not d2 then continue end
+        if not d1 or not d2 or not pb then continue end
 
         local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
         local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
@@ -147,7 +155,7 @@ end
 function MOD:Offset(data, origindata, worldvector, worldangle, hitpos)
 
     if not hitpos then
-        hitpos = origindata[0].Pos;
+        hitpos = origindata.origin.Pos;
     end
 
     local newdata = {};
@@ -155,7 +163,7 @@ function MOD:Offset(data, origindata, worldvector, worldangle, hitpos)
     for id, kdata in pairs(data) do
 
         local d = {};
-        local Pos, Ang = WorldToLocal(kdata.Pos, kdata.Ang, origindata[0].Pos, Angle(0, 0, 0));
+        local Pos, Ang = WorldToLocal(kdata.Pos, kdata.Ang, origindata.origin.Pos, Angle(0, 0, 0));
         d.Pos, d.Ang = LocalToWorld(Pos, Ang, worldvector, worldangle);
         d.Pos = d.Pos + hitpos;
 
@@ -183,7 +191,7 @@ function MOD:OffsetDupe(entity, data, origindata)
     for id, kdata in pairs(data) do
 
         local d = {};
-        d.Pos, d.Ang = WorldToLocal(kdata.Pos, kdata.Ang, origindata[0].Pos, origindata[0].Ang);
+        d.Pos, d.Ang = WorldToLocal(kdata.Pos, kdata.Ang, origindata.origin.Pos, origindata.origin.Ang);
         d.Pos, d.Ang = LocalToWorld(d.Pos, d.Ang, entPos, entAng);
 
         if kdata.LocalPos and kdata.LocalAng then -- those shouldn't change

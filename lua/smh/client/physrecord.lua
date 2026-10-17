@@ -20,13 +20,16 @@ surface.CreateFont( "smh_font", {
     outline = false
 } )
 
+--- [CLIENT]
+--- 
+--- @class SMH.ClientPhysRecord
 local MGR = {}
 
 MGR.FrameCount, MGR.RecordInterval, MGR.StartDelay = 100, 0, 3
 MGR.SelectedEntities = {}
 
 do
-    ---@param rate number
+    --- @param rate number
     local function beep(rate)
         rate = rate or 1
     

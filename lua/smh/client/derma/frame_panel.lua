@@ -1,7 +1,33 @@
----@class SMHFramePanel: DPanel
+--- @class SMHFramePanel: DPanel
+--- @field AudioClipPointers SMHAudioClipPointer[]
+--- @field FramePointers SMHFramePointer[]
 local PANEL = {}
 
 Derma_Install_Convar_Functions(PANEL)
+
+---@param scrollPanel DPanel
+---@param pressed function
+---@param released function
+---@param cursorMoved function
+---@return DPanel leftSizer
+---@return DPanel rightSizer
+local function scrollSizePair(scrollPanel, pressed, released, cursorMoved)
+    local pair = {}
+    for i = 1, 2 do
+        local sizer = vgui.Create("DPanel", scrollPanel)
+        sizer:SetCursor("sizewe")
+        sizer:SetPaintBackground(false)
+        sizer:Dock(i == 1 and LEFT or RIGHT)
+        
+        sizer.OnMousePressed = function(_, mousecode) pressed(mousecode, i == 1) end
+        sizer.OnMouseReleased = function(_, mousecode) released(mousecode, i == 1) end
+        sizer.OnCursorMoved = function(_, x, y) cursorMoved(x, y, i == 1) end
+
+        table.insert(pair, sizer)
+    end
+
+    return unpack(pair)
+end
 
 function PANEL:Init()
 
@@ -12,6 +38,13 @@ function PANEL:Init()
     self.ScrollBar.OnMousePressed = function(_, mousecode) self:OnScrollBarPressed(mousecode) end
     self.ScrollBar.OnMouseReleased = function(_, mousecode) self:OnScrollBarReleased(mousecode) end
     self.ScrollBar.OnCursorMoved = function(_, x, y) self:OnScrollBarCursorMoved(x, y) end
+
+    self.ScrollBar.Left, self.ScrollBar.Right = scrollSizePair(
+        self.ScrollBar, 
+        function(mousecode, isLeft) self:OnScrollBarSizerPressed(mousecode, isLeft) end,
+        function(mousecode, isLeft) self:OnScrollBarSizerReleased(mousecode, isLeft) end,
+        function(x, y, isLeft) self:OnScrollBarSizerCursorMoved(x, y, isLeft) end
+    )
 
     self.ScrollButtonLeft = vgui.Create("DButton", self)
     self.ScrollButtonLeft:SetText("")
@@ -30,6 +63,9 @@ function PANEL:Init()
     self.FrameArea = {0, 1}
     self._draggingScrollBar = false
     self._scrollCursorOffset = 0
+    self._scrollCursorPos = 0
+    self._resizingScrollBar = false
+    self._oldWidth = 0
 
     self.FramePointers = {}
 	self.AudioClipPointers = {}
@@ -67,7 +103,7 @@ function PANEL:PerformLayout(width, height)
 	
 end
 
----@param newMajor integer
+--- @param newMajor integer
 function PANEL:UpdateMajor(newMajor)
     self.major = newMajor
     self.majorFactorSet = {}
@@ -86,11 +122,11 @@ function PANEL:UpdateMajor(newMajor)
     end
 end
 
----Triangle sine wave function with range [0, 4*a/p] 
----@param x number point
----@param a number amplitude
----@param p number period
----@return number
+--- Triangle sine wave function with range [0, 4*a/p] 
+--- @param x number point
+--- @param a number amplitude
+--- @param p number period
+--- @return number
 local function triangle(x, a, p)
     return 4 * a / p * math.abs(((x - p * 0.5) % p) - p * 0.5)
 end
@@ -112,6 +148,9 @@ function PANEL:Paint(width, height)
 	for _, pointer in pairs(self.AudioClipPointers) do
         pointer:PaintOverride()
     end
+
+    self.ScrollBar.Left:SetSize(5, self.ScrollBar:GetTall())
+    self.ScrollBar.Right:SetSize(5, self.ScrollBar:GetTall())
 end
 
 function PANEL:UpdateFrameCount(totalframes)
@@ -193,22 +232,44 @@ function PANEL:SortClipOrder()
 	self:RefreshFrames()
 end
 
+--- @param frame integer
+--- @return SMHAudioClipPointer?
 function PANEL:GetAudioClipPointerAtFrame(frame)
 	--get all clips that exist at this frame
 	local clips = {}
-	for k,v in pairs(self.AudioClipPointers) do
+    local count = 0
+	for k,v in ipairs(self.AudioClipPointers) do
 		local startFrame = v:GetFrame()
-		local endFrame = v:GetDuration()*SMH.State.PlaybackRate
-		if startFrame <= frame and endFrame >= frame then
+		local endFrame = startFrame + v:GetDuration() * SMH.State.PlaybackRate
+		if v:IsVisible() and startFrame <= frame and endFrame >= frame then
 			table.insert(clips,v)
+            count = count + 1
 		end
 	end
 	--return last clip
-	if not table.IsEmpty(clips) then
+	if count > 0 then
 		return clips[#clips]
 	end
 end
 
+--- @param frame integer
+--- @return SMHAudioClipPointer[]
+function PANEL:GetAudioClipPointersAtFrame(frame)
+	--get all clips that exist at this frame
+	local clips = {}
+    local count = 0
+	for k,v in ipairs(self.AudioClipPointers) do
+		local startFrame = v:GetFrame()
+		local endFrame = startFrame + v:GetDuration() * SMH.State.PlaybackRate
+		if v:IsVisible() and startFrame <= frame and endFrame >= frame then
+			table.insert(clips,v)
+            count = count + 1
+		end
+	end
+    return clips
+end
+
+--- @param audioClip AudioClip
 function PANEL:CreateAudioClipPointer(audioClip)
     local pointer = vgui.Create("SMHAudioClipPointer", self)
 	pointer:Setup(audioClip)
@@ -229,13 +290,15 @@ function PANEL:DeleteAllAudioClipPointers()
 	end
 	table.Empty(self.AudioClipPointers)
 end
+
+function PANEL:UnhideAllAudio()
+    for _, audioClip in ipairs(self.AudioClipPointers) do
+        audioClip:SetVisible(true)
+    end
+end
 -- ============================================================
 
-function PANEL:OnMousePressed(mousecode)
-    if mousecode ~= MOUSE_LEFT then
-        return
-    end
-
+function PANEL:GetFrameFromCursorPos()
     local startX, endX = unpack(self.FrameArea)
     local posX, posY = self:CursorPos()
 
@@ -244,24 +307,103 @@ function PANEL:OnMousePressed(mousecode)
     local framePosition = math.Round(self.ScrollOffset + (targetX / width) * (self.Zoom - 1))
     framePosition = framePosition < 0 and 0 or (framePosition >= self.TotalFrames and self.TotalFrames - 1 or framePosition)
 
-    self:OnFramePressed(framePosition)
+    return framePosition
+end
+
+function PANEL:OnMousePressed(mousecode)
+    if mousecode ~= MOUSE_LEFT and mousecode ~= MOUSE_RIGHT then
+        return
+    end
+
+    local framePosition = self:GetFrameFromCursorPos()
+
+    self:OnFramePressed(mousecode, framePosition)
 end
 
 local scrollMultiplierConVar = GetConVar("smh_scrollmultiplier")
+
+function PANEL:SetZoom(newZoom)
+    self:SetValue(newZoom)
+    self:ConVarChanged(tostring(newZoom))
+end
+
+local function validateZoom(newZoom)
+    if newZoom < 30 then
+        newZoom = 30
+    end
+
+    return newZoom
+end
 
 function PANEL:OnMouseWheeled(scrollDelta)
     scrollMultiplierConVar = scrollMultiplierConVar or GetConVar("smh_scrollmultiplier")
 
     scrollDelta = -scrollDelta
     local newZoom = self.Zoom + scrollDelta * scrollMultiplierConVar:GetFloat()
-    if newZoom > 500  then
-        newZoom = 500
-    elseif newZoom < 30 then
-        newZoom = 30
+    newZoom = validateZoom(newZoom)
+
+    self:SetZoom(newZoom)
+end
+
+function PANEL:OnScrollBarSizerPressed(mousecode, isLeft)
+    if mousecode ~= MOUSE_LEFT then 
+        return
     end
 
-    self:SetValue(newZoom)
-    self:ConVarChanged(tostring(newZoom))
+    local scrollBarSizer
+    if isLeft then
+        scrollBarSizer = self.ScrollBar.Left
+    else
+        scrollBarSizer = self.ScrollBar.Right
+    end
+    scrollBarSizer:MouseCapture(true)
+    self._resizingScrollBar = true
+    self._oldWidth = self.ScrollBar:GetWide()
+    local cursorXOffset, _ = self.ScrollBar:CursorPos()
+    self._scrollCursorOffset = cursorXOffset
+    self._scrollCursorPos = self.ScrollBar:GetX()
+end
+
+function PANEL:OnScrollBarSizerReleased(mousecode, isLeft)
+    if mousecode ~= MOUSE_LEFT then
+        return
+    end
+
+    self.ScrollBar.Left:MouseCapture(false)
+    self.ScrollBar.Right:MouseCapture(false)
+    self._resizingScrollBar = false
+end
+
+function PANEL:ValidateScroll(movePos, movableWidth, numSteps)
+    if movableWidth ~= 0 then
+        local targetScrollOffset = math.Round((movePos / movableWidth) * numSteps)
+
+        if targetScrollOffset >= 0 and targetScrollOffset <= numSteps and targetScrollOffset ~= self.ScrollOffset then
+            self:SetScrollOffset(targetScrollOffset)
+        end
+    elseif self.ScrollOffset ~= 0 then
+        self:SetScrollOffset(0)
+    end
+end
+
+function PANEL:OnScrollBarSizerCursorMoved(x, y, isLeft)
+    if not self._resizingScrollBar then
+        return
+    end
+
+    local cursorX, _ = self:CursorPos()
+    local movePos = cursorX - self._scrollCursorOffset - self._scrollCursorPos
+
+    local newWidth = self._oldWidth + (isLeft and -movePos or movePos)
+    local newZoom = validateZoom(newWidth * self.TotalFrames / self.ScrollBarRect.Width)
+    self:SetZoom(newZoom)
+    if isLeft then
+        local movableWidth = self.ScrollBarRect.Width - newWidth
+        local numSteps = self.TotalFrames - self.Zoom
+        -- I prescribe an offset of 16 here to prevent the scroller from moving when clicking the left side
+        -- TODO: Investigate where 16 offset comes from and apply the correct offset
+        self:ValidateScroll(self._scrollCursorPos + movePos - 16, movableWidth, numSteps)
+    end
 end
 
 function PANEL:OnScrollBarPressed(mousecode)
@@ -293,6 +435,14 @@ function PANEL:Think()
 end
 
 function PANEL:OnScrollBarReleased(mousecode)
+    if mousecode == MOUSE_RIGHT then
+        local m = DermaMenu(true, self)
+        m:AddOption("Reset zoom?", function ()
+            GetConVar("smh_zoom"):Revert()
+        end)
+        m:Open()
+    end
+    
     if mousecode ~= MOUSE_LEFT then
         return
     end
@@ -310,18 +460,12 @@ function PANEL:OnScrollBarCursorMoved(x, y)
     local movePos = cursorX - self._scrollCursorOffset - self.ScrollBarRect.X
 
     local movableWidth = self.ScrollBarRect.Width - self.ScrollBar:GetWide()
-    if movableWidth ~= 0 then
-        local numSteps = self.TotalFrames - self.Zoom
-        local targetScrollOffset = math.Round((movePos / movableWidth) * numSteps)
-
-        if targetScrollOffset >= 0 and targetScrollOffset <= numSteps and targetScrollOffset ~= self.ScrollOffset then
-            self:SetScrollOffset(targetScrollOffset)
-        end
-    elseif self.ScrollOffset ~= 0 then
-        self:SetScrollOffset(0)
-    end
+    local numSteps = self.TotalFrames - self.Zoom
+    self:ValidateScroll(movePos, movableWidth, numSteps)
 end
 
-function PANEL:OnFramePressed(frame) end
+--- @param mouseCode MOUSE
+--- @param frame integer
+function PANEL:OnFramePressed(mouseCode, frame) end
 
 vgui.Register("SMHFramePanel", PANEL, "DPanel")

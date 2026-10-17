@@ -1,0 +1,3 @@
+sphinx~=8.0
+sphinx-lua-ls
+myst-parser

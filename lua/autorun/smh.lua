@@ -1,6 +1,6 @@
----
+--- 
 -- SMH Entry point.
----
+--- 
 
 if SERVER then
     AddCSLuaFile("smh.lua")

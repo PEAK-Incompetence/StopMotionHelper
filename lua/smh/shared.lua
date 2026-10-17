@@ -1,7 +1,12 @@
 if not SMH then
+    --- [SHARED]
+    --- 
+    --- Stop Motion Helper Singleton
+    --- @class SMH
     SMH = {}
 end
 
+---@type table<string, integer>|table<integer, string>
 SMH.MessageTypes = {
     "SetFrame",
     "SetFrameResponse",
@@ -110,6 +115,13 @@ end
 cleanup.Register("smhentity")
 CreateConVar("sbox_maxsmhentity", 20, FCVAR_NOTIFY)
 
+include("shared/translations.lua")
+
+include("shared/gmod_saves.lua")
+include("shared/gmod_dupes.lua")
+include("shared/render.lua")
+
+include("shared/easing.lua")
 include("shared/saves.lua")
 include("shared/tablesplit.lua")
 include("shared/audioseq_saves.lua")

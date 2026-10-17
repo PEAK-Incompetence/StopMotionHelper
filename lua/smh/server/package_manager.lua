@@ -1,18 +1,21 @@
 local packIntoEntity = CreateConVar("smh_packentity", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, this packs animation data into the entity itself. Up to 2MB of animation data can be saved.")
 local disablePacking = CreateConVar("smh_disablepacking", "0", FCVAR_PROTECTED + FCVAR_ARCHIVE, "If set to 1, it prevents applying SMH packages upon loading a save")
 
+--- [SERVER]
+--- 
+--- @class SMH.Packer
 local MGR = {}
 
----@param entities {[string]: Entity}
----@param serializedKeyframes SMHFile
----@param savePath string
----@return boolean
+--- @param entities {[string]: Entity}
+--- @param serializedKeyframes SMHFile
+--- @param savePath string
+--- @return boolean
 local function packSaveIntoEntity(entities, serializedKeyframes, savePath)
     local hasDupes = false
     for _,  data in ipairs(serializedKeyframes.Entities) do
         local entity = entities[data.Properties.Name]
         if not IsValid(entity) or entity:IsPlayer() then continue end
-        ---@cast entity Entity
+        --- @cast entity Entity
 
         if entity.smh_IsDupe then
             hasDupes = true
@@ -21,7 +24,7 @@ local function packSaveIntoEntity(entities, serializedKeyframes, savePath)
         duplicator.StoreEntityModifier(entity, "SMHPackage", {
             name = data.Properties.Name,
             save = savePath,
-            isDupe = entity.smh_IsDupe ---@diagnostic disable-line
+            isDupe = entity.smh_IsDupe --- @diagnostic disable-line
         })
         -- Only apply the dupe tag once, so that it only carries over once per packing operation.
         entity.smh_IsDupe = nil
@@ -29,9 +32,9 @@ local function packSaveIntoEntity(entities, serializedKeyframes, savePath)
     return hasDupes
 end
 
----@param entities {[string]: Entity}
----@param serializedKeyframes SMHFile
----@return boolean
+--- @param entities {[string]: Entity}
+--- @param serializedKeyframes SMHFile
+--- @return boolean
 local function packDataIntoEntity(entities, serializedKeyframes)
     for _,  data in ipairs(serializedKeyframes.Entities) do
         local entity = entities[data.Properties.Name]
@@ -44,8 +47,8 @@ local function packDataIntoEntity(entities, serializedKeyframes)
     return true
 end
 
----@param player Player
----@param path string
+--- @param player Player
+--- @param path string
 function MGR.NotifyPack(player, path)
     if packIntoEntity:GetBool() then
         return player:ChatPrint(Format("Stop Motion Helper: Successfully packed animation data into all entities"))
@@ -54,15 +57,15 @@ function MGR.NotifyPack(player, path)
     end
 end
 
----@param path string
----@return boolean
+--- @param path string
+--- @return boolean
 function MGR.ValidateSave(path)
     return Either(not packIntoEntity:GetBool(), SMH.Saves.CheckIfExists(path, NULL), true)
 end
 
----@param entities {[string]: Entity}
----@param serializedKeyframes SMHFile
----@param savePath string
+--- @param entities {[string]: Entity}
+--- @param serializedKeyframes SMHFile
+--- @param savePath string
 function MGR.Pack(entities, serializedKeyframes, savePath)
     local hasDupes = false
 
@@ -75,26 +78,28 @@ function MGR.Pack(entities, serializedKeyframes, savePath)
     return hasDupes
 end
 
----@param player Player
----@param entity SMHEntity
----@param data Data
+--- @param player Player
+--- @param entity SMHEntity
+--- @param data Data
 local function applyDataIntoEntity(player, entity, data)
     SMH.PropertiesManager.AddEntity(player, {entity})
     SMH.KeyframeManager.ImportSave(player, entity, data.Frames, data.Properties)
 
+    ---@type SMHFile
     local serializedKeyframes = {
-        Entities = {data}
+        Entities = {data},
+        Map = game.GetMap()
     }
 
     SMH.Spawner.DupeOffsetKeyframes(player, entity, serializedKeyframes)
 
-    duplicator.ClearEntityModifier(ent, "SMHPackage")
-    duplicator.StoreEntityModifier(ent, "SMHPackage", data)
+    duplicator.ClearEntityModifier(entity, "SMHPackage")
+    duplicator.StoreEntityModifier(entity, "SMHPackage", data)
 end
 
----@param player Player
----@param entity SMHEntity
----@param data PackageData
+--- @param player Player
+--- @param entity SMHEntity
+--- @param data PackageData
 local function applySaveIntoEntity(player, entity, data)
     local frameData, properties, _, settings = SMH.Saves.LoadPathForEntity(data.save, data.name)
     if not frameData or not properties then return end
@@ -116,20 +121,20 @@ local function applySaveIntoEntity(player, entity, data)
     net.Send(player)
 end
 
----@param player Player
----@param entity SMHEntity
----@param data PackageData|Data
----@return boolean?
+--- @param player Player
+--- @param entity SMHEntity
+--- @param data PackageData|Data
+--- @return boolean?
 local function PackageApply(player, entity, data)
     if not IsValid(entity) then return false end
     if disablePacking:GetBool() then return false end
 
     timer.Simple(0, function()
         if data.save then
-            ---@cast data PackageData
+            --- @cast data PackageData
             applySaveIntoEntity(player, entity, data)
         else
-            ---@cast data Data
+            --- @cast data Data
             applyDataIntoEntity(player, entity, data)
         end
     end)
@@ -142,19 +147,19 @@ if not duplicator.smh_Copy then
     duplicator.smh_Copy = duplicator.Copy
 end
 
----`engine.OpenDupe` enforces a limit of 2MB
----(even though `engine.WriteDupe` can save at least 2MB worth of data).
----This shall be the limit for duped SMH animations
+--- `engine.OpenDupe` enforces a limit of 2MB
+--- (even though `engine.WriteDupe` can save at least 2MB worth of data).
+--- This shall be the limit for duped SMH animations
 local MAX_DUPE_FILE_SIZE = 2048000
 
----@type SMHEntity[]
+--- @type SMHEntity[]
 local markedDirty = {}
 
----Override `duplicator.Copy` to label copied entities as dupes, so SMH can preserve animations in saves
----Pretty hacky
----@param Ent Entity
----@param AddToTable table
----@return table
+--- Override `duplicator.Copy` to label copied entities as dupes, so SMH can preserve animations in saves
+--- Pretty hacky
+--- @param Ent Entity
+--- @param AddToTable table
+--- @return table
 function duplicator.Copy(Ent, AddToTable)
     Ent.smh_IsDupe = true
 

@@ -1,17 +1,17 @@
 local BaseClass = baseclass.Get("EditablePanel")
----@class SMHWorldClickerPanel: EditablePanel
+--- @class SMHWorldClickerPanel: EditablePanel
 local PANEL = {}
 
----@source https://github.com/penolakushari/RagdollMover/blob/eefbda5c3b27e193b1c3e113b258f7a1d4334cad/lua/autorun/ragdollmover.lua#L72
----@param output TraceResult
----@return Trace
+--- @source https://github.com/penolakushari/RagdollMover/blob/eefbda5c3b27e193b1c3e113b258f7a1d4334cad/lua/autorun/ragdollmover.lua#L72
+--- @param output TraceResult
+--- @return Trace
 local function GetViewTrace(output)
     local player = LocalPlayer()
     local viewEntity = GetViewEntity()
 
-    local eyePos = player:EyePos()
+    local eyePos = MainEyePos()
     if IsValid(viewEntity) and viewEntity:GetClass() == "hl_camera" then -- adding support for Advanced Camera's view offset https://steamcommunity.com/sharedfiles/filedetails/?id=881605937&searchtext=advanced+camera
-        ---@diagnostic disable-next-line
+        --- @diagnostic disable-next-line
         eyePos = viewEntity:LocalToWorld(viewEntity:GetViewOffset())
     end
 
@@ -34,7 +34,12 @@ function PANEL:Init()
     self:MakePopup()
     self:SetVisible(false)
 
-    self.TraceResult = {}
+    ---@type TraceResult
+    self.TraceResult = {
+        HitPos = vector_origin,
+        Normal = vector_origin,
+        StartPos = vector_origin
+    }
 end
 
 function PANEL:SetVisible(visible)

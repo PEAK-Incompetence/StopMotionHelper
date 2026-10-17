@@ -4,10 +4,11 @@ local isSavingMap
 local isLoadingMap
 
 hook.Add("PostSMHLoaded", "SMHSave", function()
+    SMH.DupeSave = {}
     local loadDelay = 0.2
-    if not SMH.OldGMSaveFunc then
+    if not SMH.DupeSave.OldGMSaveFunc then
         local tab = concommand.GetTable()
-        SMH.OldGMSaveFunc = tab["gm_save"]
+        SMH.DupeSave.OldGMSaveFunc = tab["gm_save"]
     end
 
     if CLIENT then
@@ -16,7 +17,7 @@ hook.Add("PostSMHLoaded", "SMHSave", function()
     else
         concommand.Add( "gm_save", function( ply, cmd, args )
             if not newDupeSave:GetBool() then
-                return SMH.OldGMSaveFunc(ply, cmd, args)
+                return SMH.DupeSave.OldGMSaveFunc(ply, cmd, args)
             end
             if ( !IsValid( ply ) ) then return end
 
@@ -54,6 +55,7 @@ hook.Add("PostSMHLoaded", "SMHSave", function()
                     local endbyte = math.min( start + send_size, len )
                     local size = endbyte - start
 
+                    ---@diagnostic disable-next-line: gmod-net-missing-network-counterpart, gmod-unknown-net-message
                     net.Start( "GModSave" )
                         net.WriteBool( i == parts )
                         net.WriteBool( ShowSave )

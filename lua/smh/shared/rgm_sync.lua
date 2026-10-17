@@ -1,37 +1,39 @@
----@class rgmPlayer
----@field Bone integer
----@field Entity Entity
----@field rgmEntLocks {[Entity] : {[Entity]: {id: number, ent: Entity, poseid: number}}}
----@field rgmAngLocks {[Entity] : {[number]: PhysObj}}
----@field rgmPosLocks {[Entity] : {[number]: PhysObj}}
----@field rgmOffsetTable table
+--- @class rgmPlayer
+--- @field Bone integer
+--- @field Entity Entity
+--- @field rgmEntLocks {[Entity] : {[Entity]: {id: number, ent: Entity, poseid: number}}}
+--- @field rgmAngLocks {[Entity] : {[number]: PhysObj}}
+--- @field rgmPosLocks {[Entity] : {[number]: PhysObj}}
+--- @field rgmOffsetTable table
 
 if CLIENT then
 	local lastBone
-	local enableSync = CreateClientConVar(
+	local enableSync = SMH.ConVars.Create(
 		"sync_rgm_to_smh",
 		"1",
 		true,
-		false,
 		[[
 		When enabled, multiple events will occur: 
 		- Selecting a bone in Ragdoll Mover update the `smh_motionpathbone` ConVar. This convar is only available in vlazed's fork of Stop Motion Helper.
 		- Upon frame change from SMH, the gizmo will orient and position itself correctly; previously, it would only have the orientation or position of the initial frame 
 		- Upon frame change from SMH, entity constraints will be set. Lock offsets can be modified by transforming (positioning or rotating) the entity in Ragdoll Mover. Can be disabled with `sync_rgm_to_smh_locks 0`.
 		]],
-		0,
-		1
+		TYPE_BOOL,
+		nil,
+		nil,
+		"Sync"
 	)
-	local enableLock = CreateClientConVar(
+	local enableLock = SMH.ConVars.Create(
 		"sync_rgm_to_smh_locks",
 		"0",
 		true,
-		false,
 		[[
-		When enabled, entity constraints will be set. This requires `sync_rgm_to_smh 1`. 
+		When enabled, it will set entity constraints via Ragdoll Mover. This requires `sync_rgm_to_smh 1`. 
 		]],
-		0,
-		1
+		TYPE_BOOL,
+		nil,
+		nil,
+		"Sync"
 	)
 	local smhBone = GetConVar("smh_motionpathbone")
 
@@ -47,15 +49,15 @@ if CLIENT then
 		enabled2 = tobool(Either(tonumber(newValue) ~= nil, tonumber(newValue) > 0, false))
 	end, "updateBoolean")
 
-	hook.Remove("SMH_PostSetFrame", "syncRGMSMHBone")
-	hook.Add("SMH_PostSetFrame", "syncRGMSMHBone", function(frame)
+	hook.Remove("Think", "syncRGMSMHBone")
+	hook.Add("Think", "syncRGMSMHBone", function(frame)
 		if not enabled then
 			return
 		end
 		smhBone = smhBone or GetConVar("smh_motionpathbone")
 		local pl = LocalPlayer()
-		---@type rgmPlayer
-		---@diagnostic disable-next-line
+		--- @type rgmPlayer
+		--- @diagnostic disable-next-line
 		local plTable = RAGDOLLMOVER and RAGDOLLMOVER[pl]
 		if not plTable or not plTable.Bone or not IsValid(plTable.Entity) then
 			return
@@ -72,12 +74,12 @@ if CLIENT then
 		lastBone = bone
 	end)
 
-	---@diagnostic disable
-	---Hack for getting Ragdoll Mover gizmos to update properly with nonphysical bone changes, since this doesn't happen automatically
-	---like they usually do with PhysicsObjects.
-	---
-	---It requires rgmSendBonePos to be a global function in stools/ragdollmover.lua. This is the main hack, unless we can adjust
-	---how external bone positions update the gizmo somehow in ragdoll mover itself
+	--- @diagnostic disable
+	--- Hack for getting Ragdoll Mover gizmos to update properly with nonphysical bone changes, since this doesn't happen automatically
+	--- like they usually do with PhysicsObjects.
+	--- 
+	--- It requires rgmSendBonePos to be a global function in stools/ragdollmover.lua. This is the main hack, unless we can adjust
+	--- how external bone positions update the gizmo somehow in ragdoll mover itself
 	local sendBonePos = rgmSendBonePos
 	timer.Simple(0, function()
 		sendBonePos = rgmSendBonePos
@@ -137,8 +139,8 @@ else
 		end,
 	}
 	net.Receive("RAGDOLLMOVER_SMH_SYNC", function(len, pl)
-		---@type rgmPlayer
-		---@diagnostic disable-next-line: undefined-global
+		--- @type rgmPlayer
+		--- @diagnostic disable-next-line: undefined-global
 		local plTable = RAGDOLLMOVER[pl]
 		local parent = plTable.Entity
 
@@ -151,14 +153,14 @@ else
 
 		local physcount = parent:GetPhysicsObjectCount() - 1
 		for child, info in pairs(plTable.rgmEntLocks[parent]) do
-			---@source https://github.com/vlazed/RagdollMover/blob/c2ea1fa0a9a6eb744b4a7bd3fd24744174323e68/lua/weapons/gmod_tool/stools/ragdollmover.lua#L2565
+			--- @source https://github.com/vlazed/RagdollMover/blob/c2ea1fa0a9a6eb744b4a7bd3fd24744174323e68/lua/weapons/gmod_tool/stools/ragdollmover.lua#L2565
 			local bone = info.id
 			local obj = parent:GetPhysicsObjectNum(bone)
 			if not IsValid(obj) then
 				continue
 			end
 
-			---@diagnostic disable-next-line: undefined-global
+			--- @diagnostic disable-next-line: undefined-global
 			local postable = rgm.SetOffsets(
 				fakeTool,
 				parent,

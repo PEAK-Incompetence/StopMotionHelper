@@ -1,0 +1,31 @@
+{
+    "workspace.library": [
+        "lua/smh/shared/types.lua"
+    ],
+    "workspace.ignoreDir": [
+        ".vscode",
+        ".venv",
+        "docs",
+        "lua/smh/modifiers"
+    ],
+    "runtime.version": "LuaJIT",
+    "runtime.special": {
+        "include": "dofile",
+        "IncludeCS": "dofile"
+    },
+    "runtime.nonstandardSymbol": [
+        "continue",
+        "&&",
+        "||",
+        "!=",
+        "!",
+        "//",
+        "/**/"
+    ],
+    "diagnostics.disable": [
+        "undefined-global",
+        "duplicate-set-field",
+        "inject-field"
+    ],
+    "workspace.checkThirdParty": false
+}

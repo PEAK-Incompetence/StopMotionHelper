@@ -1,17 +1,18 @@
-local smh_startatone = CreateClientConVar("smh_startatone", "0", true, false, "Controls whether the timeline starts at 0 or 1.", 0, 1)
-local smh_render_cmd = CreateClientConVar("smh_render_cmd", "poster 1", true, false, "For smh_render, this string will be ran in the console for each frame.")
-CreateClientConVar("smh_currentpreset", "default", true, false)
-CreateClientConVar("smh_motionpathbone", "", true, true, "Set the bone that the motion path will track")
-CreateClientConVar("smh_motionpathrange", "0", true, false, "Set how many nodes to show around the current frame. 1 means show 2 nodes on the left and right of the current frame.", 0)
-CreateClientConVar("smh_motionpathsize", "1", true, false, "Set the size of the nodes in the motion path", 0)
-local motionPathOffset = CreateClientConVar("smh_motionpathoffset", "0 0 0", true, false, "Set the size of the nodes in the motion path")
-CreateClientConVar("smh_majortickinterval", "3", true, false, "Set the interval for the ticks on the frame panel", 3, 16)
-local autosaveTime = CreateClientConVar("smh_autosavetime", "5", true, false, "Set the autosave interval in minutes. Set to 0 to disable", 0)
+local smh_startatone = SMH.ConVars.Create("smh_startatone", "0", false, "Controls whether the timeline starts at 0 or 1.", TYPE_BOOL, nil, nil, "UI")
+local smh_render_cmd = SMH.ConVars.Create("smh_render_cmd", "poster 1", false, "For smh_render, this string will be ran in the console for each frame.", TYPE_STRING, nil, nil, "UI")
+SMH.ConVars.Create("smh_currentpreset", "default", false, "Set the timeline preset to use", TYPE_STRING, nil, nil, "UI")
+SMH.ConVars.Create("smh_motionpath", "1", false, "Set the visibility of motion paths", TYPE_BOOL, nil, nil, "Motion Paths")
+SMH.ConVars.Create("smh_motionpathbone", "", true, "Set the bone that the motion path will track", TYPE_STRING, nil, nil, "Motion Paths")
+SMH.ConVars.Create("smh_motionpathrange", "0", false, "Set how many nodes to show around the current frame. 1 means show 2 nodes on the left and right of the current frame.", TYPE_NUMBER, 0, 1000, "Motion Paths")
+SMH.ConVars.Create("smh_motionpathsize", "1", false, "Set the size of the nodes in the motion path", TYPE_NUMBER, 0, 100000, "Motion Paths")
+local motionPathOffset = SMH.ConVars.Create("smh_motionpathoffset", "0 0 0", false, "Set the size of the nodes in the motion path", TYPE_STRING, nil, nil, "Motion Paths")
+SMH.ConVars.Create("smh_majortickinterval", "3", false, "Set the interval for the ticks on the frame panel", TYPE_NUMBER, 3, 16, "UI")
+local autosaveTime = SMH.ConVars.Create("smh_autosavetime", "5", false, "Set the autosave interval in minutes. Set to 0 to disable", TYPE_NUMBER, 0, 10000)
 cvars.AddChangeCallback("smh_autosavetime", function (convar, oldValue, newValue)
-    newValue = tonumber(newValue)
+    local newValue = tonumber(newValue)
     if not newValue or not isnumber(newValue) then
         local val = tonumber(oldValue)
-        ---@cast val number
+        --- @cast val number
         autosaveTime:SetFloat(val)
         return
     end
@@ -24,12 +25,11 @@ cvars.AddChangeCallback("smh_autosavetime", function (convar, oldValue, newValue
         end
     end
 end)
-CreateClientConVar("smh_scrollmultiplier", "1", true, false, "Set how much scrolling should affect the timeline", 0, 100)
-CreateClientConVar("smh_cycleselected", "1", true, false, "Controls the new behavior of selecting child (bonemerged) entities", 0, 1)
-CreateClientConVar("smh_lockselected", "0", true, false, "Controls the selection of other entities", 0, 1)
-CreateClientConVar("smh_force_render_entities", "0", true, false, "Controls whether all entities are always rendered. This may prevent entities from disappearing between frames; however, it causes shadow rendering glitches", 0, 1)
+SMH.ConVars.Create("smh_scrollmultiplier", "1", false, "Set how much scrolling should affect the timeline", TYPE_NUMBER, 0, 100, "UI")
+SMH.ConVars.Create("smh_cycleselected", "1", false, "Controls the new behavior of selecting child (bonemerged) entities", TYPE_BOOL, nil, nil, "Selection")
+SMH.ConVars.Create("smh_lockselected", "0", false, "Controls the selection of other entities", TYPE_BOOL, nil, nil, "Selection")
 
-local smh_entity_settings = CreateClientConVar("smh_entity_settings", "0", true, false, "Stores settings per entity. For example, Disable Tweening can disable tweening for one entity")
+local smh_entity_settings = SMH.ConVars.Create("smh_entity_settings", "0", false, "Stores settings per entity. For example, Disable Tweening can disable tweening for one entity", TYPE_BOOL, nil, nil, "Settings")
 
 concommand.Add("+smh_menu", function()
     SMH.Controller.OpenMenu()
@@ -37,7 +37,7 @@ end)
 
 -- Helper functions for incrementing the playhead position on the timeline
 
----@param n Falsy<integer>?
+--- @param n Falsy<integer>?
 local function nextFrame(n)
 	n = n or 1
 	local pos = SMH.State.Frame + n
@@ -47,7 +47,7 @@ local function nextFrame(n)
     SMH.Controller.SetFrame(pos)
 end
 
----@param n Falsy<integer>?
+--- @param n Falsy<integer>?
 local function previousFrame(n)
 	n = n or 1
 	local pos = SMH.State.Frame - n
@@ -57,12 +57,19 @@ local function previousFrame(n)
     SMH.Controller.SetFrame(pos)
 end
 
+local smh_menu_toggle = SMH.ConVars.Create("smh_menu_toggle", "0", false, "Tapping the button bound to +smh_menu will toggle the SMH timeline, without having to hold the button", TYPE_BOOL, nil, nil, "UI")
+local smhMenuLastOpen = 0
 
 concommand.Add("+smh_menu", function()
+	if smh_menu_toggle:GetBool() and SMH.UI:IsOpen() then return end
+	smhMenuLastOpen = SysTime()
+
     SMH.Controller.OpenMenu()
 end, nil, "Open the SMH Timeline")
 
 concommand.Add("-smh_menu", function()
+    if smh_menu_toggle:GetBool() and (SysTime() - smhMenuLastOpen < 0.180) then return end
+
     SMH.Controller.CloseMenu()
 end, nil, "Close the SMH Timeline")
 
@@ -78,13 +85,17 @@ concommand.Add("smh_delete", function()
     SMH.Controller.DeleteKeyframe(ids)
 end)
 
+concommand.Add("smh_refreshui", function ()
+    SMH.UI.RefreshUI()
+end)
+
 concommand.Add("smh_resetsession", function (ply, cmd, args, argStr)
     SMH.Controller.RequestNewSession()
 end)
 
 do
-    ---@param command string
-    ---@return string[]
+    --- @param command string
+    --- @return string[]
     local function suggestFrames(command)
         local options = {
             command
@@ -97,13 +108,13 @@ do
 
     concommand.Add("smh_next", function(_, _, _, argStr) 
         local n = tonumber(argStr)
-        ---@cast n number
+        --- @cast n number
         nextFrame(isnumber(n) and math.Round(math.abs(n)))
     end, suggestFrames, "Increment the playhead by n, where n is a whole number. If not specified, increment by 1")
 
     concommand.Add("smh_previous", function(_, _, _, argStr) 
         local n = tonumber(argStr)
-        ---@cast n number
+        --- @cast n number
         previousFrame(isnumber(n) and math.Round(math.abs(n)))
     end, suggestFrames, "Decrement the playhead by n, where n is a whole number. If not specified, decrement by 1")
 end
@@ -154,6 +165,9 @@ concommand.Add("smh_smooth", function(_, _, args)
         table.sort(frames)
     elseif SMH.UI.IsFrameKeyframe(SMH.State.Frame) then
         frames = {SMH.State.Frame}
+    else
+        hook.Run("SMHSmoothingFinished")
+        return
     end
 
     SMH.Controller.Smooth(frames, passes)
@@ -162,7 +176,7 @@ end, nil, "Apply additional keyframes to produce a smoother result", nil)
 
 concommand.Add("smh_motionpath_offsetfromview", function()
     local player = LocalPlayer()
-    ---@type TraceResult
+    --- @type TraceResult
     local trace = SMH.UI.IsOpen() and player:GetEyeTraceNoCursor() or player:GetEyeTrace()
 
     local pos, ang = SMH.Renderer.GetBonePoseFromFrame()
@@ -199,7 +213,7 @@ concommand.Add("smh_stretch", function (ply, cmd, args, argStr)
     end
 
     local selected = SMH.UI.GetSelected()
-    if not next(selected) then return end
+    if not next(selected) then hook.Run("SMHStretchingFinished") return end
 
     local frames = {}
     for _, panel in pairs(selected) do
@@ -248,3 +262,7 @@ do
         StartRender(args[1], smh_render_cmd:GetString())
     end, suggestStartingFrame, "Generate an image sequence containing all the frames in the SMH Timeline, if smh_render_cmd makes an image. Accepts a whole number between 0 and the current frame count to offset the sequence")    
 end
+
+concommand.Add("smh_audioclip_refresh_all", function(ply, cmd, args, argStr)
+    SMH.UI.RefreshAllAudioClipPointers()
+end, nil, "Refresh all audio clip waveforms on the timeline.")

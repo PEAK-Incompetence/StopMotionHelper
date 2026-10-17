@@ -1,5 +1,5 @@
----@class SMHSaveAudio: DFrame
----@field BaseClass DFrame
+--- @class SMHSaveAudio: DFrame
+--- @field BaseClass DFrame
 local PANEL = {}
 
 function PANEL:Init()
@@ -44,7 +44,7 @@ end
 
 function PANEL:PerformLayout(width, height)
 
-    ---@diagnostic disable-next-line
+    --- @diagnostic disable-next-line
     self.BaseClass.PerformLayout(self, width, height)
 
     self.FileName:SetPos(5, 45)

@@ -1,14 +1,25 @@
 
 MOD.Name = "Position and Rotation";
+MOD.Ghost = true
 
 local opt = SMH.Optimizations
 local setPos = opt.EntitySetPos
 local setAngles = opt.EntitySetAngles
+local getPhysicsObject = opt.EntityGetPhysicsObject
+local getBrushPlaneCount = opt.EntityGetBrushPlaneCount
 
 local lerpLinearVector = SMH.LerpLinearVector
 local lerpLinearAngle = SMH.LerpLinearAngle
 
+local multiplayerPhysics = GetConVar("smh_multiplayer_physics")
+
 function MOD:Save(entity)
+
+    -- Don't record redundant data if we have a physics object that can provide
+    -- more accurate transform data
+    if not multiplayerPhysics:GetBool() and getPhysicsObject(entity) and getBrushPlaneCount(entity) == 0 then
+        return nil;
+    end
 
     local data = {};
     data.Pos = entity:GetPos();
@@ -26,6 +37,9 @@ function MOD:LoadGhostBetween(entity, ghost, data1, data2, percentage)
 end
 
 function MOD:Load(entity, data)
+    if not multiplayerPhysics:GetBool() and getPhysicsObject(entity) and getBrushPlaneCount(entity) == 0 then
+        return
+    end
 
     setPos(entity, data.Pos);
     setAngles(entity, data.Ang);
@@ -33,6 +47,9 @@ function MOD:Load(entity, data)
 end
 
 function MOD:LoadBetween(entity, data1, data2, percentage)
+    if not multiplayerPhysics:GetBool() and getPhysicsObject(entity) and getBrushPlaneCount(entity) == 0 then
+        return
+    end
 
     local Pos = lerpLinearVector(data1.Pos, data2.Pos, percentage);
     local Ang = lerpLinearAngle(data1.Ang, data2.Ang, percentage);
@@ -42,6 +59,7 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
 
 end
 
+local zeroAngle = Angle(0, 0, 0)
 function MOD:Offset(data, origindata, worldvector, worldangle, hitpos)
 
     if not hitpos then
@@ -49,7 +67,7 @@ function MOD:Offset(data, origindata, worldvector, worldangle, hitpos)
     end
 
     local datanew = {};
-    local Pos, Ang = WorldToLocal(data.Pos, data.Ang, origindata.Pos, Angle(0, 0, 0));
+    local Pos, Ang = WorldToLocal(data.Pos, data.Ang, origindata.Pos, zeroAngle);
     datanew.Pos, datanew.Ang = LocalToWorld(Pos, Ang, worldvector, worldangle);
     datanew.Pos = datanew.Pos + hitpos;
     return datanew;

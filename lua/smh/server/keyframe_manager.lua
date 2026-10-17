@@ -1,9 +1,165 @@
+--- Legacy keyframe getter
+--- TODO: Make `WalkBetweenKeyframes` behavior the same as `GetBetweenKeyframes` 
+--- @param keyframes FrameData[]
+--- @param frame integer
+--- @param ignoreCurrentFrame boolean
+--- @param modname Modifiers
+--- @return FrameData? prevKeyframe
+--- @return FrameData? nextKeyframe
+function SMH.GetBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname)
+    if ignoreCurrentFrame == nil then
+        ignoreCurrentFrame = false
+    end
 
----@param player Player
----@param entity SMHEntity | Player
----@param frame integer
----@param modnames ModifierNames?
----@return FrameData?
+    local prevKeyframe = nil
+    local nextKeyframe = nil
+    for _, keyframe in ipairs(keyframes) do
+        if keyframe.Modifiers[modname] then
+            if keyframe.Frame == frame and not ignoreCurrentFrame then
+                prevKeyframe = keyframe
+                nextKeyframe = keyframe
+                break
+            elseif keyframe.Frame < frame then
+                prevKeyframe = keyframe
+            elseif keyframe.Frame > frame then
+                nextKeyframe = keyframe
+                break
+            end
+        end
+    end
+
+
+    if not prevKeyframe and not nextKeyframe then
+        return nil, nil
+    elseif not prevKeyframe then
+        prevKeyframe = nextKeyframe
+    elseif not nextKeyframe then
+        nextKeyframe = prevKeyframe
+    end
+
+    return prevKeyframe, nextKeyframe
+end
+
+--- Playback performant keyframe getter
+--- @param keyframes FrameData[]
+--- @param frame integer
+--- @param ignoreCurrentFrame boolean
+--- @param modname string
+--- @param delta number
+--- @param start FrameData?
+--- @return FrameData? prevKeyframe
+--- @return FrameData? nextKeyframe
+function SMH.WalkBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta, start)
+    if ignoreCurrentFrame == nil then
+        ignoreCurrentFrame = false
+    end
+
+    local walk = start or keyframes[1]
+    local direction = delta < 0 and "Previous" or "Next"
+
+    local prevKeyframe = nil
+    local nextKeyframe = nil
+    while walk do
+        if walk.Modifiers[modname] then
+            if walk.Frame == frame and not ignoreCurrentFrame then
+                prevKeyframe = walk
+                nextKeyframe = walk
+                break
+            elseif walk.Frame < frame then
+                prevKeyframe = walk
+                if delta < 0 then
+                    break
+                end
+            elseif walk.Frame > frame then
+                nextKeyframe = walk
+                if delta >= 0 then
+                    break
+                end
+            end
+        end
+        walk = walk[direction]
+    end
+
+    if not prevKeyframe and not nextKeyframe then
+        return nil, nil
+    elseif not prevKeyframe then
+        prevKeyframe = nextKeyframe
+    elseif not nextKeyframe then
+        nextKeyframe = prevKeyframe
+    end
+
+    return prevKeyframe, nextKeyframe
+end
+
+local GetBetweenKeyframes = SMH.GetBetweenKeyframes
+local WalkBetweenKeyframes = SMH.WalkBetweenKeyframes
+
+--- @param keyframes FrameData[]
+--- @param frame integer
+--- @param ignoreCurrentFrame boolean
+--- @param modname string
+--- @param delta number
+--- @return FrameData? prevKeyframe
+--- @return FrameData? nextKeyframe
+--- @return integer
+function SMH.GetClosestKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta)
+    local prevKeyframe, nextKeyframe = WalkBetweenKeyframes(keyframes, frame, ignoreCurrentFrame, modname, delta)
+
+    if not prevKeyframe and not nextKeyframe then
+        return nil, nil, 0
+    end
+
+    --- @cast prevKeyframe FrameData
+    --- @cast nextKeyframe FrameData
+
+    local lerpMultiplier = 0
+    if prevKeyframe.Frame ~= nextKeyframe.Frame then
+        lerpMultiplier = (frame - prevKeyframe.Frame) / (nextKeyframe.Frame - prevKeyframe.Frame)
+        lerpMultiplier = math.EaseInOut(lerpMultiplier, prevKeyframe.EaseOut[modname], nextKeyframe.EaseIn[modname])
+    end
+
+    return prevKeyframe, nextKeyframe, lerpMultiplier
+end
+
+--- @param keyframe FrameData
+local function clearKeyframeWalkCache(keyframe)
+    keyframe.Previous = nil
+    keyframe.Next = nil
+end
+
+--- @param player Player
+--- @param entity Entity
+function SMH.SortKeyframes(player, entity)
+    local keyframes = SMH.KeyframeData.Players[player].Entities[entity]
+    if keyframes then
+        table.sort(keyframes, function (a, b)
+            --- @cast a FrameData
+            --- @cast b FrameData
+            
+            clearKeyframeWalkCache(a)
+            clearKeyframeWalkCache(b)
+            return a.Frame < b.Frame
+        end)
+    end
+
+    --- @type FrameData
+    local prevKeyframe
+    for i, keyframe in ipairs(keyframes) do
+        keyframe.Previous = prevKeyframe
+        if prevKeyframe then
+            prevKeyframe.Next = keyframe
+        end
+        prevKeyframe = keyframe
+    end
+end
+
+local sortKeyframes = SMH.SortKeyframes
+
+--- @param player Player
+--- @param entity SMHEntity | Player
+--- @param frame integer
+--- @param modnames ModifierNames?
+--- @return FrameData?
 local function GetExistingKeyframe(player, entity, frame, modnames)
     if not SMH.KeyframeData.Players[player] or not SMH.KeyframeData.Players[player].Entities[entity] then
         return nil
@@ -27,11 +183,11 @@ local function GetExistingKeyframe(player, entity, frame, modnames)
     return nil
 end
 
----@param keyframe FrameData
----@param player Player
----@param entity SMHEntity|Player
----@param modnames ModifierNames
----@return boolean
+--- @param keyframe FrameData
+--- @param player Player
+--- @param entity SMHEntity|Player
+--- @param modnames TimelineMod
+--- @return boolean
 local function Record(keyframe, player, entity, modnames)
     local recorded = false
     for _, name in ipairs(modnames) do
@@ -46,8 +202,8 @@ local function Record(keyframe, player, entity, modnames)
     return recorded
 end
 
----@param keyframe FrameData
----@param modname Modifiers
+--- @param keyframe FrameData
+--- @param modname Modifiers
 local function ClearModifier(keyframe, modname)
     keyframe.Modifiers[modname] = nil
     keyframe.EaseIn[modname] = nil
@@ -73,10 +229,13 @@ hook.Add("EntityRemoved", "SMHKeyframesEntityRemoved", function(entity)
 
 end)
 
+--- [SERVER]
+--- 
+--- @class SMH.KeyframeManager
 local MGR = {}
 
----@param player Player
----@return FrameData[]
+--- @param player Player
+--- @return FrameData[]
 function MGR.GetAll(player)
     if not SMH.KeyframeData.Players[player] then
         return {}
@@ -90,9 +249,9 @@ function MGR.GetAll(player)
     return result
 end
 
----@param player Player
----@param entities Entities
----@return FrameData[]
+--- @param player Player
+--- @param entities Entities
+--- @return FrameData[]
 function MGR.GetAllForEntity(player, entities)
     local keyframes = {}
 
@@ -109,11 +268,11 @@ function MGR.GetAllForEntity(player, entities)
     return keyframes
 end
 
----@param player Player
----@param entities Entities
----@param frame integer
----@param timeline any
----@return FrameData[]
+--- @param player Player
+--- @param entities Entities
+--- @param frame integer
+--- @param timeline any
+--- @return FrameData[]
 function MGR.Create(player, entities, frame, timeline)
     local keyframes = {}
 
@@ -151,17 +310,17 @@ function MGR.Create(player, entities, frame, timeline)
             }
             table.insert(keyframes, keyframe)
         end
-        SMH.SortKeyframes(player, entity)
+        sortKeyframes(player, entity)
     end
 
     return keyframes
 end
 
----@param player Player
----@param keyframeIds any
----@param updateData any
----@param timeline integer
----@return FrameData[]
+--- @param player Player
+--- @param keyframeIds any
+--- @param updateData any
+--- @param timeline integer
+--- @return FrameData[]
 function MGR.Update(player, keyframeIds, updateData, timeline)
     local keyframes, movingkeyframes = {}, {}
 
@@ -181,7 +340,7 @@ function MGR.Update(player, keyframeIds, updateData, timeline)
             if updateData[id][field] then
                 if field == "Frame" then
                     if updateData[id][field] == keyframe.Frame then continue end
-                    ---@diagnostic disable-next-line
+                    --- @diagnostic disable-next-line
                     local remainmods, EaseIn, EaseOut, frame = table.Copy(keyframe.Modifiers), table.Copy(keyframe.EaseIn), table.Copy(keyframe.EaseOut), updateData[id][field]
                     for _, name in ipairs(modnames) do
                         remainmods[name] = nil
@@ -228,6 +387,7 @@ function MGR.Update(player, keyframeIds, updateData, timeline)
             SMH.KeyframeData:Delete(player, replacekey.ID)
         end
         keyframe.Frame = frame
+        clearKeyframeWalkCache(keyframe)
         table.insert(keyframes, keyframe)
     end
 
@@ -235,7 +395,7 @@ function MGR.Update(player, keyframeIds, updateData, timeline)
     for _, keyframe in ipairs(keyframes) do
         local entity = keyframe.Entity
         if not sortedEnts[entity] then
-            SMH.SortKeyframes(player, entity)
+            sortKeyframes(player, entity)
             sortedEnts[entity] = true
         end
     end
@@ -243,13 +403,13 @@ function MGR.Update(player, keyframeIds, updateData, timeline)
     return keyframes
 end
 
----@param player Player
----@param keyframeIds any
----@param frame integer[]
----@param timeline integer
----@return FrameData[]
+--- @param player Player
+--- @param keyframeIds any
+--- @param frame integer[]
+--- @param timeline integer
+--- @return FrameData[]
 function MGR.Copy(player, keyframeIds, frame, timeline)
-    local copiedKeyframes, movingkeyframes = {}, {}
+    local copiedKeyframes, movingkeyframes, copyTargets = {}, {}, {}
 
     for id, keyframeId in ipairs(keyframeIds) do
         if not SMH.KeyframeData.Players[player] or not SMH.KeyframeData.Players[player].Keyframes[keyframeId] then
@@ -277,23 +437,34 @@ function MGR.Copy(player, keyframeIds, frame, timeline)
         copiedKeyframe.Modifiers = Mods
 
         movingkeyframes[copiedKeyframe] = frame[id]
+        copyTargets[keyframe.Entity] = copyTargets[keyframe.Entity] or {}
+        copyTargets[keyframe.Entity][frame[id]] = copyTargets[keyframe.Entity][frame[id]] or copiedKeyframe
+    end
+
+    local idsToDelete = {}
+    for entity, targetFrames in pairs(copyTargets) do
+        local existingKeyframes = table.Copy(SMH.KeyframeData.Players[player].Entities[entity] or {})
+        for _, existingKeyframe in ipairs(existingKeyframes) do
+            local copiedKeyframe = targetFrames[existingKeyframe.Frame]
+            if copiedKeyframe and not movingkeyframes[existingKeyframe] then
+                for name, data in pairs(existingKeyframe.Modifiers) do
+                    if copiedKeyframe.Modifiers[name] ~= nil then continue end
+                    copiedKeyframe.Modifiers[name] = data
+                    copiedKeyframe.EaseIn[name] = existingKeyframe.EaseIn[name]
+                    copiedKeyframe.EaseOut[name] = existingKeyframe.EaseOut[name]
+                end
+                idsToDelete[existingKeyframe.ID] = true
+            end
+        end
+    end
+
+    for id, _ in pairs(idsToDelete) do
+        SMH.KeyframeData:Delete(player, id)
     end
 
     for keyframe, frame in pairs(movingkeyframes) do
-        local replacekey = GetExistingKeyframe(player, keyframe.Entity, frame)
-
-        if replacekey ~= nil and not movingkeyframes[replacekey] then
-            for name, data in pairs(replacekey.Modifiers) do
-                if not keyframe.Modifiers[name] then
-                    keyframe.Modifiers[name] = data
-                    keyframe.EaseIn[name] = replacekey.EaseIn[name]
-                    keyframe.EaseOut[name] = replacekey.EaseOut[name]
-                end
-            end
-            SMH.KeyframeData:Delete(player, replacekey.ID)
-        end
-
         keyframe.Frame = frame
+        clearKeyframeWalkCache(keyframe)
         table.insert(copiedKeyframes, keyframe)
     end
 
@@ -301,7 +472,7 @@ function MGR.Copy(player, keyframeIds, frame, timeline)
     for _, keyframe in ipairs(copiedKeyframes) do
         local entity = keyframe.Entity
         if not sortedEnts[entity] then
-            SMH.SortKeyframes(player, entity)
+            sortKeyframes(player, entity)
             sortedEnts[entity] = true
         end
     end
@@ -309,10 +480,10 @@ function MGR.Copy(player, keyframeIds, frame, timeline)
     return copiedKeyframes
 end
 
----@param player Player
----@param keyframeId integer
----@param timeline any
----@return unknown
+--- @param player Player
+--- @param keyframeId integer
+--- @param timeline any
+--- @return unknown
 function MGR.Delete(player, keyframeId, timeline)
     if not SMH.KeyframeData.Players[player] or not SMH.KeyframeData.Players[player].Keyframes[keyframeId] then
         error("Invalid keyframe ID")
@@ -331,15 +502,15 @@ function MGR.Delete(player, keyframeId, timeline)
         SMH.KeyframeData:Delete(player, keyframeId)
     end
 
-    SMH.SortKeyframes(player, entity)
+    sortKeyframes(player, entity)
 
     return entity
 end
 
----@param player Player
----@param entity SMHEntity|Player
----@param serializedKeyframes SerializedFrameData[]
----@param entityProperties Properties
+--- @param player Player
+--- @param entity SMHEntity|Player
+--- @param serializedKeyframes SerializedFrameData[]
+--- @param entityProperties Properties
 function MGR.ImportSave(player, entity, serializedKeyframes, entityProperties)
     if SMH.KeyframeData.Players[player] and SMH.KeyframeData.Players[player].Entities[entity] then
         local deletethis = table.Copy(SMH.KeyframeData.Players[player].Entities[entity])
@@ -355,41 +526,41 @@ function MGR.ImportSave(player, entity, serializedKeyframes, entityProperties)
 
         if keyframe ~= nil then
             for name, _ in pairs(skf.EntityData) do
-                keyframe.EaseIn[name] = type(skf.EaseIn) == "table" and skf.EaseIn[name] or skf.EaseIn ---@diagnostic disable-line: assign-type-mismatch
-                keyframe.EaseOut[name] = type(skf.EaseOut) == "table" and skf.EaseOut[name] or skf.EaseOut ---@diagnostic disable-line: assign-type-mismatch
+                keyframe.EaseIn[name] = type(skf.EaseIn) == "table" and skf.EaseIn[name] or skf.EaseIn --- @diagnostic disable-line: assign-type-mismatch
+                keyframe.EaseOut[name] = type(skf.EaseOut) == "table" and skf.EaseOut[name] or skf.EaseOut --- @diagnostic disable-line: assign-type-mismatch
                 keyframe.Modifiers[name] = skf.EntityData[name]
             end
         else
             local keyframe = SMH.KeyframeData:New(player, entity)
             keyframe.Frame = skf.Position
             for name, _ in pairs(skf.EntityData) do
-                keyframe.EaseIn[name] = type(skf.EaseIn) == "table" and skf.EaseIn[name] or skf.EaseIn ---@diagnostic disable-line: assign-type-mismatch
-                keyframe.EaseOut[name] = type(skf.EaseOut) == "table" and skf.EaseOut[name] or skf.EaseOut ---@diagnostic disable-line: assign-type-mismatch
+                keyframe.EaseIn[name] = type(skf.EaseIn) == "table" and skf.EaseIn[name] or skf.EaseIn --- @diagnostic disable-line: assign-type-mismatch
+                keyframe.EaseOut[name] = type(skf.EaseOut) == "table" and skf.EaseOut[name] or skf.EaseOut --- @diagnostic disable-line: assign-type-mismatch
                 keyframe.Modifiers[name] = skf.EntityData[name]
             end
         end
     end
 
-    SMH.SortKeyframes(player, entity)
+    sortKeyframes(player, entity)
 end
 
----@param player Player
----@param frame integer
----@return string
----@return string
----@return string
+--- @param player Player
+--- @param frame integer
+--- @return string
+--- @return string
+--- @return string
 function MGR.GetWorldData(player, frame)
     local keyframe = GetExistingKeyframe(player, player, frame, {"world"})
-    ---@cast keyframe FrameData
+    --- @cast keyframe FrameData
     local modifiers = keyframe.Modifiers["world"]
 
     return modifiers.Console, modifiers.Push, modifiers.Release
 end
 
----@param player Player
----@param frame integer
----@param str string
----@param key any
+--- @param player Player
+--- @param frame integer
+--- @param str string
+--- @param key any
 function MGR.UpdateWorldKeyframe(player, frame, str, key)
     local keyframe = GetExistingKeyframe(player, player, frame, {"world"})
     if not keyframe then return end

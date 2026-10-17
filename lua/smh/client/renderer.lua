@@ -1,4 +1,3 @@
-local RenderEntities = {}
 local RenderCmd = ""
 local IsRendering = false
 
@@ -11,89 +10,19 @@ CreateMaterial("SMH_XRay", "UnlitGeneric", {
     ["$nocull"] = 		1,
 })
 
----This stores the nodes for easy iteration
----@type Node[]
+--- This stores the nodes for easy iteration
+--- @type Node[]
 local Nodes = {}
----This stores the existing nodes indexed by frame, for easy access
----@type SerializedNode[]
+--- This stores the existing nodes indexed by frame, for easy access
+--- @type SerializedNode[]
 local NodeSet = {}
 
+--- [CLIENT]
+--- 
+--- @class SMH.Renderer
 local MGR = {}
 
-local transmitFlags = bit.bor(EFL_IN_SKYBOX, EFL_FORCE_CHECK_TRANSMIT)
-
----@param entity Entity
-local function doRenderBounds(entity, shouldRender)
-    if shouldRender then
-        local mins, maxs = entity.smh_oldCollisionMins, entity.smh_oldCollisionMaxs
-        if not mins then
-            mins, maxs = entity:GetCollisionBounds()
-            entity.smh_oldCollisionMins = mins
-            entity.smh_oldCollisionMaxs = maxs
-            entity.smh_oldEFLSkybox = entity:IsEFlagSet(EFL_IN_SKYBOX)
-            entity.smh_oldEFLCheckTransmit = entity:IsEFlagSet(EFL_FORCE_CHECK_TRANSMIT)
-        end
-        entity:SetCollisionBounds(mins*1000, maxs*1000)
-        entity:AddEFlags(transmitFlags)
-    else
-        if entity.smh_oldCollisionMins then
-            entity:SetCollisionBounds(entity.smh_oldCollisionMins, entity.smh_oldCollisionMaxs)
-        end
-        entity.smh_oldCollisionMins, entity.smh_oldCollisionMaxs = nil, nil
-        if not entity.smh_oldEFLSkybox then
-            entity:RemoveEFlags(EFL_IN_SKYBOX)
-        end
-        if not entity.smh_oldEFLCheckTransmit then
-            entity:RemoveEFlags(EFL_FORCE_CHECK_TRANSMIT)
-        end
-    end
-
-    for _, child in ipairs(entity:GetChildren()) do
-        doRenderBounds(child, shouldRender)
-    end
-end
-
-local function alwaysRenderEntities()
-    for _, entity in ipairs(RenderEntities) do
-        doRenderBounds(entity, true)
-    end
-end
-
-hook.Remove("Think", "SMHAlwaysRenderEntities")
-
----@param entities Entity[]
----@param shouldRender boolean
-function MGR.ForceRenderEntities(entities, shouldRender)
-    if not GetConVar("smh_force_render_entities"):GetBool() then return end
-    if shouldRender then
-        RenderEntities = entities
-        hook.Add("Think", "SMHAlwaysRenderEntities", alwaysRenderEntities)
-    else
-        RenderEntities = nil
-        hook.Remove("Think", "SMHAlwaysRenderEntities")
-    end
-    for _, entity in ipairs(entities) do
-        doRenderBounds(entity, shouldRender)
-    end
-end
-
-local function forceRenderCallback(cvar, old, new)
-    local result = tobool(new)
-    if not result then
-        if RenderEntities then
-            for _, entity in ipairs(RenderEntities) do
-                doRenderBounds(entity, shouldRender)
-            end
-        end
-        hook.Remove("Think", "SMHAlwaysRenderEntities")
-        RenderEntities = nil
-    end
-end
-
-cvars.RemoveChangeCallback("smh_force_render_entities", "forceRenderEntities")
-cvars.AddChangeCallback("smh_force_render_entities", forceRenderCallback, "forceRenderEntities")
-
----@return boolean
+--- @return boolean
 function MGR.IsRendering()
     return IsRendering
 end
@@ -129,8 +58,8 @@ local function RenderTick()
 
 end
 
----@param renderCmd string
----@param StartFrame integer
+--- @param renderCmd string
+--- @param StartFrame integer
 function MGR.Start(renderCmd, StartFrame)
     if not isstring(renderCmd) then error(string.format("Tried to start a render with a non-string renderCmd: %s: %q", type(renderCmd), tostring(renderCmd))) end
     RenderCmd = renderCmd
@@ -145,18 +74,20 @@ function MGR.Start(renderCmd, StartFrame)
     timer.Simple(1, RenderTick)
 end
 
----@param nodeSet SerializedNode[]
+--- @param nodeSet SerializedNode[]
 local function updateNodes(nodeSet)
     for frame, pose in SortedPairs(nodeSet) do
         table.insert(Nodes, {Pos = pose[1], Ang = pose[2], Frame = frame})
     end
 end
 
+--- @param newNodes NetworkedNode[]
 function MGR.SetNodes(newNodes)
     Nodes = {}
     NodeSet = {}
 
     if #newNodes == 0 then return end
+    ---@type SerializedNode[]
     local sortedNodes = {}
     for i = 1, #newNodes do
         sortedNodes[newNodes[i][1]] = {newNodes[i][2], newNodes[i][3]}
@@ -169,8 +100,8 @@ function MGR.GetNodes()
     return Nodes
 end
 
----@param frame integer
----@param frameData SerializedNode
+--- @param frame integer
+--- @param frameData SerializedNode
 function MGR.UpdateNode(frame, frameData)
     if not frameData then return end
     if NodeSet[frame] then
@@ -182,16 +113,16 @@ function MGR.UpdateNode(frame, frameData)
     updateNodes(NodeSet)
 end
 
----@return Vector
----@return Angle
+--- @return Vector
+--- @return Angle
 function MGR.GetBonePoseFromFrame()
     if not next(NodeSet) then 
         return vector_origin, angle_zero
     end
 
-    ---@type Vector, Angle, Vector, Angle
+    --- @type Vector, Angle, Vector, Angle
     local prevPos, prevAng, nextPos, nextAng
-    ---@type integer, integer, integer
+    --- @type integer, integer, integer
     local currentFrame, prevFrame, nextFrame = SMH.State.Frame, 0, SMH.State.PlaybackLength
     for i = currentFrame, 0, -1 do
         if NodeSet[i] then
@@ -233,9 +164,8 @@ do
     local sphereSize = GetConVar("smh_motionpathsize")
     local offset = GetConVar("smh_motionpathoffset")
     local currentFrameIndex = 1 
-
-    hook.Remove("PostDrawHUD", "SMHRenderMotionPath")
-    hook.Add("PostDrawHUD", "SMHRenderMotionPath", function()
+    
+    local function renderMotionPaths()
         local hud = GetHUDPanel()
         if not hud:IsVisible() then return end
 
@@ -262,6 +192,7 @@ do
 
         local baseSize = sphereSize:GetFloat()
         local vectorString = offset:GetString():Split(" ")
+        ---@diagnostic disable-next-line: param-type-mismatch, redundant-parameter
         local vectorOffset = Vector(vectorString[1], vectorString[2], vectorString[3])
         for i = 1, #Nodes do 
             local currentFrame = SMH.State.Frame == Nodes[i].Frame
@@ -300,6 +231,7 @@ do
             if Nodes[i].Frame ~= SMH.State.Frame then continue end 
             
             local vectorString = offset:GetString():Split(" ")
+            ---@diagnostic disable-next-line: param-type-mismatch, redundant-parameter
             local vectorOffset = Vector(vectorString[1], vectorString[2], vectorString[3])
             local framePosition = LocalToWorld(vectorOffset, angle_zero, Nodes[i].Pos, Nodes[i].Ang)
             if Nodes[i-1] then
@@ -316,7 +248,23 @@ do
             end
             return
         end
-    end)
+    end
+
+    -- TODO: 8/21/2026: Observe changes to this HUD, as this was PostDrawHUD before, 
+    -- but a commit causes motion paths to draw over SMH timeline
+    -- https://commits.facepunch.com/615356#:~:text=*%20DrawOverlay%20and%20PostRenderVGUI%20are%20now%20called%20just%20before%20main%20menu%20rendering%20(PostRender%20still%20is%20called%20after%2C%20TBD)    
+    --- @param state boolean
+    local function addMotionPaths(state)
+        hook.Remove("HUDDrawScoreBoard", "SMHRenderMotionPath") 
+        if state then
+            hook.Add("HUDDrawScoreBoard", "SMHRenderMotionPath", renderMotionPaths)
+        end
+    end
+    local function handleHook(cvar, old, new)
+        addMotionPaths(tobool(new))
+    end
+    cvars.AddChangeCallback("smh_motionpath", handleHook, "handleHook")
+    addMotionPaths(GetConVar("smh_motionpath"):GetBool())
 end
 
 SMH.Renderer = MGR

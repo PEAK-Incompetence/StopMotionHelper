@@ -1,5 +1,6 @@
 include("shared.lua")
 
+include("client/convar.lua")
 include("client/state.lua")
 
 include("client/derma/frame_panel.lua")
@@ -37,3 +38,9 @@ include("client/ui.lua")
 include("client/audioclip.lua")
 include("client/audioclip_data.lua")
 include("client/audioclip_manager.lua")
+
+include("shared/rgm_sync.lua")
+include("client/tool_sync.lua")
+include("shared/unstretch.lua")
+
+include("client/spawnmenu_settings.lua")

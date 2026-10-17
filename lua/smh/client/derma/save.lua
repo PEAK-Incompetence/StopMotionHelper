@@ -3,8 +3,8 @@ local AppendWindowActive = false
 local DeletePromptActive = false
 local FolderSelected = false
 
----@class SMHSave: DFrame
----@field BaseClass DFrame
+--- @class SMHSave: DFrame
+--- @field BaseClass DFrame
 local PANEL = {}
 
 function PANEL:Init()
@@ -81,7 +81,7 @@ end
 
 function PANEL:PerformLayout(width, height)
 
-    ---@diagnostic disable-next-line
+    --- @diagnostic disable-next-line
     self.BaseClass.PerformLayout(self, width, height)
 
     local xOffset, yOffset = (self:GetWide()*0.2 - 50), (self:GetTall()*0.1 - 25)
@@ -430,7 +430,8 @@ function PANEL:OnGoToFolderRequested(path, toClient) end
 function PANEL:OnOverwriteSave(path) end
 function PANEL:OnAppendRequested(path) end
 function PANEL:OnAppend(path, savenames, gamenames) end
-function PANEL:OnPackRequested() end
+--- @param path string
+function PANEL:OnPackRequested(path) end
 function PANEL:OnDeleteRequested(path, isFolder, deleteFromClient) end
 
 vgui.Register("SMHSave", PANEL, "DFrame")

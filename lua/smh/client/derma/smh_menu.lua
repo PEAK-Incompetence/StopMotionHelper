@@ -1,6 +1,19 @@
----@class SMHMenu: DFrame
----@field BaseClass DFrame
+--- @class SMHMenu: DFrame
 local PANEL = {}
+AccessorFunc(PANEL, "m_bHangOpen", "HangOpen")
+
+function PANEL:StartKeyFocus(panel)
+    self.m_pKeyFocus = panel
+    self:SetKeyboardInputEnabled(true)
+    self:SetHangOpen(true)
+end
+
+function PANEL:EndKeyFocus(panel)
+    if self.m_pKeyFocus ~= panel then
+        return
+    end
+    self:SetKeyboardInputEnabled(false)
+end
 
 function PANEL:Init()
 
@@ -10,6 +23,7 @@ function PANEL:Init()
     self:SetDraggable(false)
     self:ShowCloseButton(false)
     self:SetDeleteOnClose(false)
+    self:SetHangOpen(false)
     self:ShowCloseButton(false)
 
     self._sendKeyframeChanges = true
@@ -18,6 +32,7 @@ function PANEL:Init()
 
     self.FramePointer = self.FramePanel:CreateFramePointer(Color(255, 255, 255), self.FramePanel:GetTall() / 4, true)
 
+    ---@class SMHTimelinesBase: Panel
     self.TimelinesBase = vgui.Create("Panel", self)
 
     self.PositionLabel = vgui.Create("DLabel", self)
@@ -127,7 +142,7 @@ end
 
 function PANEL:PerformLayout(width, height)
 
-    ---@diagnostic disable-next-line
+    --- @diagnostic disable-next-line
     self.BaseClass.PerformLayout(self, width, height)
 
     self:SetTitle("Stop Motion Helper")
@@ -199,7 +214,7 @@ function PANEL:PerformLayout(width, height)
 
 end
 
----@param timelineinfo TimelineSetting
+--- @param timelineinfo TimelineSetting
 function PANEL:UpdateTimelines(timelineinfo)
     self.TimelinesBase:Clear()
 
@@ -243,15 +258,15 @@ function PANEL:UpdateTimelines(timelineinfo)
     end
 end
 
----@param state State
+--- @param state State
 function PANEL:SetInitialState(state)
     self.PlaybackRateControl:SetValue(state.PlaybackRate)
     self.PlaybackLengthControl:SetValue(state.PlaybackLength)
     self:UpdatePositionLabel(state.Frame, state.PlaybackLength)
 end
 
----@param frame integer
----@param totalFrames integer
+--- @param frame integer
+--- @param totalFrames integer
 function PANEL:UpdatePositionLabel(frame, totalFrames)
     local offset = GetConVar("smh_startatone"):GetInt()
     self.PositionLabel:SetText("Position: " .. frame + offset .. " / " .. totalFrames - (1 - offset))
@@ -263,8 +278,8 @@ function PANEL:UpdateAudioTrackEditMode(edit)
 	self.AudioClipTools:SetEnabled(edit)
 end
 
----@param easeIn number
----@param easeOut number
+--- @param easeIn number
+--- @param easeOut number
 function PANEL:ShowEasingControls(easeIn, easeOut)
     self._sendKeyframeChanges = false
     self.EaseInControl:SetValue(easeIn)
@@ -277,9 +292,9 @@ function PANEL:HideEasingControls()
     self.Easing:SetVisible(false)
 end
 
----@param newState NewState
+--- @param newState NewState
 function PANEL:OnRequestStateUpdate(newState) end
----@param newKeyframeData any
+--- @param newKeyframeData any
 function PANEL:OnRequestKeyframeUpdate(newKeyframeData) end
 function PANEL:OnRequestOpenPropertiesMenu() end
 function PANEL:OnRequestRecord() end
