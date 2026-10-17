@@ -694,6 +694,7 @@ local function RequestModifiers(msgLength, player)
     net.Start(SMH.MessageTypes.RequestModifiersResponse)
     net.WriteTable(list)
     net.WriteTable(SMH.ModifierInfo.Names, true)
+    net.WriteTable(SMH.ModifierInfo.Defaults, true)
     net.Send(player)
 end
 

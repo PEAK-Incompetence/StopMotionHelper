@@ -35,3 +35,4 @@ end
 
 MOD.Name = "Upper Body"
 MOD.SetRoot = false
+MOD.Default = true

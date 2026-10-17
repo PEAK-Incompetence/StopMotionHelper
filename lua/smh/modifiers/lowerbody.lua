@@ -35,3 +35,4 @@ end
 
 MOD.Name = "Lower Body (Root)"
 MOD.SetRoot = true
+MOD.Default = true

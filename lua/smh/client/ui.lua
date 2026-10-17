@@ -1401,8 +1401,9 @@ end
 --- Initialize the timeline modifiers in the properties menu
 --- @param list any
 --- @param ids string[]
-function MGR.InitModifiers(list, ids)
-    PropertiesMenu:InitModifiers(list, ids)
+--- @param defaults boolean[]
+function MGR.InitModifiers(list, ids, defaults)
+    PropertiesMenu:InitModifiers(list, ids, defaults)
 end
 
 --- Re-update the Properties timeline settings

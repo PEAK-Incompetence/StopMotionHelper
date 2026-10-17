@@ -1237,8 +1237,9 @@ end
 local function RequestModifiersResponse(msgLength)
     local list = net.ReadTable()
     local ids = net.ReadTable(true)
+    local defaults = net.ReadTable(true)
 
-    SMH.UI.InitModifiers(list, ids)
+    SMH.UI.InitModifiers(list, ids, defaults)
 end
 
 local function UpdateTimelineInfoResponse(msgLength)

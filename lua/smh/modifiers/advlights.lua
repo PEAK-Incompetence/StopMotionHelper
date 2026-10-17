@@ -1,6 +1,7 @@
 -- Backwards compat
 include("sent.lua")
 MOD.Name = "Advanced Lights (deprecated)";
+MOD.Default = false
 
 local lerpLinear = SMH.LerpLinear
 local lerpLinearVector = SMH.LerpLinearVector

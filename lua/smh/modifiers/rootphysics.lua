@@ -35,3 +35,4 @@ end
 
 MOD.Name = "Root Physics (Root)"
 MOD.SetRoot = true
+MOD.Default = true

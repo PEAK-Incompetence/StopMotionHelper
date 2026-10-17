@@ -35,3 +35,4 @@ end
 
 MOD.Name = "Child Physics"
 MOD.SetRoot = false
+MOD.Default = true
