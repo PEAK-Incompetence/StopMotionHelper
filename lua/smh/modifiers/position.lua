@@ -17,7 +17,7 @@ function MOD:Save(entity)
 
     -- Don't record redundant data if we have a physics object that can provide
     -- more accurate transform data
-    if not multiplayerPhysics:GetBool() and getPhysicsObject(entity) and getBrushPlaneCount(entity) == 0 then
+    if not multiplayerPhysics:GetBool() and IsValid(getPhysicsObject(entity)) and getBrushPlaneCount(entity) == 0 then
         return nil;
     end
 
@@ -37,7 +37,7 @@ function MOD:LoadGhostBetween(entity, ghost, data1, data2, percentage)
 end
 
 function MOD:Load(entity, data)
-    if not multiplayerPhysics:GetBool() and getPhysicsObject(entity) and getBrushPlaneCount(entity) == 0 then
+    if not multiplayerPhysics:GetBool() and IsValid(getPhysicsObject(entity)) and getBrushPlaneCount(entity) == 0 then
         return
     end
 
@@ -47,7 +47,7 @@ function MOD:Load(entity, data)
 end
 
 function MOD:LoadBetween(entity, data1, data2, percentage)
-    if not multiplayerPhysics:GetBool() and getPhysicsObject(entity) and getBrushPlaneCount(entity) == 0 then
+    if not multiplayerPhysics:GetBool() and IsValid(getPhysicsObject(entity)) and getBrushPlaneCount(entity) == 0 then
         return
     end
 

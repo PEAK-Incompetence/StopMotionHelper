@@ -11,7 +11,7 @@ local EntsTable = {}
 local BonemergedEntsTable = {}
 ---@type TimelineSetting
 local PropertyTable = {} ---@diagnostic disable-line: missing-fields
-local ModifierList, ModifierNames, ModifierIds = {}, {}, {}
+local ModifierList, ModifierNames, ModifierIds, ModifierDefaults = {}, {}, {}, {}
 local Fallback = "none"
 local selectedEntity = nil
 local UsingWorld = false
@@ -483,10 +483,11 @@ function PANEL:SetBonemergedEntities(entities)
     self.BonemergedList:UpdateLines(entlist)
 end
 
-function PANEL:InitModifiers(list, ids)
+function PANEL:InitModifiers(list, ids, defaults)
     ModifierList = table.Copy(list)
     ModifierNames = table.Copy(ids)
     ModifierIds = table.Flip(ids)
+    ModifierDefaults = defaults
 end
 
 --- @return table ModifierList

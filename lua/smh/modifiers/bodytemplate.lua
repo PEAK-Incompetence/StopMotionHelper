@@ -3,6 +3,7 @@ MOD.Name = "Body Template (don't enable)";
 MOD.BodyEnds = {}
 MOD.SetRoot = true
 MOD.Ghost = true
+MOD.Default = false
 
 local opt = SMH.Optimizations
 local setPos = opt.PhysObjSetPos

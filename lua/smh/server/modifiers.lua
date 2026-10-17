@@ -15,6 +15,7 @@ local MODBASE = {}
 --- @package
 MODBASE.__index = MODBASE
 MODBASE.Name = "Unnamed"
+MODBASE.Default = true
 
 --- @param entity SMHEntity|Player
 --- @return any
@@ -68,6 +69,8 @@ SMH.ModifierInfo = {}
 SMH.ModifierInfo.Names = {}
 --- @type {[string]: integer}
 SMH.ModifierInfo.Ids = {}
+--- @type boolean[]
+SMH.ModifierInfo.Defaults = {}
 
 local path = "smh/modifiers/"
 local files, dirs = file.Find(path .. "*.lua", "LUA")
@@ -81,8 +84,11 @@ local function refreshModifiers()
 		include(path .. f)
 
 		local modName = f:sub(1, -5) 
-		SMH.Modifiers[modName] = _G["MOD"]
+		---@type ModifierClass
+		local modifierClass = _G["MOD"]
+		SMH.Modifiers[modName] = modifierClass
 		table.insert(SMH.ModifierInfo.Names, modName)
+		table.insert(SMH.ModifierInfo.Defaults, modifierClass.Default)
 
 		_G["MOD"] = nil
 

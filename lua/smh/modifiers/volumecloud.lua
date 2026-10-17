@@ -1,5 +1,7 @@
-
-MOD.Name = "Volumetric Cloud";
+-- Backwards compat
+include("sent.lua")
+MOD.Name = "Volumetric Cloud (deprecated)";
+MOD.Default = false
 
 local lerpLinear = SMH.LerpLinear
 local lerpLinearVector = SMH.LerpLinearVector
@@ -7,23 +9,6 @@ local lerpLinearVector = SMH.LerpLinearVector
 function MOD:IsVolumeCloud(entity)
 
     return entity:GetClass() == "volume_cloud"
-
-end
-
-function MOD:Save(entity)
-
-    if not self:IsVolumeCloud(entity) then return nil; end
-
-    local data = {};
-
-    data.size_x = entity:Getsize_x()
-    data.size_y = entity:Getsize_y()
-    data.size_z = entity:Getsize_z()
-    data.subdivisions = entity:Getsubdivisions()
-    data.blur = entity:Getblur()
-    data.cloud_color = entity:Getcloud_color()
-
-    return data;
 
 end
 
