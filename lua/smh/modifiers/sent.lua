@@ -3,6 +3,9 @@
 -- TODO: For old modifiers, reroute their methods over to the SENT 
 MOD.Name = "Scripted Entity";
 
+-- TODO: Make an allow list to prevent some other network variables from running
+-- Could also tie that into other some admin permission systems
+
 -- Disallow most prop classes
 local invalidClasses = {
     prop_physics = true,
@@ -75,7 +78,7 @@ function MOD:Load(entity, data)
     self:InitializeNetworkVars(entity)
     for _, networkVar in ipairs(networkVarMap[class].arr) do
         local result = data[networkVar]
-        if result then
+        if result ~= nil then
             setNetworkVar(entity, networkVar, result)
         end
     end
@@ -94,7 +97,7 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
     self:InitializeNetworkVars(entity)
     for _, networkVar in ipairs(networkVarMap[class].arr) do
         local result = data1[networkVar]
-        if result then
+        if result ~= nil then
             if isvector(result) then
                 result = lerpLinearVector(data1[networkVar], data2[networkVar], percentage)
             elseif isangle(result) then
