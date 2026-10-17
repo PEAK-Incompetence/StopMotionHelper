@@ -121,6 +121,12 @@ function SMH.GetClosestKeyframes(keyframes, frame, ignoreCurrentFrame, modname, 
     return prevKeyframe, nextKeyframe, lerpMultiplier
 end
 
+--- @param keyframe FrameData
+local function clearKeyframeWalkCache(keyframe)
+    keyframe.Previous = nil
+    keyframe.Next = nil
+end
+
 --- @param player Player
 --- @param entity Entity
 function SMH.SortKeyframes(player, entity)
@@ -130,10 +136,8 @@ function SMH.SortKeyframes(player, entity)
             --- @cast a FrameData
             --- @cast b FrameData
             
-            a.Previous = nil
-            a.Next = nil
-            b.Previous = nil
-            b.Next = nil
+            clearKeyframeWalkCache(a)
+            clearKeyframeWalkCache(b)
             return a.Frame < b.Frame
         end)
     end
@@ -383,6 +387,7 @@ function MGR.Update(player, keyframeIds, updateData, timeline)
             SMH.KeyframeData:Delete(player, replacekey.ID)
         end
         keyframe.Frame = frame
+        clearKeyframeWalkCache(keyframe)
         table.insert(keyframes, keyframe)
     end
 
@@ -459,6 +464,7 @@ function MGR.Copy(player, keyframeIds, frame, timeline)
 
     for keyframe, frame in pairs(movingkeyframes) do
         keyframe.Frame = frame
+        clearKeyframeWalkCache(keyframe)
         table.insert(copiedKeyframes, keyframe)
     end
 
