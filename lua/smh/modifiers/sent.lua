@@ -41,7 +41,7 @@ end
 ---@return any?
 local function getNetworkVar(entity, networkVar)
     local func = entity["Get" .. networkVar]
-    return Either(isfunction(func), func(), nil)
+    return Either(isfunction(func), func(entity), nil)
 end
 
 ---@param entity Entity
@@ -49,7 +49,7 @@ end
 ---@return any?
 local function setNetworkVar(entity, networkVar, ...)
     local func = entity["Set" .. networkVar]
-    return isfunction(func) and func(...)
+    return isfunction(func) and func(entity, ...)
 end
 
 function MOD:Save(entity)
