@@ -10,8 +10,11 @@ local DefaultPoseTrees = {}
 
 local check = SMH.SettingsManager.CheckSetting
 local getSetting = SMH.SettingsManager.GetSetting
+-- FIXME: For some reason, these helpers don't initialize just yet, so
+-- these are left unused for now. 
 local BoneToPhysBone = SMH.BoneToPhysBone
 local GetPhysBoneParentFromBone = SMH.GetPhysBoneParentFromBone
+local PhysBoneToBone = SMH.PhysBoneToBone
 
 --- @param player Player
 --- @param entity SMHEntity
@@ -530,7 +533,7 @@ function MGR.RequestNode(player)
         do
             local id = bone
             local pose = defaultPoseTree[bone]
-            local boneParent = PhysBoneToBone(entity, physBoneParent)
+            local boneParent = SMH.PhysBoneToBone(entity, physBoneParent)
             while pose and id ~= boneParent do
                 table.insert(branch, id)
                 id = pose.Parent
@@ -640,7 +643,7 @@ function MGR.RequestNodes(player, settings)
             do
                 local id = bone
                 local pose = defaultPoseTree[bone]
-                local boneParent = PhysBoneToBone(entity, physBoneParent)
+                local boneParent = SMH.PhysBoneToBone(entity, physBoneParent)
                 while pose and id ~= boneParent do
                     table.insert(branch, id)
                     id = pose.Parent
