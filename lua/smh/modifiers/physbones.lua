@@ -66,7 +66,7 @@ function MOD:Load(entity, data, settings)
 
         local d = data[i];
 
-        if d then
+        if d and IsValid(pb) then
             if parent and localizePhysBones and d.LocalPos and d.LocalAng then
                 local pos, ang = LocalToWorld(d.LocalPos, d.LocalAng, parent:GetPos(), parent:GetAngles());
                 setPos(pb, pos, true)
