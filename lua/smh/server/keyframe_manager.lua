@@ -244,8 +244,15 @@ function MGR.GetAll(player)
 
     local result = {}
     for _, keyframe in pairs(keyframes) do
+        local oldPrevious, oldNext = keyframe.Previous, keyframe.Next
+        keyframe.Previous = nil
+        keyframe.Next = nil
         table.insert(result, table.Copy(keyframe))
+        keyframe.Previous = oldPrevious
+        keyframe.Next = oldNext
     end
+
+
     return result
 end
 
