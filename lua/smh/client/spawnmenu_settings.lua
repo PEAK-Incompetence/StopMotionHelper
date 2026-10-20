@@ -1,4 +1,19 @@
 
+local function niceName(name)
+    local base = string.NiceName(string.sub(name, 5))
+    local words = string.Split(base, " ")
+    for i, word in ipairs(words) do
+        if string.lower(word) == "smh" or string.lower(word) == "rgm" then
+            words[i] = string.upper(word)
+            continue
+        end
+
+        local firstLetter = word[1]
+        words[i] = string.gsub(word, firstLetter, string.upper(firstLetter), 1)
+    end
+    return table.concat(words, " ")
+end
+
 ---@param cPanel ControlPanel
 local function settings(cPanel)
     SMH.UI.Open()
@@ -33,7 +48,8 @@ local function settings(cPanel)
         ---@type Panel
         local panel
         local helpText = cvarInfo.helptext
-        local niceName = string.NiceName(string.sub(name, 5))
+        local niceName = niceName(name)
+
         if cvarInfo.type == TYPE_NUMBER then
             local cvar = cvarInfo.cvar
             panel = category:NumSlider(niceName, name, cvar:GetMin() or 0, cvar:GetMax() or 100, 3)

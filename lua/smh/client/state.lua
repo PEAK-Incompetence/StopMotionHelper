@@ -12,6 +12,7 @@ SMH.State = {
     PlaybackLength = playbackLengthConVar:GetInt(),
 	
     AllowUnstretch = true,
+    Playing = false,
 
 	EditAudioTrack = false,
     TimeStamp = RealTime() -- TODO: Use metamethods to track state changes to update this automatically

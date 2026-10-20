@@ -139,12 +139,28 @@ concommand.Add("smh_previousframe", function()
     end
 end, nil, "Jumps the playhead to the previous, immediate keyframe on the timeline, relative to the playhead")
 
+local smh_playback_toggle = SMH.ConVars.Create("smh_playback_toggle", "0", true, "If set to 1, tap the playback button once to play the animation. Tap the button again to stop it.", TYPE_BOOL, 0, 1)
+cvars.RemoveChangeCallback("smh_playback_toggle", "stop_playback")
+cvars.AddChangeCallback("smh_playback_toggle", function(cvar, old, new)
+    SMH.Controller.StopPlayback()
+end, "stop_playback")
+
 concommand.Add("+smh_playback", function(_, _, args)
     local start = #args > 1 and tonumber(args[1]) or SMH.State.Frame
-    SMH.Controller.StartPlayback(math.floor(start))
+    if smh_playback_toggle:GetBool() then
+        if SMH.State.Playing then
+            SMH.Controller.StopPlayback()
+        else
+            SMH.Controller.StartPlayback(math.floor(start))
+        end
+    else
+        SMH.Controller.StartPlayback(math.floor(start))
+    end
 end, nil, "Start SMH playback relative to the playhead at the framerate specified by the user. Note that this does not move the playhead. If a number is specified, it will start playback at that frame")
 
 concommand.Add("-smh_playback", function()
+    if smh_playback_toggle:GetBool() then return end
+
     SMH.Controller.StopPlayback()
 end, nil, "Stop SMH playback")
 

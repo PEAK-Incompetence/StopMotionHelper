@@ -482,6 +482,7 @@ end
 function CTRL.StartPlayback(startFrame)
     if SMH.PhysRecord.IsActive() then return end
     SMH.State.AllowUnstretch = false
+    SMH.State.Playing = true
 
     net.Start(SMH.MessageTypes.StartPlayback)
     net.WriteUInt(startFrame, INT_BITCOUNT)
@@ -496,6 +497,7 @@ end
 --- Signal the playback manager to stop for the client
 function CTRL.StopPlayback()
     SMH.State.AllowUnstretch = true
+    SMH.State.Playing = false
 
     net.Start(SMH.MessageTypes.StopPlayback)
     net.SendToServer()
