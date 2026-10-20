@@ -1,7 +1,7 @@
 ---@class SMH.ConVars
 local convars = SMH.ConVars or {}
 SMH.ConVars = convars
-convars.Storage = {}
+convars.Storage = convars.Storage or {}
 
 if CLIENT then
     ---@param name string
@@ -12,7 +12,7 @@ if CLIENT then
     ---@param min number?
     ---@param max number?
     ---@param category string?
-    ---@return any
+    ---@return ConVar
     function convars.Create(name, default, userinfo, helptext, type, min, max, category)
         local cvar
         if type == TYPE_BOOL then
