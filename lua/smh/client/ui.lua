@@ -951,11 +951,11 @@ function MGR.ScrubAudio(frame, lastFrame, sampleTime)
         if audioClip.Frame <= frame and math.abs(audioClip.Frame - frame) < totalFrames then            
             local oldRate = audioClip.AudioChannel:GetPlaybackRate()
             local frameDifference = math.abs(frame - lastFrame)
-            local totalTime = (1 / SMH.State.PlaybackRate + math.abs(sampleTime / frameDifference)) * frameDifference
             local sign = (frame - lastFrame) >= 0 and 1 or -1
             if audioClip.AudioChannel:GetState() ~= GMOD_CHANNEL_PLAYING then
-                SMH.AudioClip.Play(audioClip.ID, (frame - audioClip.Frame) / totalFrames * audioClip.Duration)
+                SMH.AudioClip.Play(audioClip.ID, (frame - audioClip.Frame - 2) / totalFrames * audioClip.Duration)
             end
+            local totalTime = (1 / SMH.State.PlaybackRate + math.abs(sampleTime / frameDifference)) * frameDifference
             audioClip.AudioChannel:SetPlaybackRate(sign)
             timer.Simple(totalTime, function()
                 SMH.AudioClip.Stop(audioClip.ID)
@@ -970,7 +970,7 @@ local lastFrame = nil
 --- @param frame integer
 function MGR.SetFrame(frame)
     lastFrame = lastFrame or frame
-    local sampleTime = 0.1
+    local sampleTime = 0.05
     if not WorldClicker.MainMenu.FramePointer:IsDragging() then
         WorldClicker.MainMenu.FramePointer:SetFrame(frame)
     else
