@@ -244,6 +244,10 @@ function MGR.GetAll(player)
 
     local result = {}
     for _, keyframe in pairs(keyframes) do
+        -- We have to set these to nil below. If we don't, then we also end up
+        -- copying the Next and Previous references.
+        -- FIXME: Maybe don't deep table.Copy for keyframes? We're not expected to modify
+        -- the keyframes at all.
         local oldPrevious, oldNext = keyframe.Previous, keyframe.Next
         keyframe.Previous = nil
         keyframe.Next = nil
