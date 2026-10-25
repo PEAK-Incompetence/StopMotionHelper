@@ -32,7 +32,7 @@ end
 --- @param player any
 --- @param settings Settings
 local function ProcessKeyframes(keyframes, entityMappedKeyframes, properties, player, settings)
-    for _, keyframe in pairs(keyframes) do
+    for _, keyframe in ipairs(keyframes) do
         local entity = keyframe.Entity
         if not IsValid(entity) then
             continue

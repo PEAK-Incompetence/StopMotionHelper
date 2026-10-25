@@ -66,22 +66,24 @@ function MOD:Load(entity, data, settings)
 
         local d = data[i];
 
-        if parent and localizePhysBones and d.LocalPos and d.LocalAng then
-            local pos, ang = LocalToWorld(d.LocalPos, d.LocalAng, parent:GetPos(), parent:GetAngles());
-            setPos(pb, pos, true)
-            setAngles(pb, ang)
-        else
-            setPos(pb, d.Pos, true);
-            setAngles(pb, d.Ang);
+        if d and IsValid(pb) then
+            if parent and localizePhysBones and d.LocalPos and d.LocalAng then
+                local pos, ang = LocalToWorld(d.LocalPos, d.LocalAng, parent:GetPos(), parent:GetAngles());
+                setPos(pb, pos, true)
+                setAngles(pb, ang)
+            else
+                setPos(pb, d.Pos, true);
+                setAngles(pb, d.Ang);
+            end
+    
+            if freezeAll then
+                enableMotion(pb, false);
+            else
+                enableMotion(pb, d.Moveable);
+            end
+    
+            wake(pb);
         end
-
-        if freezeAll then
-            enableMotion(pb, false);
-        else
-            enableMotion(pb, d.Moveable);
-        end
-
-        wake(pb);
 
     end
 
@@ -100,16 +102,20 @@ function MOD:LoadGhost(entity, ghost, data)
         wake(pb);
 
         local d = data[i];
-        if isPropDynamic then
-            entSetPos(ghost, d.Pos)
-            entSetAngles(ghost, d.Ang)
-        else
-            setPos(pb, d.Pos, true);
-            setAngles(pb, d.Ang);
+
+        if d then            
+            if isPropDynamic then
+                entSetPos(ghost, d.Pos)
+                entSetAngles(ghost, d.Ang)
+            else
+                setPos(pb, d.Pos, true);
+                setAngles(pb, d.Ang);
+            end
+
+            enableMotion(pb, false);
+            wake(pb);
         end
 
-        enableMotion(pb, false);
-        wake(pb);
 
     end
 
@@ -127,20 +133,20 @@ function MOD:LoadGhostBetween(entity, ghost, data1, data2, percentage)
         local d1 = data1[i];
         local d2 = data2[i];
 
-        local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
-        local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
-
-        enableMotion(pb, false);
-        if isPropDynamic then
-            entSetPos(ghost, Pos)
-            entSetAngles(ghost, Ang)
-        else
-            setPos(pb, Pos, true);
-            setAngles(pb, Ang);
+        if d1 and d2 then
+            local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
+            local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
+    
+            enableMotion(pb, false);
+            if isPropDynamic then
+                entSetPos(ghost, Pos)
+                entSetAngles(ghost, Ang)
+            else
+                setPos(pb, Pos, true);
+                setAngles(pb, Ang);
+            end
+            wake(pb);
         end
-
-        wake(pb);
-
     end
 end
 
@@ -159,18 +165,20 @@ function MOD:LoadBetween(entity, data1, data2, percentage, settings)
         local d1 = data1[i];
         local d2 = data2[i];
 
-        local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
-        local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
-
-        if freezeAll then
-            enableMotion(pb, false);
-        else
-            enableMotion(pb, d1.Moveable);
+        if d1 and d2 then
+            local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
+            local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
+    
+            if freezeAll then
+                enableMotion(pb, false);
+            else
+                enableMotion(pb, d1.Moveable);
+            end
+            setPos(pb, Pos, true);
+            setAngles(pb, Ang);
+    
+            wake(pb);
         end
-        setPos(pb, Pos, true);
-        setAngles(pb, Ang);
-
-        wake(pb);
     end
 
 end

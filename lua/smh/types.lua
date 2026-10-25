@@ -33,6 +33,7 @@
 --- @field PlaybackLength integer
 --- @field TimeStamp number
 --- @field AllowUnstretch boolean
+--- @field Playing boolean
 
 --- @class AudioClip
 --- @field ID integer

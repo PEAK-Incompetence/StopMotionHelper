@@ -6,6 +6,9 @@
 --- @field rgmPosLocks {[Entity] : {[number]: PhysObj}}
 --- @field rgmOffsetTable table
 
+-- TODO: The rest of the script is messy. Do some cleanup here before we integrate these features
+-- directly into SMH.
+
 if CLIENT then
 	local lastBone
 	local enableSync = SMH.ConVars.Create(
@@ -28,7 +31,7 @@ if CLIENT then
 		"0",
 		true,
 		[[
-		When enabled, it will set entity constraints via Ragdoll Mover. This requires `sync_rgm_to_smh 1`. 
+		(DEPRECATED) When enabled, it will set entity constraints via Ragdoll Mover. This requires `sync_rgm_to_smh 1`. 
 		]],
 		TYPE_BOOL,
 		nil,
@@ -36,6 +39,22 @@ if CLIENT then
 		"Sync"
 	)
 	local smhBone = GetConVar("smh_motionpathbone")
+
+	local ragdollMoverAutoKeyer = SMH.ConVars.Create(
+		"smh_rgm_autokey", 
+		"0", 
+		true, 
+		"If set to 1, keyframes are created at the playhead after moving an animation. It is recommended to have an undo function when using this script", 
+		TYPE_BOOL,
+		0, 
+		1,
+		"Sync"
+	)
+	local autokeyEnabled = ragdollMoverAutoKeyer:GetBool()
+	cvars.RemoveChangeCallback("smh_rgm_autokey", "updateBoolean")
+	cvars.AddChangeCallback("smh_rgm_autokey", function(_, _, newValue)
+		autokeyEnabled = tobool(Either(tonumber(newValue) ~= nil, tonumber(newValue) > 0, false))
+	end, "updateBoolean")
 
 	local enabled = enableSync:GetBool()
 	cvars.RemoveChangeCallback("sync_rgm_to_smh", "updateBoolean")
@@ -48,6 +67,33 @@ if CLIENT then
 	cvars.AddChangeCallback("sync_rgm_to_smh_locks", function(_, _, newValue)
 		enabled2 = tobool(Either(tonumber(newValue) ~= nil, tonumber(newValue) > 0, false))
 	end, "updateBoolean")
+
+	local lastMove = false
+	hook.Remove("Think", "syncRGMRecord")
+	hook.Add("Think", "syncRGMRecord", function()
+		if not autokeyEnabled then
+			return
+		end
+
+		if not SMH or not RAGDOLLMOVER then
+			return
+		end
+		
+		local pl = LocalPlayer()
+		local plTable = RAGDOLLMOVER[pl]
+		if not plTable then
+			return
+		end
+
+		local currentMove = plTable.Moving
+		if currentMove ~= nil and currentMove ~= lastMove then
+			if lastMove then
+				SMH.Controller.Record()
+			end
+			lastMove = currentMove
+		end
+	end)
+
 
 	hook.Remove("Think", "syncRGMSMHBone")
 	hook.Add("Think", "syncRGMSMHBone", function(frame)

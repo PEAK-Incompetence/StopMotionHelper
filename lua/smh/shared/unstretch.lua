@@ -10,9 +10,16 @@ if SERVER then
 	--- @type {[string]: PhysObjParentOffset[]}
 	local physObjToParentOffsets = {}
 
+	-- TODO: If we ever expand this, maybe put this in another
+	-- module, or make this user specified
+	local problematicBones = {
+		"prp_",
+		"dogtag"
+	}
+
 	--- @param ragdoll Entity
 	--- @return PhysObjBoneOffset[] | false
-	local function getOffsets(ragdoll)
+	local function getOffsets(ragdoll, ply)
 		local model = ragdoll:GetModel()
 		if physObjToBoneOffsets[model] then
 			return physObjToBoneOffsets[model], physObjToParentOffsets[model]
@@ -94,13 +101,33 @@ if SERVER then
 				basePos, baseAng = temp:GetPos(), temp:GetAngles()
 			end
 			local pos, ang = WorldToLocal(referencePose[1], referencePose[2], basePos, baseAng)
-			parentOffsets[i + 1] = {[1] = pos, [2] = ang, [3] = parent}
+			parentOffsets[i + 1] = {pos, ang, parent}
 		end
 
 		temp:Remove()
 
 		physObjToBoneOffsets[model] = offsets
 		physObjToParentOffsets[model] = parentOffsets
+
+		net.Start("smh_unstretch_bones")
+		local prpPhysBones = {}
+		local prpPhysBoneParents = {}
+		for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
+			local boneName = ragdoll:GetBoneName(ragdoll:TranslatePhysBoneToBone(i))
+			for _, name in ipairs(problematicBones) do			
+				if string.find(boneName, name) then
+					table.insert(prpPhysBones, i)
+					local parent = SMH.GetPhysBoneParent(ragdoll, i)
+					prpPhysBoneParents[i] = parent
+					break
+				end
+			end
+		end
+		net.WriteEntity(ragdoll)
+		net.WriteTable(prpPhysBones, true)
+		net.WriteTable(prpPhysBoneParents)
+		net.Send(ply)
+
 		return offsets, parentOffsets
 	end
 
@@ -170,9 +197,9 @@ if SERVER then
 	end
 
 	--- @param ragdoll Entity
-	local function unstretch(ragdoll)
+	local function unstretch(ragdoll, ply)
 		timer.Simple(0.1, function()
-			local offsets, parentOffsets = getOffsets(ragdoll)
+			local offsets, parentOffsets = getOffsets(ragdoll, ply)
 			if not offsets then
 				return
 			end
@@ -190,6 +217,8 @@ if SERVER then
 		end)
 	end
 
+	local colorAlpha = Color(0, 0, 0, 1)
+
 	--- Use Penol's method to unstretch ragdolls, regardless of stretch state
 	--- @param ragdoll Entity
 	local function peakUnstretch(ragdoll, ply)
@@ -206,7 +235,9 @@ if SERVER then
 		ent:SetPos(ragdoll:GetPos())
 		ent:SetAngles(ragdoll:GetAngles())
 		ent:SetMaterial("null")
-		ent:SetColor(color_transparent)
+		-- If we set the alpha to completely 0, then prp_* bone transforms becomes unavailable.
+		-- So we need the alpha to be around 1. This reduces the ragdoll shadow.  
+		ent:SetColor(colorAlpha)
 		ent:SetRenderMode(RENDERMODE_TRANSCOLOR)
 		ent:SetCollisionGroup(COLLISION_GROUP_WORLD)
 		ent:Spawn()
@@ -232,8 +263,53 @@ if SERVER then
 		end
 	end)
 
+	util.AddNetworkString("smh_unstretch_bones")
+	net.Receive("smh_unstretch_bones", function(len, ply)
+		-- We run this net message once
+		local entity = net.ReadEntity()
+		local model = entity:GetModel()
+		local bones = net.ReadUInt(5)
+		for _ = 1, bones do
+			local phys = net.ReadUInt(5)
+			local parent = net.ReadUInt(5)
+			local matrix = net.ReadMatrix()
+			physObjToParentOffsets[model][phys + 1] = {matrix:GetTranslation(), matrix:GetAngles(), parent}
+		end
+	end)
+
 	return
 end
+
+net.Receive("smh_unstretch_bones", function(len)
+	local entity = net.ReadEntity()
+
+	local prpPhysBones = net.ReadTable(true)
+	local prpPhysBoneParents = net.ReadTable()
+
+	local temp = ClientsideModel(entity:GetModel())
+	temp:SetupBones()
+	temp:InvalidateBoneCache()
+	net.Start("smh_unstretch_bones")
+	net.WriteEntity(entity)
+	net.WriteUInt(#prpPhysBones, 5)
+	pcall(function()
+		for _, phys in ipairs(prpPhysBones) do
+			local parent = prpPhysBoneParents[phys]
+			local bone = temp:TranslatePhysBoneToBone(phys)
+			local boneParent = temp:TranslatePhysBoneToBone(parent)
+
+			local childMatrix = temp:GetBoneMatrix(bone)
+			local parentMatrix = temp:GetBoneMatrix(boneParent)
+
+			net.WriteUInt(phys, 5)
+			net.WriteUInt(parent, 5)
+			-- Send local matrix
+			net.WriteMatrix(parentMatrix:GetInverse() * childMatrix)
+		end
+	end)
+	net.SendToServer()
+	temp:Remove()
+end)
 
 local doPeakUnstretch = SMH.ConVars.Create(
 	"smh_unstretch_dopeak",

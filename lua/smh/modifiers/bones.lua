@@ -75,9 +75,11 @@ function MOD:Load(entity, data)
     for b = 0, count - 1 do
 
         local d = data[b];
-        manipulateBonePosition(entity, b, d.Pos);
-        manipulateBoneAngles(entity, b, d.Ang);
-        manipulateBoneScale(entity, b, d.Scale);
+        if d then
+            manipulateBonePosition(entity, b, d.Pos);
+            manipulateBoneAngles(entity, b, d.Ang);
+            manipulateBoneScale(entity, b, d.Scale);
+        end
 
     end
 
@@ -97,13 +99,15 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
         local d1 = data1[b];
         local d2 = data2[b];
 
-        local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
-        local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
-        local Scale = lerpLinear(d1.Scale, d2.Scale, percentage);
-
-        manipulateBonePosition(entity, b, Pos);
-        manipulateBoneAngles(entity, b, Ang);
-        manipulateBoneScale(entity, b, Scale);
+        if d1 and d2 then
+            local Pos = lerpLinearVector(d1.Pos, d2.Pos, percentage);
+            local Ang = lerpLinearAngle(d1.Ang, d2.Ang, percentage);
+            local Scale = lerpLinear(d1.Scale, d2.Scale, percentage);
+    
+            manipulateBonePosition(entity, b, Pos);
+            manipulateBoneAngles(entity, b, Ang);
+            manipulateBoneScale(entity, b, Scale);
+        end
 
     end
 

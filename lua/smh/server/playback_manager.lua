@@ -236,7 +236,7 @@ local function PlaybackSmooth(player, playback, settings)
 
         entityList[#entityList + 1] = entity
     end
-    hook.Run("SMH_PostFrameEntity", entityList)
+    hook.Run("SMH_PostFrameEntity", entityList, player)
     frameHistory[player] = currentFrame
 end
 
@@ -298,7 +298,7 @@ function MGR.SelectFrame(player, newFrame, settings)
 
         entityList[#entityList + 1] = entity
     end
-    hook.Run("SMH_PostFrameEntity", entityList)
+    hook.Run("SMH_PostFrameEntity", entityList, player)
     frameHistory[player] = newFrame
 end
 
@@ -361,7 +361,7 @@ function MGR.SetFrame(player, newFrame, settings)
 
         entityList[#entityList + 1] = entity
     end
-    hook.Run("SMH_PostFrameEntity", entityList)
+    hook.Run("SMH_PostFrameEntity", entityList, player)
     frameHistory[player] = newFrame
 end
 
@@ -415,7 +415,7 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
 
         entityList[#entityList + 1] = entity
     end
-    hook.Run("SMH_PostFrameEntity", entityList)
+    hook.Run("SMH_PostFrameEntity", entityList, player)
     frameHistory[player] = newFrame
 end
 

@@ -82,10 +82,12 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
 
         local w1 = data1.Weights[i];
         local w2 = data2.Weights[i];
-        local w = lerpLinear(w1, w2, percentage);
-
-        setFlexWeight(entity, i, w);
-        networkFlex(entity, i, w)
+        if w1 and w2 then
+            local w = lerpLinear(w1, w2, percentage);
+    
+            setFlexWeight(entity, i, w);
+            networkFlex(entity, i, w)
+        end
     end
 
 end
