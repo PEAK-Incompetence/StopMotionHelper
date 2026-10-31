@@ -34,13 +34,25 @@ end
 
 
 --- Skip loading Physical Bone keyframes when enabled, so the animator can use other 
---- physics bone body modifiers to either record manually or automatically with the physics recorder
+--- body modifiers to bake their keyframes to the physics bone modifier 
+--- (record manually or automatically with the physics recorder)
 --- @param entity Entity
 --- @param modName string
 --- @param settings Settings
 --- @return boolean
 local function checkPhysBake(player, entity, modName, settings)
     return modName == "physbones" and tobool(player:GetInfo("smh_enablephysbake"))
+end
+
+--- Skip loading any body modifier keyframes when enabled, so the animator can use the 
+--- physics bone to bake their keyframes to the body modifiers 
+--- (record manually or automatically with the physics recorder)
+--- @param entity Entity
+--- @param mod ModifierClass
+--- @param settings Settings
+--- @return boolean
+local function checkBodyBake(player, entity, mod, settings)
+    return mod.BodyEnds and tobool(player:GetInfo("smh_enablebodybake"))
 end
 
 --- This is used to make the walking algorithm go the right direction
@@ -198,6 +210,7 @@ local function PlaybackSmooth(player, playback, settings)
 
         for name, mod in pairs(mods) do
             if checkPhysBake(player, entity, name, settings) then continue end
+            if checkBodyBake(player, entity, mod, settings) then continue end
 
             local cached, prevKeyframe, nextKeyframe, invDelta = lookupPlaybackCache(player, entity, name)
             if 
@@ -269,6 +282,7 @@ function MGR.SelectFrame(player, newFrame, settings)
 
         for name, mod in pairs(mods) do
             if checkPhysBake(player, entity, name, settings) then continue end
+            if checkBodyBake(player, entity, mod, settings) then continue end
 
             local cached, prevKeyframe, nextKeyframe, invDelta = lookupPlaybackCache(player, entity, name)
             if 
@@ -332,6 +346,7 @@ function MGR.SetFrame(player, newFrame, settings)
 
         for name, mod in pairs(mods) do
             if checkPhysBake(player, entity, name, settings) then continue end
+            if checkBodyBake(player, entity, mod, settings) then continue end
 
             local cached, prevKeyframe, nextKeyframe, invDelta = lookupPlaybackCache(player, entity, name)
             if 
@@ -387,6 +402,9 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
         local tweenDisabled = check(settings, "TweenDisable", entity)
 
         for name, mod in pairs(mods) do
+            if checkPhysBake(player, entity, name, settings) then continue end
+            if checkBodyBake(player, entity, mod, settings) then continue end
+
             local cached, prevKeyframe, nextKeyframe, invDelta = lookupPlaybackCache(player, entity, name)
             if 
                 not cached 
