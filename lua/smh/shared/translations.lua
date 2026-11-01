@@ -35,7 +35,7 @@ function SMH.BoneToPhysBone(ent, bone)
 		return boneToPhysMap[model][bone]
 	else		
 		boneToPhysMap[model] = boneToPhysMap[model] or {}
-		if isStaticProp(ent) or ent:GetPhysicsObjectCount() == 1 then
+		if (isStaticProp(ent) or ent:GetPhysicsObjectCount() == 1) and IsValid(ent:GetPhysicsObject()) then
 			boneToPhysMap[model][bone] = 0
 			return 0
 		end
