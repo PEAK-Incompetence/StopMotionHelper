@@ -17,8 +17,11 @@ local invalidClasses = {
 ---@field set {[string]: true}?
 ---@field arr string[]?
 
----@type {[string]: NetworkVarInfo}
+---@type table<string, NetworkVarInfo>
 local networkVarMap = {}
+
+---@type Set<Entity>
+local sentFilter = {}
 
 function MOD:IsPhysicsProp(entity)
     return invalidClasses[entity:GetClass()]
@@ -26,17 +29,28 @@ end
 
 function MOD:InitializeNetworkVars(entity)
     local c = entity:GetClass()
+    if sentFilter[c] then
+        return false
+    end
+
     if not networkVarMap[c] then
         networkVarMap[c] = {
             set = {},
             arr = {}
         }
         
-        for k, _ in pairs(entity:GetNetworkVars()) do
-            table.insert(networkVarMap[c].arr, k)
-            networkVarMap[c].set[k] = true
+        local networkVars = entity.GetNetworkVars and entity:GetNetworkVars()
+        if networkVars then
+            for k, _ in pairs(networkVars) do
+                table.insert(networkVarMap[c].arr, k)
+                networkVarMap[c].set[k] = true
+            end
+        else
+            sentFilter[c] = true
+            return false
         end
     end
+    return true
 end
 
 ---@param entity Entity
@@ -61,7 +75,8 @@ function MOD:Save(entity)
 
     local data = {};
     
-    self:InitializeNetworkVars(entity)
+    if not self:InitializeNetworkVars(entity) then return nil end
+
     for _, networkVar in ipairs(networkVarMap[entity:GetClass()].arr) do
         data[networkVar] = getNetworkVar(entity, networkVar)
     end
@@ -75,7 +90,8 @@ function MOD:Load(entity, data)
     if self:IsPhysicsProp(entity) then return nil end
 
     local class = entity:GetClass()
-    self:InitializeNetworkVars(entity)
+    if not self:InitializeNetworkVars(entity) then return nil end
+
     for _, networkVar in ipairs(networkVarMap[class].arr) do
         local result = data[networkVar]
         if result ~= nil then
@@ -94,7 +110,8 @@ function MOD:LoadBetween(entity, data1, data2, percentage)
     if self:IsPhysicsProp(entity) then return nil end
 
     local class = entity:GetClass()
-    self:InitializeNetworkVars(entity)
+    if not self:InitializeNetworkVars(entity) then return nil end
+
     for _, networkVar in ipairs(networkVarMap[class].arr) do
         local result = data1[networkVar]
         if result ~= nil then
