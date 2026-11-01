@@ -514,9 +514,9 @@ function MGR.RequestNode(player)
     local entity = selectedEntities[1]
     local boneName = player:GetInfo("smh_motionpathbone")
 
-    if entity:GetClass() == "prop_effect" and IsValid(entity.AttachedEntity) then
-        entity = entity.AttachedEntity
-    end
+    -- if entity:GetClass() == "prop_effect" and IsValid(entity.AttachedEntity) then
+    --     entity = entity.AttachedEntity
+    -- end
 
     local bone = entity:LookupBone(boneName)
     local physBone = bone and SMH.BoneToPhysBone(entity, bone)
@@ -587,9 +587,9 @@ function MGR.RequestNodes(player, settings)
     if not IsValid(entity) then return {} end
     local tweening = not check(settings, "TweenDisable", entity)
 
-    if entity:GetClass() == "prop_effect" and IsValid(entity.AttachedEntity) then
-        entity = entity.AttachedEntity
-    end
+    -- if entity:GetClass() == "prop_effect" and IsValid(entity.AttachedEntity) then
+    --     entity = entity.AttachedEntity
+    -- end
 
     GhostData[player].LastEntity = entity
 
