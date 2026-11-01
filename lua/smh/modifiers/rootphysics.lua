@@ -20,13 +20,17 @@ do
     end)
     refreshBody()
 
+    local default = [[ValveBiped.Bip01_Pelvis
+bip_pelvis
+    ]]
+
     local function initializeDirectory()
         if not file.IsDir(directory, "DATA") then
             file.CreateDir(directory)
         end
         local path = Format("%s/%s", directory, "valve.txt")
         if not file.Read(path) then
-            local s = "ValveBiped.Bip01_Pelvis\nbip_pelvis"
+            local s = default
             file.Write(path, s)
         end
     end

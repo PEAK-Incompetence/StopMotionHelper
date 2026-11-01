@@ -20,13 +20,56 @@ do
     end)
     refreshBody()
 
+    local default = [[ValveBiped.Bip01_L_Foot
+ValveBiped.Bip01_R_Foot
+ValveBiped.Bip01_L_Toe0
+ValveBiped.Bip01_R_Toe0
+bip_foot_L
+bip_foot_R
+bip_toe_L
+bip_toe_R
+prp_legPouch
+prp_pouch
+prp_cord
+prp_pack
+prp_coat_back_0_M
+prp_coat_back_0_R
+prp_coat_back_0_L
+prp_coat_front_0_R
+prp_coat_front_0_L
+prp_coat_back_1_M
+prp_coat_back_1_R
+prp_coat_back_1_L
+prp_coat_front_1_R
+prp_coat_front_1_L
+prp_coat_back_2_M
+prp_coat_back_2_R
+prp_coat_back_2_L
+prp_coat_front_2_R
+prp_coat_front_2_L
+prp_hippouch_0_L
+prp_hippouch_0_B
+bip_hippouch_0
+bip_crotchflap_0
+bip_head
+bip_hand_L
+bip_hand_R
+bip_dogtag_0
+bip_dogtag_1
+bip_dogtag_2
+bip_dogtag_3
+ValveBiped.Bip01_L_Hand
+ValveBiped.Bip01_R_Hand
+ValveBiped.Bip01_Head1
+]]
+
     local function initializeDirectory()
         if not file.IsDir(directory, "DATA") then
             file.CreateDir(directory)
         end
         local path = Format("%s/%s", directory, "valve.txt")
         if not file.Read(path) then
-            local s = "ValveBiped.Bip01_L_Foot\nValveBiped.Bip01_R_Foot\nValveBiped.Bip01_L_Toe0\nValveBiped.Bip01_R_Toe0\nbip_foot_L\nbip_foot_R\nbip_toe_L\nbip_toe_R\nbip_head\nbip_hand_L\nbip_hand_R\nValveBiped.Bip01_L_Hand\nValveBiped.Bip01_R_Hand\nValveBiped.Bip01_Head1"
+            local s = default
             file.Write(path, s)
         end
     end
