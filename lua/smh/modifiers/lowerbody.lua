@@ -15,9 +15,6 @@ do
             end
         end
     end
-    concommand.Add(Format("smh_%s_refresh", modName), function (ply, cmd, args, argStr)
-        refreshBody()
-    end)
     refreshBody()
 
     local default = [[ValveBiped.Bip01_L_Foot
@@ -54,17 +51,20 @@ bip_crotchflap_0
 ]]
 
 
-    local function initializeDirectory()
+    local function initializeDirectory(check)
         if not file.IsDir(directory, "DATA") then
             file.CreateDir(directory)
         end
         local path = Format("%s/%s", directory, "valve.txt")
-        if not file.Read(path) then
+        if check or not file.Read(path) then
             local s = default
             file.Write(path, s)
         end
     end
-    initializeDirectory()
+    concommand.Add(Format("smh_%s_refresh", modName), function (ply, cmd, args, argStr)
+        initializeDirectory(true) 
+    end)
+    initializeDirectory(false)
 end
 
 MOD.Name = "Lower Body (Root)"
