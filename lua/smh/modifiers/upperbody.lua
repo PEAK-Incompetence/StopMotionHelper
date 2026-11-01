@@ -20,13 +20,24 @@ do
     end)
     refreshBody()
 
+    local default = [[bip_head
+bip_hand_L
+bip_hand_R
+bip_dogtag_0
+bip_dogtag_1
+bip_dogtag_2
+bip_dogtag_3
+ValveBiped.Bip01_L_Hand
+ValveBiped.Bip01_R_Hand
+ValveBiped.Bip01_Head1
+]]
     local function initializeDirectory()
         if not file.IsDir(directory, "DATA") then
             file.CreateDir(directory)
         end
         local path = Format("%s/%s", directory, "valve.txt")
         if not file.Read(path) then
-            local s = "bip_head\nbip_hand_L\nbip_hand_R\nValveBiped.Bip01_L_Hand\nValveBiped.Bip01_R_Hand\nValveBiped.Bip01_Head1"
+            local s = default
             file.Write(path, s)
         end
     end
