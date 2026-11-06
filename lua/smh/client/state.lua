@@ -13,6 +13,7 @@ SMH.State = {
 	
     AllowUnstretch = true,
     Playing = false,
+    HeldKeys = false,
 
 	EditAudioTrack = false,
     TimeStamp = RealTime() -- TODO: Use metamethods to track state changes to update this automatically
