@@ -93,6 +93,9 @@ end
 entitySyncFactory("sync_smh_to_fingerpose", "syncFingerPoseSMH", function(ent)
 	local owner = LocalPlayer()
 	local tool = owner:GetActiveWeapon()
+	if not IsValid(tool) then 
+		return 
+	end
 	if tool:GetClass() ~= "gmod_tool" then
 		return
 	end
