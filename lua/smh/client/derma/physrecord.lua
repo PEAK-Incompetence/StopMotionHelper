@@ -85,6 +85,12 @@ function PANEL:Init()
         end
     end
 
+    local oldThink = self.RecordButton.Think
+    function self.RecordButton:Think()
+        oldThink(self)
+        self:SetEnabled(SMH.PhysRecord.IsActive() or next(SMH.State.Entity) ~= nil)
+    end
+
     self.SelectEntity = vgui.Create("DButton", self)
     self.SelectEntity:SetText("Select Entity")
     self.SelectEntity.DoClick = function()

@@ -42,9 +42,13 @@ do
     end
         
     function MGR.RecordToggle()
-
         beep(1)
         if not Active then
+            -- Don't record if we have nothing selected
+            if not next(SMH.State.Entity) then
+                return
+            end
+
             SMH.Controller.SelectEntity(NULL, {})
             Active = true
             local wait = MGR.StartDelay

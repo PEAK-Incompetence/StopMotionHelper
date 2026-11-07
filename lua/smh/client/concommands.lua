@@ -29,6 +29,9 @@ SMH.ConVars.Create("smh_scrollmultiplier", "1", false, "Set how much scrolling s
 SMH.ConVars.Create("smh_cycleselected", "1", false, "Controls the new behavior of selecting child (bonemerged) entities", TYPE_BOOL, nil, nil, "Selection")
 SMH.ConVars.Create("smh_lockselected", "0", false, "Controls the selection of other entities", TYPE_BOOL, nil, nil, "Selection")
 
+local smh_hold_multiplier = SMH.ConVars.Create("smh_hold_multiplier", "1", false, "Controls how much of an impact holding down a keybind. For example, if holding down a key bound to smh_next and smh_holdmultiplier is set to 2, then it will skip over 2 frames when the key is held", TYPE_NUMBER, 1, 10, "UI")
+local smh_hold_delay = SMH.ConVars.Create("smh_hold_delay", "0.1", false, "Controls how much time to wait before executing a keybind when the key is held down. 0 means immediately execute on the next tick", TYPE_NUMBER, 0, 1, "UI")
+
 local smh_entity_settings = SMH.ConVars.Create("smh_entity_settings", "0", false, "Stores settings per entity. For example, Disable Tweening can disable tweening for one entity", TYPE_BOOL, nil, nil, "Settings")
 
 concommand.Add("+smh_menu", function()
@@ -138,6 +141,65 @@ concommand.Add("smh_previousframe", function()
         end
     end
 end, nil, "Jumps the playhead to the previous, immediate keyframe on the timeline, relative to the playhead")
+
+do
+    -- Miniature hacky input handler to allow commands to repeat when their key bind is held
+    -- Only works for commands that have at most one key bound to it
+    local pollButtons = {
+        smh_next = true,
+        smh_previous = true,
+        smh_nextframe = true,
+        smh_previousframe = true
+    }
+
+    local cmds = {}
+    local function captureInput(_, bind, pressed, code)
+        local commands = input.TranslateAlias(bind) or bind
+        commands = string.Replace(commands, "\n", "")
+        local commandTable = string.Split(commands, ";")
+        for _, command in ipairs(commandTable) do
+            local args = string.Split(command, " ")
+            if pollButtons[args[1]] then
+                if not args[2] then
+                    args[2] = tostring(1)
+                end
+                for i, arg in ipairs(args) do
+                    local num = tonumber(arg)
+                    if num then
+                        args[i] = tostring(num * smh_hold_multiplier:GetInt())
+                    end
+                end
+                local newCommand = table.concat(args, " ")
+                cmds[newCommand] = {CurTime(), CurTime(), code}
+            end
+        end
+    end
+    hook.Add("PlayerBindPress", "SMHCaptureInput", captureInput)
+
+    cvars.RemoveChangeCallback("smh_hold_multiplier", "refreshcmds")
+    cvars.AddChangeCallback("smh_hold_multiplier", function(cvar, old, new)
+        cmds = {}
+    end, "refreshcmds")
+
+    local pressDelay = 0.25
+
+    local function pollKeys()
+        local held = false
+        local now = CurTime()
+        for cmd, t in pairs(cmds) do
+            if input.IsKeyDown(t[#t]) and now - t[1] > pressDelay and now - t[2] > smh_hold_delay:GetFloat() then
+                SMH.State.AllowUnstretch = false
+                LocalPlayer():ConCommand(cmd)
+                t[2] = now
+                held = true
+            else
+                SMH.State.AllowUnstretch = true
+            end
+        end
+        SMH.State.HeldKeys = held
+    end
+    hook.Add("Think", "SMHInputPoller", pollKeys)
+end
 
 local smh_playback_toggle = SMH.ConVars.Create("smh_playback_toggle", "0", true, "If set to 1, tap the playback button once to play the animation. Tap the button again to stop it.", TYPE_BOOL, 0, 1)
 cvars.RemoveChangeCallback("smh_playback_toggle", "stop_playback")

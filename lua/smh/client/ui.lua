@@ -971,9 +971,11 @@ local lastFrame = nil
 function MGR.SetFrame(frame)
     lastFrame = lastFrame or frame
     local sampleTime = 0.05
-    if not WorldClicker.MainMenu.FramePointer:IsDragging() then
+    local dragging = WorldClicker.MainMenu.FramePointer:IsDragging()
+    if not dragging then
         WorldClicker.MainMenu.FramePointer:SetFrame(frame)
-    else
+    end
+    if dragging or SMH.State.HeldKeys then
         MGR.ScrubAudio(frame, lastFrame, sampleTime)
     end
     timer.Simple(sampleTime, function()
