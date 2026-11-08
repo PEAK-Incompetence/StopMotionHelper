@@ -169,7 +169,7 @@ net.Receive("SMHForceRenderBoundsBoneScale", function (len, ply)
     local entity = Entity(entIndex)
 
     local function manipulateEntity(entity)
-        if IsValid(entity) then
+        if IsValid(entity) and not entity:IsWeapon() then
             for index = 0, entity:GetBoneCount() - 1 do
                 setEntityRenderBounds(entity, index, entity:GetManipulateBoneScale(index))
             end
