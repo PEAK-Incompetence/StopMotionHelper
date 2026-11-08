@@ -187,13 +187,13 @@ do
         local held = false
         local now = CurTime()
         for cmd, t in pairs(cmds) do
-            if input.IsKeyDown(t[#t]) and now - t[1] > pressDelay and now - t[2] > smh_hold_delay:GetFloat() then
-                SMH.State.AllowUnstretch = false
+            local pressTime = t[1]
+            local holdTime = t[2]
+            local key = t[#t]
+            if input.IsKeyDown(key) and now - pressTime > pressDelay and now - holdTime > smh_hold_delay:GetFloat() then
                 LocalPlayer():ConCommand(cmd)
                 t[2] = now
                 held = true
-            else
-                SMH.State.AllowUnstretch = true
             end
         end
         SMH.State.HeldKeys = held

@@ -321,7 +321,8 @@ local doPeakUnstretch = SMH.ConVars.Create(
 
 --- @param ragdolls Entity[]
 local function unstretch(ragdolls)
-	if not SMH.State.AllowUnstretch then
+	-- Don't unstretch if we're not supposed to or if we are repeating an action multiple times
+	if not SMH.State.AllowUnstretch or SMH.State.HeldKeys then
 		return
 	end
 
