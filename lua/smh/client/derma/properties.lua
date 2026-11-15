@@ -59,13 +59,6 @@ local function FindEntity(name)
     return nil
 end
 
--- local function UpdateName(name)
---     if not IsValid(selectedEntity) then return end
---     if EntsTable then
---         EntsTable[selectedEntity].Name = name
---     end
--- end
-
 local function TransformToEntityTable(tab)
     local newtab = {}
     for _, ent in ipairs(tab) do
@@ -74,6 +67,19 @@ local function TransformToEntityTable(tab)
         newtab[ent].Name = GetModelName(ent)
     end
     return newtab
+end
+
+local function UpdateName(name)
+    if not IsValid(selectedEntity) then return end
+    if EntsTable then
+        -- silence a nil error
+        if not EntsTable[selectedEntity] then
+            EntsTable[selectedEntity] = {
+                Name = ""
+            }
+        end
+        EntsTable[selectedEntity].Name = name
+    end
 end
 
 function PANEL:Init()
@@ -95,11 +101,12 @@ function PANEL:Init()
     self.EntityNameEnter:SetEditable(false)
     self.EntityNameEnter:SetText("none")
     self.EntityNameEnter.OnLoseFocus = function(sel)
-        if sel:GetValue() == "" then
+        -- Don't make animators use whitespace in their names
+        local text = string.Trim(sel:GetText())
+        if text == "" then
             sel:SetText(Fallback)
         end
-
-        self:ApplyName(selectedEntity, sel:GetValue())
+        self:ApplyName(selectedEntity, text)
     end
         self.EntityNameEnter.Label = vgui.Create("DLabel", self.EntitiesPanel)
         self.EntityNameEnter.Label:SetText("Selected entity's name:")
@@ -352,7 +359,7 @@ end
 
 function PANEL:SetName(name)
     self.EntityNameEnter:SetText(name)
-    -- UpdateName(name)
+    UpdateName(name)
     self:SetEntities(EntsTable)
 end
 

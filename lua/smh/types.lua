@@ -203,6 +203,7 @@
 --- @class PlayerProperties
 --- @field Entities {[Entity]: EntityProperties}
 --- @field TimelineSetting TimelineSetting
+--- @field UsedNames Set<string>
 
 --- @class PropertiesManager
 --- @field Players {[Player]: PlayerProperties}
