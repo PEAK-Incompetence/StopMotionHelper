@@ -154,11 +154,14 @@ do
 
     local cmds = {}
     local function captureInput(_, bind, pressed, code)
+        cmds = {}
         local commands = input.TranslateAlias(bind) or bind
         commands = string.Replace(commands, "\n", "")
         local commandTable = string.Split(commands, ";")
+        -- if we have multiple commands, let's go over each of them and see if we have what we want
         for _, command in ipairs(commandTable) do
             local args = string.Split(command, " ")
+            -- args[1] is the command name, everything afterwards is the arguments
             if pollButtons[args[1]] then
                 if not args[2] then
                     args[2] = tostring(1)
@@ -183,14 +186,35 @@ do
 
     local pressDelay = 0.25
 
+    local filteredPanels = {
+        GModBasePanel = true,
+        [""] = true, -- This is just a representation of "I'm not hovering over anything"
+        ContextMenu = true,
+    }
+
     local function pollKeys()
         local held = false
         local now = CurTime()
+        local hoveredPanel = vgui.GetHoveredPanel()
+        local parentPanel = hoveredPanel and hoveredPanel:GetParent()
+        local hoveredClass = hoveredPanel and hoveredPanel:GetName() or ""
+        local parentClass = parentPanel and parentPanel:GetName() or ""
+        -- Only allow concommands when we're hovering over nothing or on the panels shown above
+        local shouldHover = filteredPanels[hoveredClass] or filteredPanels[parentClass]
+        -- Don't execute anything if we're typing something
+        local keyboardFocus = vgui.GetKeyboardFocus()
         for cmd, t in pairs(cmds) do
             local pressTime = t[1]
             local holdTime = t[2]
+            local pressed = t[#t - 1]
             local key = t[#t]
-            if input.IsKeyDown(key) and now - pressTime > pressDelay and now - holdTime > smh_hold_delay:GetFloat() then
+            if 
+                pressed and input.IsKeyDown(key)
+                and now - pressTime > pressDelay 
+                and now - holdTime > smh_hold_delay:GetFloat() 
+                and shouldHover
+                and not keyboardFocus
+            then
                 LocalPlayer():ConCommand(cmd)
                 t[2] = now
                 held = true
