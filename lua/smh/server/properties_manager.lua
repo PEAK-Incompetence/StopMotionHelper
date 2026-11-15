@@ -1,9 +1,7 @@
 --- @type PropertiesManager
-SMH.Properties = {
+SMH.Properties = SMH.Properties or {
     Players = {}
 }
-
-local usednames = {}
 
 --- @param entity Entity
 --- @return string
@@ -19,13 +17,16 @@ end
 --- @param name string
 --- @return string uniqueName
 local function SetUniqueName(player, entity, name)
-    if SMH.Properties.Players[player].Entities[entity] then
-        usednames[player][SMH.Properties.Players[player].Entities[entity].Name] = nil -- so we won't consider our own name when sorting
+    local playerData = SMH.Properties.Players[player]
+    local usedNames = playerData.UsedNames
+    local entityProperties = playerData.Entities[entity]
+    if entityProperties then
+        usedNames[entityProperties.Name] = nil -- so we won't consider our own name when sorting
     end
 
-    for kentity, value in pairs(SMH.Properties.Players[player].Entities) do
+    for kentity, value in pairs(playerData.Entities) do
         if kentity ~= entity and name == value.Name then -- if there's another entity with our name
-            usednames[player][value.Name] = true
+            usedNames[value.Name] = true
             break
         end
     end
@@ -33,15 +34,15 @@ local function SetUniqueName(player, entity, name)
     local namebase = name
     local num = 1
 
-    if usednames[player][name] then
+    if usedNames[name] then
         local startPos = string.find(namebase, "%d*$")
         namebase = string.sub(namebase, 1, startPos - 1)
     end
-    while usednames[player][name] do
+    while usedNames[name] do
         name = namebase .. num
         num = num + 1
     end
-    usednames[player][name] = true
+    usedNames[name] = true
     return name
 end
 
@@ -49,8 +50,8 @@ end
 --- @return Entity?
 local function FindEntity(player) -- I use this to find entity that doesn't have recorded frames
     local sorting = {}
-
-    for entity, _ in pairs(SMH.Properties.Players[player].Entities) do
+    local playerData = SMH.Properties.Players[player]
+    for entity, _ in pairs(playerData.Entities) do
         if sorting[entity] then continue end
 
         for k, value in pairs(SMH.KeyframeData.Players[player].Keyframes) do
@@ -61,7 +62,7 @@ local function FindEntity(player) -- I use this to find entity that doesn't have
         end
     end
 
-    for entity, _ in pairs(SMH.Properties.Players[player].Entities) do
+    for entity, _ in pairs(playerData.Entities) do
         if not sorting[entity] then return entity end
     end
 
@@ -69,26 +70,32 @@ local function FindEntity(player) -- I use this to find entity that doesn't have
 end
 
 local function initializePlayer(player)
-    SMH.Properties.Players[player] = { Entities = {}, TimelineSetting = {
-        Timelines = 1,
-        TimelineMods = {}
-    } }
-    usednames[player] = {}
+    ---@type PlayerProperties
+    local playerProperties = { 
+        Entities = {}, 
+        UsedNames = {}, 
+        TimelineSetting = {
+            Timelines = 1,
+            TimelineMods = {},
+        } 
+    }
+    SMH.Properties.Players[player] = playerProperties
 end
 
 hook.Add("PlayerInitialSpawn", "SMHInitPlayerProperties", initializePlayer)
 
 hook.Add("PlayerDisconnected", "SMHDeleteProperties", function(player)
     SMH.Properties.Players[player] = nil
-    usednames[player] = nil
 end)
 
 hook.Add("EntityRemoved", "SMHPropertiesEntityRemoved", function(entity)
-
-    for _, player in pairs(player.GetAll()) do
-        if SMH.Properties.Players[player] and SMH.Properties.Players[player].Entities and SMH.Properties.Players[player].Entities[entity] then
-            usednames[player][SMH.Properties.Players[player].Entities[entity].Name] = nil
-            SMH.Properties.Players[player].Entities[entity] = nil
+    local players = SMH.Properties.Players
+    for _, player in ipairs(player.GetAll()) do
+        local playerData = players[player]
+        local entityProperties = playerData and playerData.Entities[entity]
+        if entityProperties then
+            playerData.UsedNames[entityProperties.Name] = nil
+            playerData.Entities[entity] = nil
         end
     end
 
@@ -105,17 +112,17 @@ function MGR.Reset(player)
     local old = SMH.Properties.Players[player]
     initializePlayer(player)
     SMH.Properties.Players[player].TimelineSetting = old.TimelineSetting
-    usednames[player] = {}
 end
 
 --- @param player Player
 --- @return table
 function MGR.GetTimelinesInfo(player)
-    if not SMH.Properties.Players[player] or not SMH.Properties.Players[player].TimelineSetting then return {} end
+    local playerData = SMH.Properties.Players[player]
+    if not playerData or not playerData.TimelineSetting then return {} end
 
     local info = {}
 
-    info = table.Copy(SMH.Properties.Players[player].TimelineSetting)
+    info = table.Copy(playerData.TimelineSetting)
 
     return info
 end
@@ -123,11 +130,12 @@ end
 --- @param player Player
 --- @return table
 function MGR.GetAllProperties(player)
-    if not SMH.Properties.Players[player] or not SMH.Properties.Players[player].Entities then return {} end
+    local playerData = SMH.Properties.Players[player]
+    if not playerData or not playerData.Entities then return {} end
 
     local info = {}
 
-    for entity, value in pairs(SMH.Properties.Players[player].Entities) do
+    for entity, value in pairs(playerData.Entities) do
         info[entity] = {
             Name = value.Name,
             Class = value.Class,
@@ -141,11 +149,12 @@ end
 --- @param player Player
 --- @return table<Entity, {Name: string}>
 function MGR.GetAllEntitiesNames(player)
-    if not SMH.Properties.Players[player] or not SMH.Properties.Players[player].Entities then return {} end
+    local playerData = SMH.Properties.Players[player]
+    if not playerData or not playerData.Entities then return {} end
 
     local info = {}
 
-    for entity, value in pairs(SMH.Properties.Players[player].Entities) do
+    for entity, value in pairs(playerData.Entities) do
         info[entity] = {
             Name = value.Name,
         }
@@ -158,23 +167,23 @@ end
 function MGR.RemoveEntity(player)
     if not SMH.KeyframeData.Players[player] or not SMH.KeyframeData.Players[player].Entities or not SMH.Properties.Players[player] or not SMH.Properties.Players[player].Entities then return end
     local entity = FindEntity(player)
+    local playerData = SMH.Properties.Players[player]
     if entity then
-        usednames[player][SMH.Properties.Players[player].Entities[entity].Name] = nil
-        SMH.Properties.Players[player].Entities[entity] = nil
+        playerData.UsedNames[playerData.Entities[entity].Name] = nil
+        playerData.Entities[entity] = nil
     end
 end
 
 --- @param player Player
 --- @param entities Entities
 function MGR.AddEntity(player, entities)
-    if not SMH.Properties.Players[player] then
-        local old = usednames[player]
+    local playerData = SMH.Properties.Players[player]
+    if not playerData then
         initializePlayer(player)
-        usednames[player] = old
     end
 
     for _, entity in ipairs(entities) do
-        if not SMH.Properties.Players[player].Entities[entity] then
+        if not playerData.Entities[entity] then
             if player ~= entity then
                 local class = entity:GetClass()
                 local model
@@ -191,12 +200,12 @@ function MGR.AddEntity(player, entities)
                     Model = model,
                 }
             else
-                SMH.Properties.Players[player].Entities[entity] = {
+                playerData.Entities[entity] = {
                     Name = SetUniqueName(player, entity, "world"),
                 }
             end
         end
-        usednames[player][SMH.Properties.Players[player].Entities[entity].Name] = true
+        playerData[playerData.Entities[entity].Name] = true
     end
 end
 
@@ -217,10 +226,9 @@ end
 --- @param player Player
 --- @param timelineInfo TimelineSetting
 function MGR.InitTimelineSetting(player, timelineInfo)
-    if not SMH.Properties.Players[player] then
-        local old = usednames[player]
+    local playerData = SMH.Properties.Players[player]
+    if not playerData then
         initializePlayer(player)
-        usednames[player] = old
     end
 
     local timelines
@@ -243,7 +251,7 @@ function MGR.InitTimelineSetting(player, timelineInfo)
 
     SMH.Properties.Players[player].TimelineSetting = {
         Timelines = timelines,
-        TimelineMods = timelinemods
+        TimelineMods = timelinemods,
     }
 end
 
