@@ -67,6 +67,10 @@ local playbackCache = {}
 --- @type ModifierCache
 local modifierCache = {}
 
+--- Store the modifiers used per entity and update the cache on keyframe change
+--- @type ModifierOrderCache
+local modifierOrderCache = {}
+
 --- @param entity Entity
 --- @param modName string
 --- @return boolean, FrameData?, FrameData?, number?
@@ -88,6 +92,15 @@ local function lookupModifierCache(player, entity)
     modifierCache[player] = modifierCache[player] or {}
     modifierCache[player][entity] = modifierCache[player][entity] or {}
     return modifierCache[player][entity]
+end
+
+--- @param player Player
+--- @param entity Entity
+--- @return integer[]
+local function lookupModifierOrderCache(player, entity)
+    modifierOrderCache[player] = modifierOrderCache[player] or {}
+    modifierOrderCache[player][entity] = modifierOrderCache[player][entity] or {}
+    return modifierOrderCache[player][entity]
 end
 
 --- @param player Player
@@ -123,10 +136,29 @@ local function storeModifierCache(player, entity, modName, mod)
     return mod
 end
 
+--- @param player Player
+--- @param entity Entity
+--- @param modifiers {[Modifiers]: ModifierClass}
+--- @return ModifierOrderCacheEntry
+local function storeModifierOrderCache(player, entity, modifiers)
+    modifierOrderCache[player] = modifierOrderCache[player] or {}
+    modifierOrderCache[player][entity] = modifierOrderCache[player][entity] or {}
+
+    for name, mod in pairs(modifiers) do
+        local modId = SMH.ModifierInfo.Ids[name]
+        table.insert(modifierOrderCache[player][entity], modId)
+    end
+    table.sort(modifierOrderCache[player][entity])
+
+    return modifierOrderCache[player][entity]
+end
+
 ---@param player Player
 ---@param entity SMHEntity
+---@return ModifierOrderCacheEntry
 local function loadModifiers(player, entity)
     local entityModifiers = lookupModifierCache(player, entity)
+    local entityModifierOrder = lookupModifierOrderCache(player, entity)
     
     if not next(entityModifiers) then
         local modifiers = SMH.Modifiers
@@ -138,8 +170,9 @@ local function loadModifiers(player, entity)
                 end
             end
         end
+        storeModifierOrderCache(player, entity, entityModifiers)
     end
-    return entityModifiers
+    return entityModifierOrder
 end
 
 --- @param player Player
@@ -148,6 +181,7 @@ function MGR.UpdateCacheFor(player, entity)
     if playbackCache[player] and IsValid(entity) then
         playbackCache[player][entity] = {}
         modifierCache[player][entity] = {}
+        modifierOrderCache[player][entity] = {}
     end
 end
 
@@ -156,6 +190,7 @@ function MGR.FlushCache(player)
     if not IsValid(player) then
         playbackCache = {}
         modifierCache = {}
+        modifierOrderCache = {}
         return
     end
 
@@ -164,6 +199,9 @@ function MGR.FlushCache(player)
     end
     if modifierCache[player] then
         modifierCache[player] = {}
+    end
+    if modifierOrderCache[player] then
+        modifierOrderCache[player] = {}
     end
 end
 
@@ -184,6 +222,7 @@ end)
 --- @param playback Playback
 --- @param settings Settings
 local function PlaybackSmooth(player, playback, settings)
+    local smhMods, modInfo = SMH.Modifiers, SMH.ModifierInfo
     local currentFrame = incrementFrame(playback.Timer * playback.PlaybackRate, playback)
 
     local playerData = SMH.KeyframeData.Players[player]
@@ -208,7 +247,10 @@ local function PlaybackSmooth(player, playback, settings)
         local entitySettings = getSetting(settings, entity)
         local tweenDisabled = check(settings, "TweenDisable", entity)
 
-        for name, mod in pairs(mods) do
+        for _, modId in ipairs(mods) do
+            local name = modInfo.Names[modId]
+            local mod = smhMods[name]
+
             if checkPhysBake(player, entity, name, settings) then continue end
             if checkBodyBake(player, entity, mod, settings) then continue end
 
@@ -258,6 +300,7 @@ end
 --- @param newFrame integer
 --- @param settings Settings
 function MGR.SelectFrame(player, newFrame, settings)
+    local smhMods, modInfo = SMH.Modifiers, SMH.ModifierInfo
     local playerData = SMH.KeyframeData.Players[player]
     
     if not playerData then
@@ -280,7 +323,10 @@ function MGR.SelectFrame(player, newFrame, settings)
         local entitySettings = getSetting(settings, entity)
         local tweenDisabled = check(settings, "TweenDisable", entity)
 
-        for name, mod in pairs(mods) do
+        for _, modId in ipairs(mods) do
+            local name = modInfo.Names[modId]
+            local mod = smhMods[name]
+
             if checkPhysBake(player, entity, name, settings) then continue end
             if checkBodyBake(player, entity, mod, settings) then continue end
 
@@ -321,6 +367,7 @@ end
 --- @param newFrame integer
 --- @param settings Settings
 function MGR.SetFrame(player, newFrame, settings)
+    local smhMods, modInfo = SMH.Modifiers, SMH.ModifierInfo
     local playerData = SMH.KeyframeData.Players[player]
     
     if not playerData then
@@ -344,7 +391,10 @@ function MGR.SetFrame(player, newFrame, settings)
         local entitySettings = getSetting(settings, entity)
         local tweenDisabled = check(settings, "TweenDisable", entity)
 
-        for name, mod in pairs(mods) do
+        for _, modId in ipairs(mods) do
+            local name = modInfo.Names[modId]
+            local mod = smhMods[name]
+
             if checkPhysBake(player, entity, name, settings) then continue end
             if checkBodyBake(player, entity, mod, settings) then continue end
 
@@ -385,6 +435,7 @@ end
 --- @param settings Settings
 --- @param ignored Set<Entity>
 function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
+    local smhMods, modInfo = SMH.Modifiers, SMH.ModifierInfo
     local playerData = SMH.KeyframeData.Players[player]
     if not playerData then
         return
@@ -401,7 +452,10 @@ function MGR.SetFrameIgnore(player, newFrame, settings, ignored)
         local entitySettings = getSetting(settings, entity)
         local tweenDisabled = check(settings, "TweenDisable", entity)
 
-        for name, mod in pairs(mods) do
+        for _, modId in ipairs(mods) do
+            local name = modInfo.Names[modId]
+            local mod = smhMods[name]
+
             if checkPhysBake(player, entity, name, settings) then continue end
             if checkBodyBake(player, entity, mod, settings) then continue end
 
