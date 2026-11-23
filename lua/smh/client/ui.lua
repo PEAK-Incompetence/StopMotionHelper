@@ -8,6 +8,12 @@ local Tooltip = nil
 local SaveMenu = nil
 --- @type SMHLoad
 local LoadMenu = nil
+--- @type SMHSaveAudio
+local SaveAudioMenu = nil
+--- @type SMHLoadAudio
+local LoadAudioMenu = nil
+--- @type SMHInsertAudio
+local InsertAudioMenu = nil
 --- @type SMHProperties
 local PropertiesMenu = nil
 
@@ -405,6 +411,19 @@ local function addKeyCodeReleasedCallback(panel)
     end
 end
 
+-- 11/23/2026: ridiculous! spamming PopUp just so that
+-- we can get focus on it? 
+local function checkHovered(state)
+    if state then
+        LoadMenu:MakePopup()
+        SaveMenu:MakePopup()
+        LoadAudioMenu:MakePopup()
+        SaveAudioMenu:MakePopup()
+        InsertAudioMenu:MakePopup()
+        PropertiesMenu:MakePopup()
+    end
+end
+
 ---@param parent Panel
 local function addHoverCallbacks(parent)
     addKeyCodeReleasedCallback(parent)
@@ -413,7 +432,9 @@ local function addHoverCallbacks(parent)
         if ispanel(child) and child ~= parent then
             addKeyCodeReleasedCallback(child)
             function child:TestHover(x, y)
-                parent:SetKeyboardInputEnabled(parent:IsChildHovered())
+                local isHovered = parent:IsChildHovered()
+                checkHovered(not isHovered)
+                parent:SetKeyboardInputEnabled(isHovered)
             end
         end
     end

@@ -82,8 +82,12 @@
 --- }
 --- ```
 --- 
+--- @alias ModifierCacheEntry ModifierClass
+--- @alias ModifierOrderCacheEntry integer[]
+--- 
 --- @alias PlaybackCache {[Player]: {[Entity]: {[string]: {[number]: {[1]: FrameData, [2]: FrameData, [3]: number}}}}}
---- @alias ModifierCache {[Player]: {[Entity]: {[Modifiers]: ModifierClass}}}
+--- @alias ModifierCache {[Player]: {[Entity]: {[Modifiers]: ModifierCacheEntry}}}
+--- @alias ModifierOrderCache {[Player]: {[Entity]: ModifierOrderCacheEntry}}
 
 --- @class Playback
 --- @field StartFrame integer

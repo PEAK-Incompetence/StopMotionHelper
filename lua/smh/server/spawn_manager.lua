@@ -155,7 +155,12 @@ function MGR.Spawn(model, settings, player, serializedKeyframes)
         end
     end
 
-    local entity = ents.Create(class)
+    local targetClass = class
+    if class == "prop_animated" then -- This has a specific spawning method, so use that
+        -- TODO: Make a system that checks the class and handles preprocessing before modifier loading
+        targetClass = "prop_dynamic"
+    end
+    local entity = ents.Create(targetClass)
     --- @cast entity SMHEntity
     local tracepos = nil
     if MGR.OffsetMode[player] then
@@ -164,6 +169,15 @@ function MGR.Spawn(model, settings, player, serializedKeyframes)
 
     entity:SetModel(modelpath)
     entity:Spawn()
+    if class == "prop_animated" and ConvertEntityToAnimprop then
+        entity:Activate()
+        local dummy = entity
+        local animProp = ConvertEntityToAnimprop(dummy, player, true, true, false)
+        if IsValid(animProp) then
+            entity = animProp
+            dummy:Remove()
+        end
+    end
 
     player:AddCount("smhentity", entity)
     player:AddCleanup("smhentity", entity)
